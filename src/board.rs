@@ -4,7 +4,7 @@ pub enum Colour {
 }
 
 impl Colour {
-    pub fn index(self) -> usize {
+    pub fn index(self) -> i32 {
         match self {
             Colour::White => 0,
             Colour::Black => 1,
@@ -19,7 +19,7 @@ impl Colour {
     }
 }
 
-pub enum Piece {
+pub enum PieceType {
     Pawn,
     Knight,
     Bishop,
@@ -28,23 +28,33 @@ pub enum Piece {
     King,
 }
 
-impl Piece {
+impl PieceType {
     pub fn index(self) -> usize {
         match self {
-            Piece::Pawn => 0,
-            Piece::Knight => 1,
-            Piece::Bishop => 2,
-            Piece::Rook => 3,
-            Piece::Queen => 4,
-            Piece::King => 5,
+            PieceType::Pawn => 0,
+            PieceType::Knight => 1,
+            PieceType::Bishop => 2,
+            PieceType::Rook => 3,
+            PieceType::Queen => 4,
+            PieceType::King => 5,
         }
     }
-    
+
+    pub fn string(self) -> &'static str {
+        match self {
+            PieceType::Pawn => "p",
+            PieceType::Knight => "n",
+            PieceType::Bishop => "b",
+            PieceType::Rook => "r",
+            PieceType::Queen => "q",
+            PieceType::King => "k",
+        }
+    }    
 }
 
 pub enum Square {
     Empty,
-    Full(Colour,Piece),
+    Piece(Colour, PieceType),
     Offboard,
 }
 
@@ -52,20 +62,81 @@ impl Square {
     pub fn return_piece(self) {
         match self {
             Square::Empty => println!("Empty square"),
-            Square::Full(colour,piece) => println!("Piece: {} {}", colour.as_string(), piece.index()),
+            Square::Piece(colour,piece) => println!("Piece: {} {}", colour.as_string(), piece.index()),
             Square::Offboard => println!("Square offboard")
         }
     }
+
+    pub fn print(self) -> String  {
+        match self {
+            Square::Empty => String::from("."),
+            Square::Piece(c,p) => {
+                if &c.index() == 0 {
+                    format!("{} {}", c.as_string(), p.string().to_uppercase())
+                }
+                else {
+                    format!("{} {}", c.as_string(), p.string())
+                }
+                },
+            Square::Offboard => String::from(".")
+        }
+    }
 }
+    use crate::board::Square::Piece;
+    use crate::board::Square::*;
+    use crate::board::PieceType::*;
+    use crate::board::Colour::*;
 
 pub fn main() {
-    let e = Square::Empty;
-    let t = Square::Full(Colour::White, Piece::Bishop);
+    let e = Empty;
+    let t = Piece(White, Bishop);
     t.return_piece();
     e.return_piece();
+    let board: [Square; 3] = [Square::Empty, Square::Empty, Square::Empty];
 }
 
+pub fn init_board() {
+    let init_pieces: [i32; 64] = [
+        3, 1, 2, 4, 5, 2, 1, 3,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        3, 1, 2, 4, 5, 2, 1, 3
+    ];
 
+    use crate::board::Square::Piece;
+    use crate::board::Square::*;
+    use crate::board::PieceType::*;
+    use crate::board::Colour::*;
+
+    let mut board: [Square; 64] = [
+        Piece(White, Rook), Piece(White, Knight), Piece(White, Bishop), Piece(White, Queen), Piece(White, King),  Piece(White, Bishop),  Piece(White, Knight),  Piece(White, Rook),
+        Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,
+        Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,
+        Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,
+        Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,
+        Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,
+        Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,
+        Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty,  Empty
+    ];
+
+    for sq in board {
+        sq.return_piece()
+    }
+    
+}
+
+// fn pieces (pc: &str) -> Piece {
+//     use crate::board::PieceType::*;
+//     use crate::board::Colour::*;
+//     match pc {
+//         "p" => Piece{pctype: Bishop, colour: White},
+//         &_ => Square::Empty,
+//     }
+// }
 
 pub fn mailbox120(index: usize) -> i32 {
     let board120: [i32; 120] = [

@@ -1,3 +1,72 @@
+pub enum Colour {
+    White,
+    Black
+}
+
+impl Colour {
+    pub fn index(self) -> usize {
+        match self {
+            Colour::White => 0,
+            Colour::Black => 1,
+        }
+    }
+
+    pub fn as_string(self) -> String {
+        match self {
+            Colour::White => String::from("White"),
+            Colour::Black => String::from("Black"),
+        }
+    }
+}
+
+pub enum Piece {
+    Pawn,
+    Knight,
+    Bishop,
+    Rook,
+    Queen,
+    King,
+}
+
+impl Piece {
+    pub fn index(self) -> usize {
+        match self {
+            Piece::Pawn => 0,
+            Piece::Knight => 1,
+            Piece::Bishop => 2,
+            Piece::Rook => 3,
+            Piece::Queen => 4,
+            Piece::King => 5,
+        }
+    }
+    
+}
+
+pub enum Square {
+    Empty,
+    Full(Colour,Piece),
+    Offboard,
+}
+
+impl Square {
+    pub fn return_piece(self) {
+        match self {
+            Square::Empty => println!("Empty square"),
+            Square::Full(colour,piece) => println!("Piece: {} {}", colour.as_string(), piece.index()),
+            Square::Offboard => println!("Square offboard")
+        }
+    }
+}
+
+pub fn main() {
+    let e = Square::Empty;
+    let t = Square::Full(Colour::White, Piece::Bishop);
+    t.return_piece();
+    e.return_piece();
+}
+
+
+
 pub fn mailbox120(index: usize) -> i32 {
     let board120: [i32; 120] = [
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

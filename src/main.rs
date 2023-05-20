@@ -5,7 +5,8 @@ pub fn main() {
     unsafe {
         board::init_hash();
         board::init_board();
-        print_board()
+        print_board();
+        board::gen();
     }
 }
 

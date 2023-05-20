@@ -2,29 +2,32 @@ pub use crate::data;
 use rand::*;
 use ndarray::*;
 use once_cell::sync::Lazy;
+use std::char::from_digit;
 
-struct MoveBytes{
+#[derive(Copy, Clone, Debug)]
+pub struct MoveBytes{
 	from: char,
 	to: char,
 	promote: char,
 	bits: char,
 }
-
-struct Move {
+#[derive(Copy, Clone, Debug)]
+pub struct Move {
 	b: MoveBytes,
 	u: i32,
 }
 
 /* an element of the move stack. it's just a move with a
    score, so it can be sorted by the search functions. */
-struct GenT{
+#[derive(Copy, Clone, Debug)]
+pub struct GenT{
 	m: Move,
 	score: i32,
 }
 
 /* an element of the history stack, with the information
    necessary to take a move back. */
-struct HistT{
+pub struct HistT{
 	m: Move,
 	capture: i32,
 	castle: i32,
@@ -32,6 +35,29 @@ struct HistT{
 	fifty: i32,
 	hash: i32,
 }
+
+const empty_gent: GenT = GenT {
+    m: empty_move,
+    score: 0,
+};
+
+const empty_move: Move = Move {
+    b: empty_move_bytes,
+	u: 0,
+};
+
+const empty_move_bytes: MoveBytes = MoveBytes{
+	from: 'a',
+	to: 'a',
+	promote: 'a',
+	bits: 'a',
+};
+
+/* gen_dat is some memory for move lists that are created by the move
+   generators. The move list for ply n starts at first_move[n] and ends
+   at first_move[n + 1]. */
+
+static mut gen_dat: [GenT; data::GEN_STACK] = [empty_gent; data::GEN_STACK];
 
 static init_color: [i32; 64] = [
 	1, 1, 1, 1, 1, 1, 1, 1,
@@ -81,6 +107,7 @@ static mailbox64: [usize; 64] = [
    91, 92, 93, 94, 95, 96, 97, 98
 ];
 
+static mut first_move: [i32; data::MAX_PLY] = [0; data::MAX_PLY];
 
 /* slide, offsets, and offset are basically the vectors that
   pieces can move in. If slide for the piece is FALSE, it can
@@ -104,6 +131,8 @@ static offset: [[i32; 8]; 6] = [
    [ -11, -10, -9, -1, 1, 9, 10, 11 ],
    [ -11, -10, -9, -1, 1, 9, 10, 11 ]
 ];
+
+static mut history: Lazy<Array2<i32>> = Lazy::new(|| Array2::<i32>::zeros((64, 64)));
 
 /* the board representation */
 pub static mut color: [i32; 64] = [0; 64];  /* LIGHT, DARK, or EMPTY */
@@ -130,6 +159,8 @@ static mut hash_piece: Lazy<Array3<i32>> = Lazy::new(|| Array3::<i32>::zeros((2,
 static mut hash_side: i32 = 0;
 static mut hash_ep: [i32; 64] = [0; 64];
 
+static mut count_moves: i32 = 0;
+
 pub fn init_board() {
     unsafe {
         for i in 0..64 {
@@ -144,7 +175,7 @@ pub fn init_board() {
         ply = 0;
         hply = 0;
         set_hash();  /* init_hash() must be called before this function */
-        data::first_move[0] = 0;
+        first_move[0] = 0;
     }
 	
 }
@@ -268,33 +299,172 @@ unsafe fn attack(sq: i32, s: i32) -> usize {
    1,000,000 is added to a capture move's score, so it
    always gets ordered above a "normal" move. */
 
-// void gen_push(int from, int to, int bits)
-// {
-// 	gen_t *g;
+unsafe fn gen_push(from: i32, to: i32, bits: i32)
+{
+  
+    let mut g = empty_gent;
 	
-// 	if (bits & 16) {
-// 		if (side == LIGHT) {
-// 			if (to <= H8) {
-// 				gen_promote(from, to, bits);
-// 				return;
-// 			}
-// 		}
-// 		else {
-// 			if (to >= A1) {
-// 				gen_promote(from, to, bits);
-// 				return;
-// 			}
-// 		}
-// 	}
-// 	g = &gen_dat[first_move[ply + 1]++];
-// 	g->m.b.from = (char)from;
-// 	g->m.b.to = (char)to;
-// 	g->m.b.promote = 0;
-// 	g->m.b.bits = (char)bits;
-// 	if (color[to] != EMPTY)
-// 		g->score = 1000000 + (piece[to] * 10) - piece[from];
-// 	else
-// 		g->score = history[from][to];
-// }
+	if bits & 16 == 1 {
+		if side == data::LIGHT {
+			if to <= data::H8 {
+				gen_promote(from, to, bits);
+				return;
+			}
+		}
+		else {
+			if to >= data::A1 {
+				gen_promote(from, to, bits);
+				return;
+			}
+		}
+	}
+
+    // check this line
+	g = gen_dat[first_move[ply + 1] as usize];
+
+    println!("ply {0}", ply);
+    println!("from {}", from);
+    println!("from {0}", from_digit(from.try_into().unwrap(), 2).unwrap());
+    println!("to {0}", to);
+    println!("bits {0}", bits);
+    println!("g {:?}", g);
+
+	g.m.b.from = from_digit(from.try_into().unwrap(), 10).unwrap();
+	g.m.b.to = from_digit(to.try_into().unwrap(), 10).unwrap();
+	g.m.b.promote = from_digit(0, 10).unwrap();
+	g.m.b.bits = from_digit(bits.try_into().unwrap(), 10).unwrap();
+
+	if color[to as usize] != data::EMPTY {
+        g.score = 1000000 + (piece[to as usize] * 10) - piece[from as usize];
+    }
+	else {
+        g.score = history[[from as usize, to as usize]];
+    }
+    count_moves = count_moves + 1;
+    println!("Moves: {}", count_moves);
+}
+
+/* gen_promote() is just like gen_push(), only it puts 4 moves
+   on the move stack, one for each possible promotion piece */
+
+unsafe fn gen_promote(from: i32, to: i32, bits: i32) {
+    let mut g = empty_gent;
+    
+    for i in data::KNIGHT..data::QUEEN {
+        g = gen_dat[first_move[ply + 1] as usize];
+        g.m.b.from = from_digit(from.try_into().unwrap(), 10).unwrap();
+        g.m.b.to = from_digit(to.try_into().unwrap(), 10).unwrap();
+        g.m.b.promote = from_digit(i.try_into().unwrap(), 10).unwrap();
+        g.m.b.bits = from_digit((bits | 32).try_into().unwrap(), 10).unwrap();
+        g.score = 1000000 + (i * 10);
+    }
+}
+
+/* gen() generates pseudo-legal moves for the current position.
+   It scans the board to find friendly pieces and then determines
+   what squares they attack. When it finds a piece/square
+   combination, it calls gen_push to put the move on the "move
+   stack." */
+
+pub unsafe fn gen()
+{
+    /* so far, we have no moves for the current ply */
+    first_move[ply + 1] = first_move[ply];
+    let mut n: i32 = 0;
+    for i in 0..64 {
+        println!("i = {}", i);
+        if color[i] == side {
+            if piece[i] == data::PAWN {
+                if side == data::LIGHT {
+                    if data::COL(i) != 0 && color[(i - 9) as usize] == data::DARK {
+                        gen_push(i.try_into().unwrap(), (i - 9).try_into().unwrap(), 17);
+                    } 
+                    if data::COL(i) != 7 && color[(i - 7) as usize] == data::DARK {
+                        gen_push(i.try_into().unwrap(), (i - 7).try_into().unwrap(), 17);
+                    } 
+                    if color[i - 8] == data::EMPTY {
+                        println!("color[(i - 16) as usize] {}", color[(i - 16) as usize]);
+                        gen_push(i.try_into().unwrap(), (i - 8).try_into().unwrap(), 16);
+                        if (i >= 48) && (color[(i - 16) as usize] == data::EMPTY) {
+                            gen_push(i.try_into().unwrap(), (i - 16).try_into().unwrap(), 24);
+                        }    
+                    }
+                }
+                else {
+                    if data::COL(i) != 0 && color[(i + 7) as usize] == data::LIGHT {
+                        gen_push(i.try_into().unwrap(), (i + 7).try_into().unwrap(), 17);
+                    }
+                    if data::COL(i) != 7 && color[(i + 9) as usize] == data::LIGHT {
+                        gen_push(i.try_into().unwrap(), (i + 9).try_into().unwrap(), 17);
+                    }  
+                    if color[i + 8] == data::EMPTY {
+                        gen_push(i.try_into().unwrap(), (i + 8).try_into().unwrap(), 16);
+                        if i <= 15 && color[(i + 16) as usize] == data::EMPTY {
+                            gen_push(i.try_into().unwrap(), (i + 16).try_into().unwrap(), 24);
+                        }
+                    }
+                }
+            }
+            else {
+                for j in 0..offsets[piece[i as usize] as usize] {
+                    n = mailbox[mailbox64[n as usize] + (offset[piece[i] as usize][j as usize] as usize)];
+                        if n == -1 {
+                            break;
+                        }
+                        if color[n as usize] != data::EMPTY {
+                            if color[n as usize] == xside {
+                                gen_push(i.try_into().unwrap(), n.try_into().unwrap(), 1);
+                            }
+                            break;
+                        }
+                        gen_push(i.try_into().unwrap(), n.try_into().unwrap(), 0);
+                        if slide[piece[i as usize]  as usize] == data::FALSE {
+                            break;
+                        }  
+                    }
+                }  
+            }      
+        }
+        
+
+    /* generate castle moves */
+    if side == data::LIGHT {
+        if castle & 1 == 1 {
+            gen_push(data::E1, data::G1, 2);
+        }
+        if castle & 2 == 1 {
+            gen_push(data::E1, data::C1, 2);
+        }
+    }
+    else {
+        if castle & 4 == 1 {
+            gen_push(data::E8, data::G8, 2);
+        }
+            
+        if castle & 8 == 1 {
+            gen_push(data::E8, data::C8, 2);
+        } 
+    }
+    
+    /* generate en passant moves */
+    if ep != -1 {
+        if side == data::LIGHT {
+            if data::COL(ep.try_into().unwrap()) != 0 && color[(ep + 7) as usize] == data::LIGHT && piece[(ep + 7) as usize] == data::PAWN {
+                gen_push((ep + 7).try_into().unwrap(), ep.try_into().unwrap(), 21);
+            }  
+            if data::COL(ep.try_into().unwrap()) != 7 && color[(ep + 9) as usize] == data::LIGHT && piece[(ep + 9) as usize] == data::PAWN {
+                gen_push((ep + 9).try_into().unwrap(), ep.try_into().unwrap(), 21);
+            }
+        }
+        else {
+            if data::COL(ep.try_into().unwrap()) != 0 && color[(ep - 9) as usize] == data::DARK && piece[(ep - 9) as usize] == data::PAWN {
+                gen_push((ep - 9).try_into().unwrap(), ep.try_into().unwrap(), 21);
+            }
+            if data::COL(ep.try_into().unwrap()) != 7 && color[(ep - 7) as usize] == data::DARK && piece[(ep - 7) as usize] == data::PAWN {
+                gen_push((ep - 7).try_into().unwrap(), ep.try_into().unwrap(), 21);
+            }
+        }
+    }
+}
 		
 	

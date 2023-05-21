@@ -401,6 +401,7 @@ pub unsafe fn gen(list: &mut MoveList)
                     if piece[i + 8] == EMPTY {
                         add_white_pawn_move(i.try_into().unwrap(), (i + 16).try_into().unwrap(), list);
                         if ranksbrd[i] == RANK_2 && (piece[(i + 16) as usize] == EMPTY) {
+                            println!("TEST");
                             add_quiet_move(move_bytes(i.try_into().unwrap(), (i + 16).try_into().unwrap(), EMPTY, EMPTY, MFLAGPS), list);
                         }    
                     }

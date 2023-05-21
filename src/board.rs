@@ -1,8 +1,8 @@
-pub use crate::data;
+pub use crate::data::*;
+pub use crate::validate::*;
 use rand::*;
 use ndarray::*;
 use once_cell::sync::Lazy;
-use std::char::from_digit;
 
 #[derive(Copy, Clone, Debug)]
 pub struct MoveBytes{
@@ -20,7 +20,7 @@ pub struct Move {
 
 #[derive(Copy, Clone, Debug)]
 pub struct MoveList {
-	pub moves: [Move; data::MAX_POSITION_MOVES],
+	pub moves: [Move; MAX_POSITION_MOVES],
 	pub count: usize,
 }
 
@@ -42,25 +42,25 @@ const empty_move: Move = Move {
 };
 
 static init_color: [i32; 64] = [
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6,
 	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0,
+	6, 6, 6, 6, 6, 6, 6, 6,
+	6, 6, 6, 6, 6, 6, 6, 6,
+	6, 6, 6, 6, 6, 6, 6, 6,
+	6, 6, 6, 6, 6, 6, 6, 6,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
 ];
 
 static init_piece: [i32; 64] = [	
-    3, 1, 2, 4, 5, 2, 1, 3,
+    4, 2, 3, 5, 6, 3, 2, 4,
+	1, 1, 1, 1, 1, 1, 1, 1,
 	0, 0, 0, 0, 0, 0, 0, 0,
-	6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6,
 	0, 0, 0, 0, 0, 0, 0, 0,
-	3, 1, 2, 4, 5, 2, 1, 3
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	7, 7, 7, 7, 7, 7, 7, 7,
+	10, 8, 9, 11, 12, 9, 8, 10
 ];
 
 static mailbox: [i32; 120] = [
@@ -89,7 +89,7 @@ static mailbox64: [usize; 64] = [
    91, 92, 93, 94, 95, 96, 97, 98
 ];
 
-static mut first_move: [i32; data::MAX_PLY] = [0; data::MAX_PLY];
+static mut first_move: [i32; MAX_PLY] = [0; MAX_PLY];
 
 /* slide, offsets, and offset are basically the vectors that
   pieces can move in. If slide for the piece is FALSE, it can
@@ -98,11 +98,11 @@ static mut first_move: [i32; data::MAX_PLY] = [0; data::MAX_PLY];
   of the actual directions. */
 
 static slide: [usize; 6] = [
-   data::FALSE, data::FALSE, data::TRUE, data::TRUE, data::TRUE, data::FALSE
+   FALSE, FALSE, TRUE, TRUE, TRUE, FALSE
 ];
 
-static offsets: [i32; 6] = [
-   0, 8, 4, 4, 8, 8
+static offsets: [i32; 13] = [
+   0, 8, 4, 4, 8, 8, 0, 0, 8, 4, 4, 8, 8
 ];
 
 static offset: [[i32; 8]; 6] = [
@@ -114,10 +114,41 @@ static offset: [[i32; 8]; 6] = [
    [ -11, -10, -9, -1, 1, 9, 10, 11 ]
 ];
 
+static loopSlidePce: [i32; 8] = [
+    wB, wR, wQ, 0, bB, bR, bQ, 0
+];
+   
+static loopNonSlidePce: [i32; 6] = [
+    wN, wK, 0, bN, bK, 0
+];
+
+static loopSlideIndex: [i32; 2] = [ 0, 4 ];
+static loopNonSlideIndex: [i32; 2] = [ 0, 3 ];
+
+static pceDir: [[i32; 8]; 13] = [
+	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
+	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
+	[ -8, -19,	-21, -12, 8, 19, 21, 12 ],
+	[ -9, -11, 11, 9, 0, 0, 0, 0 ],
+	[ -1, -10,	1, 10, 0, 0, 0, 0 ],
+	[ -1, -10,	1, 10, -9, -11, 11, 9 ],
+	[ -1, -10,	1, 10, -9, -11, 11, 9 ],
+	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
+	[ -8, -19,	-21, -12, 8, 19, 21, 12 ],
+	[ -9, -11, 11, 9, 0, 0, 0, 0 ],
+	[ -1, -10,	1, 10, 0, 0, 0, 0 ],
+	[ -1, -10,	1, 10, -9, -11, 11, 9 ],
+	[ -1, -10,	1, 10, -9, -11, 11, 9 ]
+];
+
+static numDir: [i32; 13] = [
+ 0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
+];
+
 static mut history: Lazy<Array2<i32>> = Lazy::new(|| Array2::<i32>::zeros((64, 64)));
 
 /* the board representation */
-pub static mut color: [i32; 64] = [0; 64];  /* LIGHT, DARK, or EMPTY */
+pub static mut color: [i32; 64] = [0; 64];  /* WHITE, BLACK, or EMPTY */
 pub static mut piece: [i32; 64] = [0; 64];  /* PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, or EMPTY */
 static mut side: i32 = 0;  /* the side to move */
 static mut xside: i32 = 0;  /* the side not to move */
@@ -137,7 +168,7 @@ static mut hply: usize = 0;  /* h for history; the number of ply since the begin
               of the game */
 
 /* random numbers used to compute hash; see set_hash() in board.c */
-static mut hash_piece: Lazy<Array3<i32>> = Lazy::new(|| Array3::<i32>::zeros((2, 6, 64)));  /* indexed by piece [color][type][square] */
+static mut hash_piece: Lazy<Array3<i32>> = Lazy::new(|| Array3::<i32>::zeros((2, 13, 64)));  /* indexed by piece [color][type][square] */
 static mut hash_side: i32 = 0;
 static mut hash_ep: [i32; 64] = [0; 64];
 
@@ -149,14 +180,14 @@ pub fn init_board() {
             color[i] = init_color[i];
             piece[i] = init_piece[i];
         }
-        side = data::LIGHT;
-        xside = data::DARK;
+        side = WHITE;
+        xside = BLACK;
         castle = 15;
         ep = -1;
         fifty = 0;
         ply = 0;
         hply = 0;
-        set_hash();  /* init_hash() must be called before this function */
+        //set_hash();  /* init_hash() must be called before this function */
         first_move[0] = 0;
     }
 	
@@ -177,11 +208,11 @@ unsafe fn set_hash() {
     let mut hp: i32 = 0;
 	let mut local_hash: i32 = 0;	
 	for i in 0..64{
-        if color[i] != data::EMPTY {
+        if color[i] != EMPTY {
             hp = hash_piece[[color[i] as usize, piece[i] as usize, i]];
             local_hash ^= hp;
         }		
-        if side == data::DARK {
+        if side == BLACK {
             local_hash ^= hash_side;
         }
 
@@ -212,139 +243,7 @@ fn move_bytes(from: i32, to: i32, capture: i32, promote: i32, fl: i32) -> i32 {
     (from) | ((to) << 7) | ( (capture) << 14 ) | ( (promote) << 20 ) | (fl)
 }
 
-/* in_check() returns TRUE if side s is in check and FALSE
-   otherwise. It just scans the board to find side s's king
-   and calls attack() to see if it's being attacked. */
 
-// unsafe fn in_check(s: i32) -> usize { 
-//     for i in 0..64 {
-//         if piece[i] == data::KING && color[i] == s {
-//             return attack(i.try_into().unwrap(), s ^ 1);
-//         }
-//     }
-//     return data::TRUE;  /* shouldn't get here */
-// }
-
-// unsafe fn attack(sq: i32, s: i32) -> usize {
-//     let mut n: i32 = 0;
-// 	for i in 0..64 {
-//         if color[i] == s {
-// 			if piece[i] == data::PAWN {
-// 				if s == data::LIGHT {
-// 					if data::COL(i) != 0 && i - 9 == sq.try_into().unwrap() {
-//                         return data::TRUE;
-//                     }
-						
-// 					if data::COL(i) != 7 && i - 7 == sq.try_into().unwrap() {
-//                         return data::TRUE;
-//                     }
-						
-// 				}
-// 				else {
-// 					if data::COL(i) != 0 && i + 7 == sq.try_into().unwrap() {
-//                         return data::TRUE;
-//                     }
-						
-// 					if data::COL(i) != 7 && i + 9 == sq.try_into().unwrap() {
-//                         return data::TRUE;
-//                     }	
-// 				}
-// 			}
-// 			else {
-//                 for j in 0..offsets[piece[i] as usize] {
-//                     n = mailbox[mailbox64[n as usize] + (offset[piece[i] as usize][j as usize] as usize)];
-//                     if n == -1 {
-//                         break;
-//                     }
-                        
-//                     if n == sq {
-//                         return data::TRUE;
-//                     }
-                        
-//                     if color[n as usize] != data::EMPTY {
-//                         break;
-//                     }
-                        
-//                     if slide[piece[i] as usize] == data::FALSE {
-//                         break;
-//                     }
-//                 }
-//             }
-				
-//         }
-//     }
-//     return data::FALSE;
-// }
-
-// /* gen_push() puts a move on the move stack, unless it's a
-//    pawn promotion that needs to be handled by gen_promote().
-//    It also assigns a score to the move for alpha-beta move
-//    ordering. If the move is a capture, it uses MVV/LVA
-//    (Most Valuable Victim/Least Valuable Attacker). Otherwise,
-//    it uses the move's history heuristic value. Note that
-//    1,000,000 is added to a capture move's score, so it
-//    always gets ordered above a "normal" move. */
-
-// unsafe fn gen_push(from: i32, to: i32, bits: i32)
-// {
-  
-//     let mut g = empty_gent;
-	
-// 	if bits & 16 == 1 {
-// 		if side == data::LIGHT {
-// 			if to <= data::H8 {
-// 				gen_promote(from, to, bits);
-// 				return;
-// 			}
-// 		}
-// 		else {
-// 			if to >= data::A1 {
-// 				gen_promote(from, to, bits);
-// 				return;
-// 			}
-// 		}
-// 	}
-
-//     // check this line
-// 	g = gen_dat[first_move[ply + 1] as usize];
-
-//     println!("ply {0}", ply);
-//     println!("from {}", from);
-//     println!("from {0}", from_digit(from.try_into().unwrap(), 2).unwrap());
-//     println!("to {0}", to);
-//     println!("bits {0}", bits);
-//     println!("g {:?}", g);
-
-// 	g.m.b.from = from_digit(from.try_into().unwrap(), 10).unwrap();
-// 	g.m.b.to = from_digit(to.try_into().unwrap(), 10).unwrap();
-// 	g.m.b.promote = from_digit(0, 10).unwrap();
-// 	g.m.b.bits = from_digit(bits.try_into().unwrap(), 10).unwrap();
-
-// 	if color[to as usize] != data::EMPTY {
-//         g.score = 1000000 + (piece[to as usize] * 10) - piece[from as usize];
-//     }
-// 	else {
-//         g.score = history[[from as usize, to as usize]];
-//     }
-//     count_moves = count_moves + 1;
-//     println!("Moves: {}", count_moves);
-// }
-
-// /* gen_promote() is just like gen_push(), only it puts 4 moves
-//    on the move stack, one for each possible promotion piece */
-
-// unsafe fn gen_promote(from: i32, to: i32, bits: i32) {
-//     let mut g = empty_gent;
-    
-//     for i in data::KNIGHT..data::QUEEN {
-//         g = gen_dat[first_move[ply + 1] as usize];
-//         g.m.b.from = from_digit(from.try_into().unwrap(), 10).unwrap();
-//         g.m.b.to = from_digit(to.try_into().unwrap(), 10).unwrap();
-//         g.m.b.promote = from_digit(i.try_into().unwrap(), 10).unwrap();
-//         g.m.b.bits = from_digit((bits | 32).try_into().unwrap(), 10).unwrap();
-//         g.score = 1000000 + (i * 10);
-//     }
-// }
 
 fn from_square(m: i32) -> usize {
     (m & 0x7F).try_into().unwrap()
@@ -355,65 +254,125 @@ fn to_square(m: i32) -> usize {
 }
 
 unsafe fn add_quiet_move(m: i32, list: &mut MoveList) {
+
+    assert!(sq_on_board(from_sq(m)));
+    assert!(sq_on_board(to_sq(m)));
+
     list.moves[list.count].m = m;
     list.moves[list.count].score = history[[from_square(m), to_square(m)]];
     list.count += 1;
 }
 
-fn add_capture_move(m: i32, mut list: &mut MoveList) {
+unsafe fn add_capture_move(m: i32, mut list: &mut MoveList) {
+
+    assert!(sq_on_board(from_sq(m)));
+    assert!(sq_on_board(to_sq(m)));
+
     list.moves[list.count].m = m;
     // Add MvvLVA
     list.count += 1;
 }
 
-fn add_ep_move(m: i32, mut list: &mut MoveList) {
+unsafe fn add_ep_move(m: i32, mut list: &mut MoveList) {
+
+    assert!(sq_on_board(from_sq(m)));
+    assert!(sq_on_board(to_sq(m)));
+
     list.moves[list.count].m = m;
     list.moves[list.count].score = 105 + 100000;
     list.count += 1;
 }
 
 unsafe fn add_white_pawn_move(from: i32, to: i32, list: &mut MoveList) {
-    if data::ROW(from.try_into().unwrap()) == 7 {
-        for i in data::KNIGHT..data::QUEEN {
-            add_quiet_move(move_bytes(from, to, data::EMPTY, i, 0), list);
+
+    assert!(sq_on_board(from));
+    assert!(sq_on_board(to));
+
+    if ranksbrd[from as usize] == RANK_7 {
+        for i in wN..wQ {
+            add_quiet_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
     else {
-        add_quiet_move(move_bytes(from, to, data::EMPTY, data::EMPTY, 0), list);
+        add_quiet_move(move_bytes(from, to, EMPTY, EMPTY, 0), list);
     }    
 }
 
-fn add_white_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveList) {
-    if data::ROW(from.try_into().unwrap()) == 7 {
-        for i in data::KNIGHT..data::QUEEN {
-            add_capture_move(move_bytes(from, to, data::EMPTY, i, 0), list);
+unsafe fn add_white_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveList) {
+
+    assert!(sq_on_board(from));
+    assert!(sq_on_board(to));
+
+    if ranksbrd[from as usize] == RANK_7 {
+        for i in wN..wQ {
+            add_capture_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
     else {
-        add_capture_move(move_bytes(from, to, data::EMPTY, data::EMPTY, 0), list);
+        add_capture_move(move_bytes(from, to, EMPTY, EMPTY, 0), list);
     }   
 }
 
 unsafe fn add_black_pawn_move(from: i32, to: i32, list: &mut MoveList) {
-    if data::ROW(from.try_into().unwrap()) == 2 {
-        for i in data::KNIGHT..data::QUEEN {
-            add_quiet_move(move_bytes(from, to, data::EMPTY, i, 0), list);
+
+    assert!(sq_on_board(from));
+    assert!(sq_on_board(to));
+
+    if ranksbrd[from as usize] == RANK_2 {
+        for i in bN..bQ {
+            add_quiet_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
     else {
-        add_quiet_move(move_bytes(from, to, data::EMPTY, data::EMPTY, 0), list);
+        add_quiet_move(move_bytes(from, to, EMPTY, EMPTY, 0), list);
     }    
 }
 
-fn add_black_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveList) {
-    if data::ROW(from.try_into().unwrap()) == 2 {
-        for i in data::KNIGHT..data::QUEEN {
-            add_capture_move(move_bytes(from, to, data::EMPTY, i, 0), list);
+unsafe fn add_black_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveList) {
+
+    assert!(sq_on_board(from));
+    assert!(sq_on_board(to));
+
+    if ranksbrd[from as usize] == RANK_2 {
+        for i in bN..bQ {
+            add_capture_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
     else {
-        add_capture_move(move_bytes(from, to, data::EMPTY, data::EMPTY, 0), list);
+        add_capture_move(move_bytes(from, to, EMPTY, EMPTY, 0), list);
     }   
+}
+
+pub static mut sq120tosq64: [i32; BRD_SQ_NUM] = [65; BRD_SQ_NUM];
+pub static mut sq64tosq120: [i32; 64] = [120; 64];
+
+pub static mut filesbrd: [i32; BRD_SQ_NUM] = [OFFBOARD; BRD_SQ_NUM];
+pub static mut ranksbrd: [i32; BRD_SQ_NUM] = [OFFBOARD; BRD_SQ_NUM];
+
+pub unsafe fn init_sq120_to_sq64() {
+    let mut sq: i32 = A1;
+    let mut sq64: i32 = 0;
+
+    for rank in RANK_1..RANK_8 {
+        for file in FILE_A..FILE_H {
+            sq = fr2sq(file, rank);
+            sq64tosq120[sq64 as usize] = sq;
+			sq120tosq64[sq as usize] = sq64;
+			sq64 += 1;
+        }
+    }
+}
+
+pub unsafe fn init_files_ranks_board() {
+    let mut sq: i32 = A1;
+
+    for rank in RANK_1..RANK_8 {
+        for file in FILE_A..FILE_H {
+            sq = fr2sq(file, rank);
+            filesbrd[sq as usize] = file;
+			ranksbrd[sq as usize] = rank;
+        }
+    }
 }
 
 /* gen() generates pseudo-legal moves for the current position.
@@ -424,107 +383,129 @@ fn add_black_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveList) {
 
 pub unsafe fn gen(list: &mut MoveList)
 {
-    //&list.count = 0;
+    list.count = 0;
     /* so far, we have no moves for the current ply */
     first_move[ply + 1] = first_move[ply];
     let mut n: i32 = 0;
     for i in 0..64 {
-        println!("i = {}", i);
-        if color[i] == side {
-            if piece[i] == data::PAWN {
-                if side == data::LIGHT {
-                    if data::COL(i) != 0 && color[(i - 9) as usize] == data::DARK {
-                        add_white_pawn_cap_move(i.try_into().unwrap(), (i - 9).try_into().unwrap(), piece[i-9], list);
+        if side == WHITE {
+            if piececol[piece[i] as usize] == side {
+                if piece[i] == wP {
+                    println!("i {}", i);
+                    if COL(i) != 0 && piececol[piece[(i + 9) as usize] as usize] == BLACK {
+                        add_white_pawn_cap_move(i.try_into().unwrap(), (i + 9).try_into().unwrap(), piece[i+9], list);
                     } 
-                    if data::COL(i) != 7 && color[(i - 7) as usize] == data::DARK {
-                        add_white_pawn_cap_move(i.try_into().unwrap(), (i - 7).try_into().unwrap(), piece[i-7], list);
+                    if COL(i) != 7 && piececol[piece[(i + 11) as usize] as usize] == BLACK {
+                        add_white_pawn_cap_move(i.try_into().unwrap(), (i + 11).try_into().unwrap(), piece[i+11], list);
                     } 
-                    if color[i - 8] == data::EMPTY {
-                        add_white_pawn_move(i.try_into().unwrap(), (i - 8).try_into().unwrap(), list);
-                        if (i >= 48) && (color[(i - 16) as usize] == data::EMPTY) {
-                            add_quiet_move(move_bytes(i.try_into().unwrap(), (i - 16).try_into().unwrap(), data::EMPTY, data::EMPTY, 24), list);
+                    if piece[i + 8] == EMPTY {
+                        add_white_pawn_move(i.try_into().unwrap(), (i + 16).try_into().unwrap(), list);
+                        if ranksbrd[i] == RANK_2 && (piece[(i + 16) as usize] == EMPTY) {
+                            add_quiet_move(move_bytes(i.try_into().unwrap(), (i + 16).try_into().unwrap(), EMPTY, EMPTY, MFLAGPS), list);
                         }    
                     }
                 }
-                else {
-                    if data::COL(i) != 0 && color[(i + 7) as usize] == data::LIGHT {
-                        add_black_pawn_cap_move(i.try_into().unwrap(), (i + 7).try_into().unwrap(), piece[i+7], list);
+
+                /* generate castle moves */
+                if castle & 1 == 1 {
+                    if piece[F1 as usize] == EMPTY && piece[G1 as usize] == EMPTY {
+                        add_quiet_move(move_bytes(E1, G1, EMPTY, EMPTY, MFLAGCA), list);
                     }
-                    if data::COL(i) != 7 && color[(i + 9) as usize] == data::LIGHT {
-                        add_black_pawn_cap_move(i.try_into().unwrap(), (i + 9).try_into().unwrap(), piece[i+9], list);
+                }
+                if castle & 2 == 1 {
+                    add_quiet_move(move_bytes(E1, C1, EMPTY, EMPTY, MFLAGCA), list);
+                }
+                // generate en passent moves
+                if ep != -1 {
+                    if COL(ep.try_into().unwrap()) != 0 && piece[(ep + 7) as usize] == WHITE && piece[(ep + 7) as usize] == wP {
+                        add_ep_move(move_bytes((ep + 7).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
                     }  
-                    if color[i + 8] == data::EMPTY {
-                        add_black_pawn_move(i.try_into().unwrap(), (i + 8).try_into().unwrap(), list);
-                        if i <= 15 && color[(i + 16) as usize] == data::EMPTY {
-                            add_quiet_move(move_bytes(i.try_into().unwrap(), (i + 16).try_into().unwrap(), data::EMPTY, data::EMPTY, 24), list);
-                        }
+                    if COL(ep.try_into().unwrap()) != 7 && piece[(ep + 9) as usize] == WHITE && piece[(ep + 9) as usize] == wP {
+                        add_ep_move(move_bytes((ep + 9).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
                     }
                 }
             }
-            else {
-                for j in 0..offsets[piece[i as usize] as usize] {
-                    println!("j {}", j);
-                    println!("mailbox64[n as usize] {}", mailbox64[n as usize]);
-                    println!("(offset[piece[i] as usize][j as usize] as usize) {}", (offset[j as usize][piece[i] as usize] as usize));
-                    n = mailbox[mailbox64[n as usize] + (offset[j as usize][piece[i] as usize] as usize)];
-                        if n == -1 {
-                            break;
-                        }
-                        if color[n as usize] != data::EMPTY {
-                            if color[n as usize] == xside {
-                                add_capture_move(move_bytes(i.try_into().unwrap(), n.try_into().unwrap(), data::EMPTY, data::EMPTY, 0), list);
-                            }
-                            break;
-                        }
-                        add_quiet_move(move_bytes(i.try_into().unwrap(), n.try_into().unwrap(), data::EMPTY, data::EMPTY, 0), list);
-                        if slide[piece[i as usize]  as usize] == data::FALSE {
-                            break;
-                        }  
-                    }
-                }  
-            }      
-        }
-        
-
-    /* generate castle moves */
-    if side == data::LIGHT {
-        if castle & 1 == 1 {
-            add_quiet_move(move_bytes(data::E1, data::G1, data::EMPTY, data::EMPTY, 2), list);
-        }
-        if castle & 2 == 1 {
-            add_quiet_move(move_bytes(data::E1, data::C1, data::EMPTY, data::EMPTY, 2), list);
-        }
-    }
-    else {
-        if castle & 4 == 1 {
-            add_quiet_move(move_bytes(data::E8, data::G8, data::EMPTY, data::EMPTY, 2), list);
-        }
-            
-        if castle & 8 == 1 {
-            add_quiet_move(move_bytes(data::E8, data::C8, data::EMPTY, data::EMPTY, 2), list);
         } 
-    }
-    
-    /* generate en passant moves */
-    if ep != -1 {
-        if side == data::LIGHT {
-            if data::COL(ep.try_into().unwrap()) != 0 && color[(ep + 7) as usize] == data::LIGHT && piece[(ep + 7) as usize] == data::PAWN {
-                add_ep_move(move_bytes((ep + 7).try_into().unwrap(), ep.try_into().unwrap(), data::EMPTY, data::EMPTY, 21), list);
-            }  
-            if data::COL(ep.try_into().unwrap()) != 7 && color[(ep + 9) as usize] == data::LIGHT && piece[(ep + 9) as usize] == data::PAWN {
-                add_ep_move(move_bytes((ep + 9).try_into().unwrap(), ep.try_into().unwrap(), data::EMPTY, data::EMPTY, 21), list);
-            }
-        }
         else {
-            if data::COL(ep.try_into().unwrap()) != 0 && color[(ep - 9) as usize] == data::DARK && piece[(ep - 9) as usize] == data::PAWN {
-                add_ep_move(move_bytes((ep - 9).try_into().unwrap(), ep.try_into().unwrap(), data::EMPTY, data::EMPTY, 21), list);
+            if piece[i] == bP {
+                println!("i {}", i);
+                if COL(i) != 0 && piece[(i + 7) as usize] == WHITE {
+                    add_black_pawn_cap_move(i.try_into().unwrap(), (i + 7).try_into().unwrap(), piece[i+7], list);
+                }
+                if COL(i) != 7 && piece[(i + 9) as usize] == WHITE {
+                    add_black_pawn_cap_move(i.try_into().unwrap(), (i + 9).try_into().unwrap(), piece[i+9], list);
+                }  
+                if piece[i + 8] == EMPTY {
+                    add_black_pawn_move(i.try_into().unwrap(), (i + 8).try_into().unwrap(), list);
+                    if i <= 15 && piece[(i + 16) as usize] == EMPTY {
+                        add_quiet_move(move_bytes(i.try_into().unwrap(), (i + 16).try_into().unwrap(), EMPTY, EMPTY, MFLAGPS), list);
+                    }
+                }
             }
-            if data::COL(ep.try_into().unwrap()) != 7 && color[(ep - 7) as usize] == data::DARK && piece[(ep - 7) as usize] == data::PAWN {
-                add_ep_move(move_bytes((ep - 7).try_into().unwrap(), ep.try_into().unwrap(), data::EMPTY, data::EMPTY, 21), list);
+            
+            if castle & 4 == 1 {
+                add_quiet_move(move_bytes(E8, G8, EMPTY, EMPTY, MFLAGCA), list);
+            }
+                        
+            if castle & 8 == 1 {
+                add_quiet_move(move_bytes(E8, C8, EMPTY, EMPTY, MFLAGCA), list);
+            } 
+                
+                /* generate en passant moves */
+                
+            if ep != -1 {
+                if COL(ep.try_into().unwrap()) != 0 && piece[(ep - 9) as usize] == BLACK && piece[(ep - 9) as usize] == bP {
+                    add_ep_move(move_bytes((ep - 9).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
+                }
+                if COL(ep.try_into().unwrap()) != 7 && piece[(ep - 7) as usize] == BLACK && piece[(ep - 7) as usize] == bP {
+                    add_ep_move(move_bytes((ep - 7).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
+                }
             }
         }
-    }
 
+        let pceIndex: i32 = loopSlideIndex[side as usize];
+        let pce: i32 = loopNonSlidePce[pceIndex as usize];
+        let mut dir_i: i32 = 0;
+        let mut dir: usize = 0;
+        let mut t_sq: usize = 0;
+        
+        for j in 0..numDir[pce as usize] {
+            dir_i = pceDir[j as usize][pce as usize];
+            dir = dir_i as usize;
+            t_sq = i + dir;
+            
+            println!("j {}", j);
+            println!("dir {}", dir);
+            println!("pce {}", pce);
+            println!("t_sq {}", t_sq);
+            if piece[t_sq as usize] != EMPTY {
+                if piececol[piece[t_sq as usize] as usize] == side ^ 1 {
+                    add_capture_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), piece[t_sq as usize], EMPTY, 0), list);
+                }
+                break;
+            }
+            add_quiet_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), EMPTY, EMPTY, 0), list);
+            t_sq += dir;
+        }
+
+        // for j in 0..offsets[piece[i as usize] as usize] {
+        //     println!("i {}", i);
+        //     n = mailbox[mailbox64[n as usize] + (offset[j as usize][piece[i] as usize] as usize)];
+        //     if n == -1 {
+        //         break;
+        //     }
+        //     if piece[n as usize] != EMPTY {
+        //         if piececol[n as usize] == xside {
+        //             add_capture_move(move_bytes(i.try_into().unwrap(), n.try_into().unwrap(), EMPTY, EMPTY, 0), list);
+        //         }
+        //         break;
+        //     }
+        //     add_quiet_move(move_bytes(i.try_into().unwrap(), n.try_into().unwrap(), EMPTY, EMPTY, 0), list);
+        //     if slide[piece[i as usize]  as usize] == FALSE {
+        //         break;
+        //     }  
+        //}  
+    }
     println!("Total moves {}", &list.count);
 }
 		

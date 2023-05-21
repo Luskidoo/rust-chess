@@ -1,5 +1,9 @@
 pub mod data;
 mod board;
+mod validate;
+
+use crate::data::*;
+
 
 pub fn main() {
     let mut list = board::MoveList {
@@ -9,6 +13,8 @@ pub fn main() {
     unsafe {
         board::init_hash();
         board::init_board();
+        board::init_sq120_to_sq64();
+        board::init_files_ranks_board();
         print_board();
         board::gen(&mut list);
     }
@@ -18,18 +24,13 @@ unsafe fn print_board()
 {
 	let i: usize;
 	
-	print!("\n8");
+	print!("\n1");
 	for i in 0..64 {
-		match board::color[i] {
-			data::EMPTY => print!(" ."),
-			data::LIGHT => print!(" {0}", data::piece_char[board::piece[i] as usize]),
-			data::DARK => print!(" {0}", data::piece_char[board::piece[i] as usize].to_lowercase()),
-            _ => print!("Undefined colour on board")
-        }
+        print!(" {}", piece_char[board::piece[i] as usize]);
 		if (i + 1) % 8 == 0 && i != 63 {
-            print!("\n{0}", 7 - data::ROW(i));
-        }
-			
+            print!("\n{0}", 2 + data::ROW(i));
+    }
+    
 	}
 	print!("\n  a b c d e f g h\n\n");
 }

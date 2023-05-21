@@ -226,6 +226,10 @@ pub unsafe fn init_hash() {
 		
 }
 
+fn Move(from: i32, to: i32, capture: i32, promote: i32, fl: i32) -> i32 {
+    (from) | ((to) << 7) | ( (capture) << 14 ) | ( (promote) << 20 ) | (fl)
+}
+
 /* in_check() returns TRUE if side s is in check and FALSE
    otherwise. It just scans the board to find side s's king
    and calls attack() to see if it's being attacked. */

@@ -2,11 +2,15 @@ pub mod data;
 mod board;
 
 pub fn main() {
+    let mut list = board::MoveList {
+        moves: [board::Move {m: 0, score: 0}; data::MAX_POSITION_MOVES],
+        count: 0
+    };
     unsafe {
         board::init_hash();
         board::init_board();
         print_board();
-        board::gen();
+        board::gen(&mut list);
     }
 }
 

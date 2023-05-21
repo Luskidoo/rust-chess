@@ -8,6 +8,8 @@ pub const HIST_STACK: usize = 400;
 pub const LIGHT: i32 = 0;
 pub const DARK: i32 = 1;
 
+pub const MAX_POSITION_MOVES: usize = 256;
+
 pub const PAWN: i32 = 0;
 pub const KNIGHT: i32 = 1;
 pub const BISHOP: i32 = 2;

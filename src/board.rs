@@ -128,17 +128,17 @@ static loopNonSlideIndex: [i32; 2] = [ 0, 3 ];
 static pceDir: [[i32; 8]; 13] = [
 	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
-	[ -8, -19,	-21, -12, 8, 19, 21, 12 ],
-	[ -9, -11, 11, 9, 0, 0, 0, 0 ],
-	[ -1, -10,	1, 10, 0, 0, 0, 0 ],
-	[ -1, -10,	1, 10, -9, -11, 11, 9 ],
-	[ -1, -10,	1, 10, -9, -11, 11, 9 ],
+	[ -21, -19, -12, -8, 8, 12, 19, 21 ],
+	[ -11, -9, 9, 11, 0, 0, 0, 0 ],
+	[ -10, -1, 1, 10, 0, 0, 0, 0 ],
+	[ -11, -10, -9, -1, 1, 9, 10, 11 ],
+	[ -11, -10, -9, -1, 1, 9, 10, 11 ],
 	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
-	[ -8, -19,	-21, -12, 8, 19, 21, 12 ],
-	[ -9, -11, 11, 9, 0, 0, 0, 0 ],
-	[ -1, -10,	1, 10, 0, 0, 0, 0 ],
-	[ -1, -10,	1, 10, -9, -11, 11, 9 ],
-	[ -1, -10,	1, 10, -9, -11, 11, 9 ]
+	[ -21, -19, -12, -8, 8, 12, 19, 21 ],
+	[ -11, -9, 9, 11, 0, 0, 0, 0 ],
+	[ -10, -1, 1, 10, 0, 0, 0, 0 ],
+	[ -11, -10, -9, -1, 1, 9, 10, 11 ],
+	[ -11, -10, -9, -1, 1, 9, 10, 11 ]
 ];
 
 static numDir: [i32; 13] = [
@@ -207,7 +207,7 @@ fn hash_rand() -> i32 {
 unsafe fn set_hash() {
     let mut hp: i32 = 0;
 	let mut local_hash: i32 = 0;	
-	for i in 0..64{
+	for i in 0..=64{
         if color[i] != EMPTY {
             hp = hash_piece[[color[i] as usize, piece[i] as usize, i]];
             local_hash ^= hp;
@@ -289,7 +289,7 @@ unsafe fn add_white_pawn_move(from: i32, to: i32, list: &mut MoveList) {
     assert!(sq_on_board(to));
 
     if ranksbrd[from as usize] == RANK_7 {
-        for i in wN..wQ {
+        for i in wN..=wQ {
             add_quiet_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
@@ -304,7 +304,7 @@ unsafe fn add_white_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveL
     assert!(sq_on_board(to));
 
     if ranksbrd[from as usize] == RANK_7 {
-        for i in wN..wQ {
+        for i in wN..=wQ {
             add_capture_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
@@ -319,7 +319,7 @@ unsafe fn add_black_pawn_move(from: i32, to: i32, list: &mut MoveList) {
     assert!(sq_on_board(to));
 
     if ranksbrd[from as usize] == RANK_2 {
-        for i in bN..bQ {
+        for i in bN..=bQ {
             add_quiet_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
@@ -334,7 +334,7 @@ unsafe fn add_black_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveL
     assert!(sq_on_board(to));
 
     if ranksbrd[from as usize] == RANK_2 {
-        for i in bN..bQ {
+        for i in bN..=bQ {
             add_capture_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
     } 
@@ -344,7 +344,7 @@ unsafe fn add_black_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveL
 }
 
 pub static mut sq120tosq64: [i32; BRD_SQ_NUM] = [65; BRD_SQ_NUM];
-pub static mut sq64tosq120: [i32; 64] = [120; 64];
+pub static mut sq64tosq120: [i32; 65] = [120; 65];
 
 pub static mut filesbrd: [i32; BRD_SQ_NUM] = [OFFBOARD; BRD_SQ_NUM];
 pub static mut ranksbrd: [i32; BRD_SQ_NUM] = [OFFBOARD; BRD_SQ_NUM];
@@ -353,8 +353,8 @@ pub unsafe fn init_sq120_to_sq64() {
     let mut sq: i32 = A1;
     let mut sq64: i32 = 0;
 
-    for rank in RANK_1..RANK_8 {
-        for file in FILE_A..FILE_H {
+    for rank in RANK_1..=RANK_8 {
+        for file in FILE_A..=FILE_H {
             sq = fr2sq(file, rank);
             sq64tosq120[sq64 as usize] = sq;
 			sq120tosq64[sq as usize] = sq64;
@@ -366,12 +366,16 @@ pub unsafe fn init_sq120_to_sq64() {
 pub unsafe fn init_files_ranks_board() {
     let mut sq: i32 = A1;
 
-    for rank in RANK_1..RANK_8 {
-        for file in FILE_A..FILE_H {
+    for rank in RANK_1..=RANK_8 {
+        for file in FILE_A..=FILE_H {
             sq = fr2sq(file, rank);
             filesbrd[sq as usize] = file;
 			ranksbrd[sq as usize] = rank;
         }
+    }
+
+    for x in filesbrd {
+        print!("{} ", x);
     }
 }
 
@@ -464,48 +468,95 @@ pub unsafe fn gen(list: &mut MoveList)
             }
         }
 
-        let pceIndex: i32 = loopSlideIndex[side as usize];
-        let pce: i32 = loopNonSlidePce[pceIndex as usize];
+        let mut pceIndex: i32 = loopSlideIndex[side as usize];
+        let mut pce: i32 = 0;
+        pceIndex += 1;
         let mut dir_i: i32 = 0;
-        let mut dir: usize = 0;
-        let mut t_sq: usize = 0;
-        
-        for j in 0..numDir[pce as usize] {
-            dir_i = pceDir[j as usize][pce as usize];
-            dir = dir_i as usize;
-            t_sq = i + dir;
-            
-            println!("j {}", j);
-            println!("dir {}", dir);
-            println!("pce {}", pce);
-            println!("t_sq {}", t_sq);
-            if piece[t_sq as usize] != EMPTY {
-                if piececol[piece[t_sq as usize] as usize] == side ^ 1 {
-                    add_capture_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), piece[t_sq as usize], EMPTY, 0), list);
-                }
-                break;
-            }
-            add_quiet_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), EMPTY, EMPTY, 0), list);
-            t_sq += dir;
-        }
+        let mut dir: i32 = 0;
+        let mut t_sq: i32 = 0;
 
-        // for j in 0..offsets[piece[i as usize] as usize] {
-        //     println!("i {}", i);
-        //     n = mailbox[mailbox64[n as usize] + (offset[j as usize][piece[i] as usize] as usize)];
-        //     if n == -1 {
-        //         break;
-        //     }
-        //     if piece[n as usize] != EMPTY {
-        //         if piececol[n as usize] == xside {
-        //             add_capture_move(move_bytes(i.try_into().unwrap(), n.try_into().unwrap(), EMPTY, EMPTY, 0), list);
-        //         }
-        //         break;
-        //     }
-        //     add_quiet_move(move_bytes(i.try_into().unwrap(), n.try_into().unwrap(), EMPTY, EMPTY, 0), list);
-        //     if slide[piece[i as usize]  as usize] == FALSE {
-        //         break;
-        //     }  
-        //}  
+        if loopSlidePce.contains(&piece[i]) && piece[i] != EMPTY {
+            for j in 0..3 {
+                pce = loopSlidePce[j as usize];
+                while pce < 4 {
+                    for k in 0..=numDir[pce as usize] {
+                        println!("pce {}", pce);
+                        //println!("k {}", k);
+                        dir = pceDir[k as usize][pce as usize];
+                        //dir = dir_i as usize;
+                        t_sq = (i as i32) + dir;
+                        
+                        println!("i {}", i);
+                        // println!("dir_i {}", dir_i);
+                        // println!("dir {}", dir);
+                        
+                        
+                        if t_sq >= 0 {
+                            while(sq_on_board(t_sq)) {
+                                println!("t_sq {}", t_sq);
+                                if piece[t_sq as usize] != EMPTY {
+                                    if piececol[piece[t_sq as usize] as usize] == side ^ 1 {
+                                        println!("Added capture move");
+                                        add_capture_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), piece[t_sq as usize], EMPTY, 0), list);
+                                    }
+                                    break;
+                                }
+                                else {
+                                    println!("Added quiet move");
+                                    add_quiet_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), EMPTY, EMPTY, 0), list);
+                                t_sq += dir;
+                                }
+                            }
+                        }
+                    }
+                    pce = loopSlidePce[pceIndex as usize];
+                    pce += 1;
+                }
+            }  
+        }  
+        
+        if loopNonSlidePce.contains(&piece[i]) && piece[i] != EMPTY {
+            for j in 0..3 {
+                pce = loopNonSlidePce[j as usize];
+                while pce < 4 {
+                    for k in 0..=numDir[pce as usize] {
+                        println!("pce {}", pce);
+                        //println!("k {}", k);
+                        dir = pceDir[k as usize][pce as usize];
+                        //dir = dir_i as usize;
+                        t_sq = (i as i32) + dir;
+                        
+                        println!("i {}", i);
+                        // println!("dir_i {}", dir_i);
+                        // println!("dir {}", dir);
+                        
+                        
+                        if t_sq >= 0 {
+                            while(sq_on_board(t_sq)) {
+                                println!("t_sq {}", t_sq);
+                                if piece[t_sq as usize] != EMPTY {
+                                    if piececol[piece[t_sq as usize] as usize] == side ^ 1 {
+                                        println!("Added capture move");
+                                        add_capture_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), piece[t_sq as usize], EMPTY, 0), list);
+                                    }
+                                    break;
+                                }
+                                else {
+                                    println!("Added quiet move");
+                                    add_quiet_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), EMPTY, EMPTY, 0), list);
+                                t_sq += dir;
+                                }
+                            }
+                        }
+                    }
+                    pce = loopNonSlidePce[pceIndex as usize];
+                    pce += 1;
+                }
+            }  
+        }
+        
+
+
     }
     println!("Total moves {}", &list.count);
 }

@@ -24,6 +24,7 @@ pub struct MoveList {
 	pub count: usize,
 }
 
+#[derive(Copy, Clone)]
 pub struct Undo {
     pub m: i32,
     pub castlePerm: i32,
@@ -42,7 +43,7 @@ pub struct Board {
     pub bigPce: [i32; 2],
     pub majPce: [i32; 2],
     pub minPce: [i32; 2],
-    pub history: [Undo; MAX_POSITION_MOVES],
+    pub history: [Undo; MAX_GAME_MOVES],
     pub pList: Lazy<Array2<i32>>,
 
 }

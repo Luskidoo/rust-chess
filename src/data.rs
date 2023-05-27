@@ -12,6 +12,7 @@ pub const BLACK: i32 = 1;
 pub const BOTH: i32 = 2;
 
 pub const MAX_POSITION_MOVES: usize = 256;
+pub const MAX_GAME_MOVES: usize = 2048;
 
 pub const EMPTY: i32 = 0;
 pub const wP: i32 = 1;
@@ -77,6 +78,7 @@ pub const RANK_8: i32 = 7;
 pub const RANK_NONE: i32 = 8;
 
 pub const OFFBOARD: i32 = 100;
+pub const NO_SQ: i32 = 101;
 
 pub fn ROW(x: usize) -> usize {
     x >> 3

@@ -24,6 +24,28 @@ pub struct MoveList {
 	pub count: usize,
 }
 
+pub struct Undo {
+    pub m: i32,
+    pub castlePerm: i32,
+    pub enPas: i32,
+}
+
+pub struct Board {
+    pub pieces: [i32; BRD_SQ_NUM],
+    pub pawns: [u64; 3],
+    pub side: i32,
+    pub enPas: i32,
+    pub ply: i32,
+    pub hisPly: i32,
+    pub castlePerm: i32,
+    pub pceNum: [i32; 13],
+    pub bigPce: [i32; 2],
+    pub majPce: [i32; 2],
+    pub minPce: [i32; 2],
+    pub history: [Undo; MAX_POSITION_MOVES],
+    pub pList: Lazy<Array2<i32>>,
+
+}
 
 /* an element of the history stack, with the information
    necessary to take a move back. */

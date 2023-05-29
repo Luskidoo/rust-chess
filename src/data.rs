@@ -38,17 +38,45 @@ pub const bR: i32 = 10;
 pub const bQ: i32 = 11;
 pub const bK: i32 = 12;
 
+pub const MAX_POSITION_MOVES: usize = 256;
+
+pub const RANK_1: i32 = 0;
+pub const RANK_2: i32 = 1;
+pub const RANK_3: i32 = 2;
+pub const RANK_4: i32 = 3;
+pub const RANK_5: i32 = 4;
+pub const RANK_6: i32 = 5;
+pub const RANK_7: i32 = 6;
+pub const RANK_8: i32 = 7;
+
+pub const FILE_1: i32 = 0;
+pub const FILE_2: i32 = 1;
+pub const FILE_3: i32 = 2;
+pub const FILE_4: i32 = 3;
+pub const FILE_5: i32 = 4;
+pub const FILE_6: i32 = 5;
+pub const FILE_7: i32 = 6;
+pub const FILE_8: i32 = 7;
+
 pub const init_pieces: [i32; 64] = [
-   10, 8, 9, 11, 12, 9, 8, 10,
-   7, 7, 7, 7, 7, 7, 7, 7,
-   0, 0, 0, 0, 0, 0, 0, 0,
-   0, 0, 0, 0, 0, 0, 0, 0,
-   0, 0, 0, 0, 0, 0, 0, 0,
-   0, 0, 0, 0, 0, 0, 0, 0,
-   1, 1, 1, 1, 1, 1, 1, 1,
-   4, 2, 3, 5, 6, 3, 2, 4
+    4, 2, 3, 5, 6, 3, 2, 4,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    7, 7, 7, 7, 7, 7, 7, 7,
+    10, 8, 9, 11, 12, 9, 8, 10,
 ];
 
 pub const piece_char: [char; 13] = [
     '.', 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k'
 ];
+
+pub fn file(sq: i32) -> i32 {
+    sq & 7
+}
+
+pub fn rank(sq: i32) -> i32 {
+    sq >> 3
+}

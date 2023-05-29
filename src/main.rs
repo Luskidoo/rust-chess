@@ -4,10 +4,15 @@ use crate::data::*;
 use crate::board::*;
 
 fn main () {
-    let board = Board {
+    let mut pos = Board {
         pieces: init_pieces,
     };
-    print_board(board);
+    let mut list = MoveList {
+        moves: [Move {m: 0, score: 0}; MAX_POSITION_MOVES],
+        count: 0, 
+    };
+    generate_moves(&mut pos, &mut list);
+    print_board(pos);
 }
 
 fn print_board (pos: Board) {

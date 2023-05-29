@@ -49,14 +49,25 @@ pub const RANK_6: i32 = 5;
 pub const RANK_7: i32 = 6;
 pub const RANK_8: i32 = 7;
 
-pub const FILE_1: i32 = 0;
-pub const FILE_2: i32 = 1;
-pub const FILE_3: i32 = 2;
-pub const FILE_4: i32 = 3;
-pub const FILE_5: i32 = 4;
-pub const FILE_6: i32 = 5;
-pub const FILE_7: i32 = 6;
-pub const FILE_8: i32 = 7;
+pub const FILE_A: i32 = 0;
+pub const FILE_B: i32 = 1;
+pub const FILE_C: i32 = 2;
+pub const FILE_D: i32 = 3;
+pub const FILE_E: i32 = 4;
+pub const FILE_F: i32 = 5;
+pub const FILE_G: i32 = 6;
+pub const FILE_H: i32 = 7;
+
+pub const WHITE: i32 = 0;
+pub const BLACK: i32 = 1;
+pub const BOTH: i32 = 2;
+
+pub const MFLAGEP: i32 = 0x40000;
+pub const MFLAGPS: i32 = 0x80000;
+pub const MFLAGCA: i32 = 0x1000000;
+
+pub const MFLAGCAP: i32 = 0x7C000;
+pub const MFLAGPROM: i32 = 0xF00000;
 
 pub const init_pieces: [i32; 64] = [
     4, 2, 3, 5, 6, 3, 2, 4,
@@ -71,6 +82,10 @@ pub const init_pieces: [i32; 64] = [
 
 pub const piece_char: [char; 13] = [
     '.', 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k'
+];
+
+pub const piece_col: [i32; 13] = [
+    BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK
 ];
 
 pub fn file(sq: i32) -> i32 {

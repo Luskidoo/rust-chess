@@ -34,14 +34,15 @@ fn add_quiet_move(m: i32, list: &mut MoveList) {
     list.count += 1;
 }
 
-pub fn generate_moves(pos: &mut Board) {
+pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
     for sq in 0..63 {
         if pos.pieces[sq] == wP {
             if rank(sq.try_into().unwrap()) == RANK_2 {
-                add_quiet_move(move_bytes(sq));
+                add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq+16).try_into().unwrap(),0,0,0), list);
                 println!("{}", sq);
             }
             
         }
     }
+    println!("{}", list.count);
 }

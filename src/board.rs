@@ -121,6 +121,7 @@ fn add_black_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveList) {
 }
 
 pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
+    let mut t_sq: i32 = 0;
     for sq in 0..63 {
         if pos.pieces[sq] == wP {
             if file(sq.try_into().unwrap()) != FILE_H && piece_col[pos.pieces[sq + 9] as usize] == BLACK {
@@ -155,17 +156,20 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
 
         if pos.pieces[sq] == wB {
             for dir in bishop_dir {
-                t_sq = (sq as i32) + dir;
-                while mailbox[(mailbox64[sq] + dir) as usize] == -1 {
-                    continue
-                }
-                else if pos.pieces[(sq as i32 + dir) as usize] != EMPTY {
-                    if piece_col[pos.pieces[(sq as i32 + dir) as usize] as usize] == BLACK {
-                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                t_sq = sq as i32;
+                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
+                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == BLACK {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        }
+                        else {
+                            break
+                        }
                     }
-                }
-                else {
-                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    else {
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                    t_sq += dir;
                 }
             }
         }
@@ -197,6 +201,26 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
                 }
                 else {
                     add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                }
+            }
+        }
+
+        if pos.pieces[sq] == bB {
+            for dir in bishop_dir {
+                t_sq = sq as i32;
+                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
+                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == WHITE {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        }
+                        else {
+                            break
+                        }
+                    }
+                    else {
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                    t_sq += dir;
                 }
             }
         }

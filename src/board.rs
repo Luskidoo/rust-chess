@@ -210,7 +210,11 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
             for dir in queen_dir {
                 t_sq = sq as i32;
                 while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
+                    if (t_sq as i32) + dir < 0 || (t_sq as i32) + dir > 63 {
+                        break
+                    }
                     if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                        println!("{}", (t_sq as i32) + dir);
                         if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == BLACK {
                             add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
                         }

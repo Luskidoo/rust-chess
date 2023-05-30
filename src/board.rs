@@ -40,6 +40,18 @@ pub const bishop_dir: [i32; 4] = [
     -9, -7, 7, 9
 ];
 
+pub const rook_dir: [i32; 4] = [
+    -8, -1, 1, 8
+];
+
+pub const queen_dir: [i32; 8] = [
+    -9, -8, -7, -1, 1, 7, 8, 9
+];
+
+pub const king_dir: [i32; 8] = [
+    -9, -8, -7, -1, 1, 7, 8, 9
+];
+
 pub fn move_bytes(from: i32, to: i32, capture: i32, promote: i32, fl: i32) -> i32 {
     (from) | ((to) << 7) | ( (capture) << 14 ) | ( (promote) << 20 ) | (fl)
 }
@@ -174,6 +186,62 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
             }
         }
 
+        if pos.pieces[sq] == wR {
+            for dir in rook_dir {
+                t_sq = sq as i32;
+                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
+                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == BLACK {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        }
+                        else {
+                            break
+                        }
+                    }
+                    else {
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                    t_sq += dir;
+                }
+            }
+        }
+
+        if pos.pieces[sq] == wQ {
+            for dir in queen_dir {
+                t_sq = sq as i32;
+                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
+                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == BLACK {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        }
+                        else {
+                            break
+                        }
+                    }
+                    else {
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                    t_sq += dir;
+                }
+            }
+        }
+
+        if pos.pieces[sq] == wK {
+            for dir in king_dir {
+                if mailbox[(mailbox64[sq] + dir) as usize] == -1 {
+                    continue
+                }
+                else if pos.pieces[(sq as i32 + dir) as usize] != EMPTY {
+                    if piece_col[pos.pieces[(sq as i32 + dir) as usize] as usize] == BLACK {
+                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                }
+                else {
+                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                }
+            }
+        }
+
         if pos.pieces[sq] == bP {
             if file(sq.try_into().unwrap()) != FILE_H && piece_col[pos.pieces[sq - 7] as usize] == BLACK {
                 add_black_pawn_cap_move(sq.try_into().unwrap(), (sq - 7).try_into().unwrap(), pos.pieces[sq-7], list);
@@ -221,6 +289,62 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
                         add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
                     }
                     t_sq += dir;
+                }
+            }
+        }
+
+        if pos.pieces[sq] == bR {
+            for dir in rook_dir {
+                t_sq = sq as i32;
+                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
+                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == WHITE {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        }
+                        else {
+                            break
+                        }
+                    }
+                    else {
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                    t_sq += dir;
+                }
+            }
+        }
+
+        if pos.pieces[sq] == bQ {
+            for dir in queen_dir {
+                t_sq = sq as i32;
+                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
+                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == WHITE {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        }
+                        else {
+                            break
+                        }
+                    }
+                    else {
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                    t_sq += dir;
+                }
+            }
+        }
+
+        if pos.pieces[sq] == bK {
+            for dir in king_dir {
+                if mailbox[(mailbox64[sq] + dir) as usize] == -1 {
+                    continue
+                }
+                else if pos.pieces[(sq as i32 + dir) as usize] != EMPTY {
+                    if piece_col[pos.pieces[(sq as i32 + dir) as usize] as usize] == WHITE {
+                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    }
+                }
+                else {
+                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
                 }
             }
         }

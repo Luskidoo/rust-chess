@@ -5,7 +5,7 @@ use crate::board::*;
 
 fn main () {
     let mut pos = Board {
-        pieces: test_pieces,
+        pieces: test_pieces2,
     };
     let mut list = MoveList {
         moves: [Move {m: 0, score: 0}; MAX_POSITION_MOVES],

@@ -151,99 +151,107 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
         }
 
         if pos.pieces[sq] == wN {
-            for dir in knight_dir {
-                if mailbox[(mailbox64[sq] + dir) as usize] == -1 {
+            for wn_dir in knight_dir {
+                t_sq = sq as i32;
+                if mailbox[(mailbox64[sq] + wn_dir) as usize] == -1 {
                     continue
                 }
-                else if pos.pieces[(sq as i32 + dir) as usize] != EMPTY {
-                    if piece_col[pos.pieces[(sq as i32 + dir) as usize] as usize] == BLACK {
-                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                else if pos.pieces[(sq as i32 + wn_dir) as usize] != EMPTY {
+                    if piece_col[pos.pieces[(sq as i32 + wn_dir) as usize] as usize] == BLACK {
+                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + wn_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
                 }
                 else {
-                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + wn_dir).try_into().unwrap(), 0, 0, 0), list);
                 }
             }
         }
 
         if pos.pieces[sq] == wB {
-            for dir in bishop_dir {
+            for wb_dir in bishop_dir {
                 t_sq = sq as i32;
-                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
-                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
-                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == BLACK {
-                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                while mailbox[(mailbox64[t_sq as usize] + wb_dir) as usize] != -1 {
+                    if (t_sq as i32) + wb_dir < 0 || (t_sq as i32) + wb_dir > 63 {
+                        break 
+                    }
+                    if pos.pieces[(t_sq as i32 + wb_dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + wb_dir) as usize] as usize] == BLACK {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + wb_dir).try_into().unwrap(), 0, 0, 0), list);
                         }
                         else {
                             break
                         }
                     }
                     else {
-                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + wb_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
-                    t_sq += dir;
+                    t_sq += wb_dir;
                 }
             }
         }
 
         if pos.pieces[sq] == wR {
-            for dir in rook_dir {
+            for wr_dir in rook_dir {
                 t_sq = sq as i32;
-                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
-                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
-                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == BLACK {
-                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                while mailbox[(mailbox64[t_sq as usize] + wr_dir) as usize] != -1 {
+                    if (t_sq as i32) + wr_dir < 0 || (t_sq as i32) + wr_dir > 63 {
+                        break 
+                    }
+                    if pos.pieces[(t_sq as i32 + wr_dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + wr_dir) as usize] as usize] == BLACK {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + wr_dir).try_into().unwrap(), 0, 0, 0), list);
                         }
                         else {
                             break
                         }
                     }
                     else {
-                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + wr_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
-                    t_sq += dir;
+                    t_sq += wr_dir;
                 }
             }
         }
 
         if pos.pieces[sq] == wQ {
-            for dir in queen_dir {
+            for wq_dir in queen_dir {
                 t_sq = sq as i32;
-                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
-                    if (t_sq as i32) + dir < 0 { // || (t_sq as i32) + dir > 63 {
+                while mailbox[(mailbox64[t_sq as usize] + wq_dir) as usize] != -1 {
+                    if (t_sq as i32) + wq_dir < 0 || (t_sq as i32) + wq_dir > 63 {
                         break 
                     }
-                    println!("{}", (t_sq as i32) + dir);
-                    println!("{}", mailbox[(mailbox64[t_sq as usize] + dir) as usize]);
-                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
+                    println!("{}", (t_sq as i32) + wq_dir);
+                    println!("{}", mailbox[(mailbox64[t_sq as usize] + wq_dir) as usize]);
+                    if pos.pieces[(t_sq as i32 + wq_dir) as usize] != EMPTY {
                         
-                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == BLACK {
-                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        if piece_col[pos.pieces[(t_sq as i32 + wq_dir) as usize] as usize] == BLACK {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + wq_dir).try_into().unwrap(), 0, 0, 0), list);
                         }
                         else {
                             break
                         }
                     }
                     else {
-                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + wq_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
-                    t_sq += dir;
+                    t_sq += wq_dir;
                 }
             }
         }
 
         if pos.pieces[sq] == wK {
-            for dir in king_dir {
-                if mailbox[(mailbox64[sq] + dir) as usize] == -1 {
+            for wk_dir in king_dir {
+                t_sq = sq as i32;
+                if mailbox[(mailbox64[sq] + wk_dir) as usize] == -1 {
                     continue
                 }
-                else if pos.pieces[(sq as i32 + dir) as usize] != EMPTY {
-                    if piece_col[pos.pieces[(sq as i32 + dir) as usize] as usize] == BLACK {
-                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                else if pos.pieces[(sq as i32 + wk_dir) as usize] != EMPTY {
+                    if piece_col[pos.pieces[(sq as i32 + wk_dir) as usize] as usize] == BLACK {
+                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + wk_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
                 }
                 else {
-                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + wk_dir).try_into().unwrap(), 0, 0, 0), list);
                 }
             }
         }
@@ -264,83 +272,94 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
         }
 
         if pos.pieces[sq] == bN {
-            for dir in knight_dir {
-                if mailbox[(mailbox64[sq] + dir) as usize] == -1 {
+            for bn_dir in knight_dir {
+                t_sq = sq as i32;
+                if mailbox[(mailbox64[sq] + bn_dir) as usize] == -1 {
                     continue
                 }
-                else if pos.pieces[(sq as i32 + dir) as usize] != EMPTY {
-                    if piece_col[pos.pieces[(sq as i32 + dir) as usize] as usize] == WHITE {
-                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                else if pos.pieces[(sq as i32 + bn_dir) as usize] != EMPTY {
+                    if piece_col[pos.pieces[(sq as i32 + bn_dir) as usize] as usize] == WHITE {
+                        add_capture_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + bn_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
                 }
                 else {
-                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                    add_quiet_move(move_bytes(sq.try_into().unwrap(), (sq as i32 + bn_dir).try_into().unwrap(), 0, 0, 0), list);
                 }
             }
         }
 
         if pos.pieces[sq] == bB {
-            for dir in bishop_dir {
+            for bb_dir in bishop_dir {
                 t_sq = sq as i32;
-                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
-                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
-                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == WHITE {
-                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                while mailbox[(mailbox64[t_sq as usize] + bb_dir) as usize] != -1 {
+                    if (t_sq as i32) + bb_dir < 0 || (t_sq as i32) + bb_dir > 63 {
+                        break 
+                    }
+                    if pos.pieces[(t_sq as i32 + bb_dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + bb_dir) as usize] as usize] == WHITE {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + bb_dir).try_into().unwrap(), 0, 0, 0), list);
                         }
                         else {
                             break
                         }
                     }
                     else {
-                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + bb_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
-                    t_sq += dir;
+                    t_sq += bb_dir;
                 }
             }
         }
 
         if pos.pieces[sq] == bR {
-            for dir in rook_dir {
+            for br_dir in rook_dir {
                 t_sq = sq as i32;
-                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
-                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
-                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == WHITE {
-                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                while mailbox[(mailbox64[t_sq as usize] + br_dir) as usize] != -1 {
+                    if (t_sq as i32) + br_dir < 0 || (t_sq as i32) + br_dir > 63 {
+                        break 
+                    }
+                    if pos.pieces[(t_sq as i32 + br_dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + br_dir) as usize] as usize] == WHITE {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + br_dir).try_into().unwrap(), 0, 0, 0), list);
                         }
                         else {
                             break
                         }
                     }
                     else {
-                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + br_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
-                    t_sq += dir;
+                    t_sq += br_dir;
                 }
             }
         }
 
         if pos.pieces[sq] == bQ {
-            for dir in queen_dir {
+            for bq_dir in queen_dir {
                 t_sq = sq as i32;
-                while mailbox[(mailbox64[t_sq as usize] + dir) as usize] != -1 {
-                    if pos.pieces[(t_sq as i32 + dir) as usize] != EMPTY {
-                        if piece_col[pos.pieces[(t_sq as i32 + dir) as usize] as usize] == WHITE {
-                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                while mailbox[(mailbox64[t_sq as usize] + bq_dir) as usize] != -1 {
+                    if (t_sq as i32) + bq_dir < 0 || (t_sq as i32) + bq_dir > 63 {
+                        break 
+                    }
+                    if pos.pieces[(t_sq as i32 + bq_dir) as usize] != EMPTY {
+                        if piece_col[pos.pieces[(t_sq as i32 + bq_dir) as usize] as usize] == WHITE {
+                            add_capture_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + bq_dir).try_into().unwrap(), 0, 0, 0), list);
                         }
                         else {
                             break
                         }
                     }
                     else {
-                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + dir).try_into().unwrap(), 0, 0, 0), list);
+                        add_quiet_move(move_bytes(t_sq.try_into().unwrap(), (t_sq as i32 + bq_dir).try_into().unwrap(), 0, 0, 0), list);
                     }
-                    t_sq += dir;
+                    t_sq += bq_dir;
                 }
             }
         }
 
         if pos.pieces[sq] == bK {
             for dir in king_dir {
+                t_sq = sq as i32;
                 if mailbox[(mailbox64[sq] + dir) as usize] == -1 {
                     continue
                 }

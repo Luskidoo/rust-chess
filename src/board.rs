@@ -220,8 +220,8 @@ pub fn generate_moves(pos: &mut Board, list: &mut MoveList) {
                     if (t_sq as i32) + wq_dir < 0 || (t_sq as i32) + wq_dir > 63 {
                         break 
                     }
-                    println!("{}", (t_sq as i32) + wq_dir);
-                    println!("{}", mailbox[(mailbox64[t_sq as usize] + wq_dir) as usize]);
+                    println!("{}", t_sq as i32);
+                    //println!("{}", mailbox[(mailbox64[t_sq as usize] + wq_dir) as usize]);
                     if pos.pieces[(t_sq as i32 + wq_dir) as usize] != EMPTY {
                         
                         if piece_col[pos.pieces[(t_sq as i32 + wq_dir) as usize] as usize] == BLACK {

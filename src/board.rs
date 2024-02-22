@@ -203,7 +203,7 @@ pub fn init_board() {
             color[i] = init_color[i];
             piece[i] = init_piece[i];
         }
-        side = BLACK;
+        side = 2;
         //xside = BLACK;
         castle = 15;
         ep = -1;
@@ -290,7 +290,7 @@ unsafe fn add_capture_move(m: i32, mut list: &mut MoveList) {
     //assert!(sq_on_board(to_sq(m)));
 
     list.moves[list.count].m = m;
-    // Add MvvLVA
+    // TODO Add MvvLVA
     list.count += 1;
 }
 
@@ -336,8 +336,8 @@ unsafe fn add_white_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveL
 
 unsafe fn add_black_pawn_move(from: i32, to: i32, list: &mut MoveList) {
 
-    assert!(sq_on_board(from));
-    assert!(sq_on_board(to));
+    //assert!(sq_on_board(from));
+    //assert!(sq_on_board(to));
 
     if ranksbrd[from as usize] == RANK_2 {
         for i in bN..=bQ {
@@ -351,8 +351,8 @@ unsafe fn add_black_pawn_move(from: i32, to: i32, list: &mut MoveList) {
 
 unsafe fn add_black_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveList) {
 
-    assert!(sq_on_board(from));
-    assert!(sq_on_board(to));
+    //assert!(sq_on_board(from));
+    //assert!(sq_on_board(to));
 
     if ranksbrd[from as usize] == RANK_2 {
         for i in bN..=bQ {
@@ -414,6 +414,7 @@ pub unsafe fn gen(list: &mut MoveList)
     let mut n: i32 = 0;
     for i in 0..64 {
         if side == WHITE {
+            print!("side {}", side);
             if color[i as usize] == side {
                 if piece[i] == wP {
                     //println!("i {}", i);
@@ -431,6 +432,24 @@ pub unsafe fn gen(list: &mut MoveList)
                         }    
                     }
                 }
+            }
+        }
+        else {
+            if piece[i] == bP {
+                if color[(i + 7) as usize] == WHITE {
+                    add_black_pawn_cap_move(i.try_into().unwrap(), (i + 7).try_into().unwrap(), piece[i + 7], list);
+                }
+                if color[(i + 9) as usize] == WHITE {
+                    add_black_pawn_cap_move(i.try_into().unwrap(), (i + 9).try_into().unwrap(), piece[i + 9], list);
+                }  
+                if piece[i + 8] == EMPTY {
+                    add_black_pawn_move(i.try_into().unwrap(), (i + 8).try_into().unwrap(), list);
+                    if rank_index(i) == 6 && piece[(i + 16) as usize] == EMPTY {
+                        add_quiet_move(move_bytes(i.try_into().unwrap(), (i + 16).try_into().unwrap(), EMPTY, EMPTY, MFLAGPS), list);
+                    }
+                }
+            }
+        }
 
         //         /* generate castle moves */
         //         if castle & 1 == 1 {
@@ -472,23 +491,7 @@ pub unsafe fn gen(list: &mut MoveList)
         //         }
         //     }
         // } 
-        else {
-            print!("side {}", side);
-            if piece[i] == bP {
-                if color[(i + 7) as usize] == WHITE {
-                    add_black_pawn_cap_move(i.try_into().unwrap(), (i + 7).try_into().unwrap(), piece[i + 7], list);
-                }
-                if color[(i + 9) as usize] == WHITE {
-                    add_black_pawn_cap_move(i.try_into().unwrap(), (i + 9).try_into().unwrap(), piece[i + 9], list);
-                }  
-                if piece[i + 8] == EMPTY {
-                    println!("i {}", i);
-                    add_black_pawn_move(i.try_into().unwrap(), (i + 8).try_into().unwrap(), list);
-                    if rank_index(i) == 6 && piece[(i + 16) as usize] == EMPTY {
-                        add_quiet_move(move_bytes(i.try_into().unwrap(), (i + 16).try_into().unwrap(), EMPTY, EMPTY, MFLAGPS), list);
-                    }
-                }
-            }
+        
             
         //     if castle & 4 == 1 {
         //         add_quiet_move(move_bytes(E8, G8, EMPTY, EMPTY, MFLAGCA), list);
@@ -596,9 +599,6 @@ pub unsafe fn gen(list: &mut MoveList)
         //         }
         //     }  
         // }
-                }
-            }
-        }
     }
     println!("Total moves {}", &list.count);
 }

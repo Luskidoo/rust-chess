@@ -471,26 +471,6 @@ pub unsafe fn gen(list: &mut MoveList)
         //         }
         //     }
         // } 
-        //         /* generate castle moves */
-        //         if castle & 1 == 1 {
-        //             if piece[F1 as usize] == EMPTY && piece[G1 as usize] == EMPTY {
-        //                 add_quiet_move(move_bytes(E1, G1, EMPTY, EMPTY, MFLAGCA), list);
-        //             }
-        //         }
-        //         if castle & 2 == 1 {
-        //             add_quiet_move(move_bytes(E1, C1, EMPTY, EMPTY, MFLAGCA), list);
-        //         }
-        //         // generate en passent moves
-        //         if ep != -1 {
-        //             if file_index(ep.try_into().unwrap()) != 0 && piece[(ep - 7) as usize] == WHITE && piece[(ep - 7) as usize] == wP {
-        //                 add_ep_move(move_bytes((ep - 7).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
-        //             }  
-        //             if file_index(ep.try_into().unwrap()) != 7 && piece[(ep - 9) as usize] == WHITE && piece[(ep - 9) as usize] == wP {
-        //                 add_ep_move(move_bytes((ep - 9).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
-        //             }
-        //         }
-        //     }
-        // } 
         
             
         //     if castle & 4 == 1 {

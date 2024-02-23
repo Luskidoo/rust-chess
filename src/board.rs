@@ -138,20 +138,20 @@ static offset: [[i32; 8]; 6] = [
 ];
 
 static loopSlidePce: [i32; 8] = [
-    wB, wR, wQ, 0, bB, bR, bQ, 0
+    3, 4, 5, 0, 9, 10, 11, 0
 ];
    
 static loopNonSlidePce: [i32; 6] = [
     wN, wK, 0, bN, bK, 0
 ];
 
-static loopSlideIndex: [i32; 2] = [ 0, 4 ];
-static loopNonSlideIndex: [i32; 2] = [ 0, 3 ];
+static loopSlideIndex: [i32; 3] = [ 0, 0, 4 ];
+static loopNonSlideIndex: [i32; 3] = [ 0, 0, 3 ];
 
 static pceDir: [[i32; 8]; 13] = [
 	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 	[ 0, 0, 0, 0, 0, 0, 0, 0 ],
-	[ -21, -19, -12, -8, 8, 12, 19, 21 ],
+	[ -11, -10, -9, -1, 1, 9, 10, 11 ],
 	[ -11, -9, 9, 11, 0, 0, 0, 0 ],
 	[ -10, -1, 1, 10, 0, 0, 0, 0 ],
 	[ -11, -10, -9, -1, 1, 9, 10, 11 ],
@@ -203,7 +203,7 @@ pub fn init_board() {
             color[i] = init_color[i];
             piece[i] = init_piece[i];
         }
-        side = 2;
+        side = WHITE;
         //xside = BLACK;
         castle = 15;
         ep = -1;
@@ -324,7 +324,7 @@ unsafe fn add_white_pawn_cap_move(from: i32, to: i32, cap: i32, list: &mut MoveL
     //assert!(sq_on_board(from));
     //assert!(sq_on_board(to));
 
-    if ranksbrd[from as usize] == RANK_7 {
+    if rank_index(from as usize) == 6 {
         for i in wN..=wQ {
             add_capture_move(move_bytes(from, to, EMPTY, i, 0), list);
         }
@@ -414,10 +414,8 @@ pub unsafe fn gen(list: &mut MoveList)
     let mut n: i32 = 0;
     for i in 0..64 {
         if side == WHITE {
-            print!("side {}", side);
             if color[i as usize] == side {
                 if piece[i] == wP {
-                    //println!("i {}", i);
                     if color[(i - 9) as usize] == BLACK {
                         add_white_pawn_cap_move(i.try_into().unwrap(), (i - 9).try_into().unwrap(), piece[i - 9], list);
                     } 
@@ -427,9 +425,30 @@ pub unsafe fn gen(list: &mut MoveList)
                     if piece[i - 8] == EMPTY {
                         add_white_pawn_move(i.try_into().unwrap(), (i - 8).try_into().unwrap(), list);
                         if rank_index(i) == 1 && (piece[(i - 16) as usize] == EMPTY) {
-                            //println!("TEST");
                             add_quiet_move(move_bytes(i.try_into().unwrap(), (i - 16).try_into().unwrap(), EMPTY, EMPTY, MFLAGPS), list);
                         }    
+                    }
+                    // generate en passent moves
+                    if ep != -1 {
+                        if piece[(i - 7) as usize] == ep.try_into().unwrap() {
+                            add_ep_move(move_bytes((i).try_into().unwrap(), (i - 7).try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
+                        }  
+                        if piece[(i - 9) as usize] == ep.try_into().unwrap() {
+                            add_ep_move(move_bytes((i).try_into().unwrap(), (i - 9).try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
+                        }
+                    }
+                }
+
+                // generate castle moves 
+                if castle & 1 == 1 {
+                    if piece[F1 as usize] == EMPTY && piece[G1 as usize] == EMPTY {
+                        add_quiet_move(move_bytes(E1, G1, EMPTY, EMPTY, MFLAGCA), list);
+                    }
+                }
+
+                if castle & 2 == 1 {
+                    if piece[B1 as usize] == EMPTY && piece[C1 as usize] == EMPTY && piece[D1 as usize] == EMPTY{
+                        add_quiet_move(move_bytes(E1, C1, EMPTY, EMPTY, MFLAGCA), list);
                     }
                 }
             }
@@ -448,97 +467,63 @@ pub unsafe fn gen(list: &mut MoveList)
                         add_quiet_move(move_bytes(i.try_into().unwrap(), (i + 16).try_into().unwrap(), EMPTY, EMPTY, MFLAGPS), list);
                     }
                 }
+                // generate en passent moves
+                if ep != -1 {
+                    if piece[(i + 7) as usize] == ep.try_into().unwrap() {
+                        add_ep_move(move_bytes((i).try_into().unwrap(), (i + 7).try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
+                    }  
+                    if piece[(i + 9) as usize] == ep.try_into().unwrap() {
+                        add_ep_move(move_bytes((i).try_into().unwrap(), (i + 9).try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
+                    }
+                }
             }
+            
+            if castle & 4 == 1 {
+                if piece[F8 as usize] == EMPTY && piece[G8 as usize] == EMPTY {
+                    add_quiet_move(move_bytes(E8, G8, EMPTY, EMPTY, MFLAGCA), list);
+                }
+            }
+                        
+            if castle & 8 == 1 {
+                if piece[B8 as usize] == EMPTY && piece[C8 as usize] == EMPTY && piece[D8 as usize] == EMPTY {
+                    add_quiet_move(move_bytes(E8, C8, EMPTY, EMPTY, MFLAGCA), list);
+                }
+            }
+
         }
 
-        //         /* generate castle moves */
-        //         if castle & 1 == 1 {
-        //             if piece[F1 as usize] == EMPTY && piece[G1 as usize] == EMPTY {
-        //                 add_quiet_move(move_bytes(E1, G1, EMPTY, EMPTY, MFLAGCA), list);
-        //             }
-        //         }
-        //         if castle & 2 == 1 {
-        //             add_quiet_move(move_bytes(E1, C1, EMPTY, EMPTY, MFLAGCA), list);
-        //         }
-        //         // generate en passent moves
-        //         if ep != -1 {
-        //             if file_index(ep.try_into().unwrap()) != 0 && piece[(ep - 7) as usize] == WHITE && piece[(ep - 7) as usize] == wP {
-        //                 add_ep_move(move_bytes((ep - 7).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
-        //             }  
-        //             if file_index(ep.try_into().unwrap()) != 7 && piece[(ep - 9) as usize] == WHITE && piece[(ep - 9) as usize] == wP {
-        //                 add_ep_move(move_bytes((ep - 9).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
-        //             }
-        //         }
-        //     }
-        // } 
-        
-            
-        //     if castle & 4 == 1 {
-        //         add_quiet_move(move_bytes(E8, G8, EMPTY, EMPTY, MFLAGCA), list);
-        //     }
-                        
-        //     if castle & 8 == 1 {
-        //         add_quiet_move(move_bytes(E8, C8, EMPTY, EMPTY, MFLAGCA), list);
-        //     } 
-                
-        //         /* generate en passant moves */
-                
-        //     if ep != -1 {
-        //         if file_index(ep.try_into().unwrap()) != 0 && piece[(ep - 9) as usize] == BLACK && piece[(ep - 9) as usize] == bP {
-        //             add_ep_move(move_bytes((ep - 9).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
-        //         }
-        //         if file_index(ep.try_into().unwrap()) != 7 && piece[(ep - 7) as usize] == BLACK && piece[(ep - 7) as usize] == bP {
-        //             add_ep_move(move_bytes((ep - 7).try_into().unwrap(), ep.try_into().unwrap(), EMPTY, EMPTY, MFLAGEP), list);
-        //         }
-        //     }
-        // }
+        let mut pceIndex: i32 = loopSlideIndex[side as usize];
+        let mut pce: i32 = 0;
+        //pceIndex += 1;
+        let mut dir_i: i32 = 0;
+        let mut dir: i32 = 0;
+        let mut t_sq: i32 = 0;
 
-        // let mut pceIndex: i32 = loopSlideIndex[side as usize];
-        // let mut pce: i32 = 0;
-        // pceIndex += 1;
-        // let mut dir_i: i32 = 0;
-        // let mut dir: i32 = 0;
-        // let mut t_sq: i32 = 0;
-
-        // if loopSlidePce.contains(&piece[i]) && piece[i] != EMPTY {
-        //     for j in 0..3 {
-        //         pce = loopSlidePce[j as usize];
-        //         while pce < 4 {
-        //             for k in 0..=numDir[pce as usize] {
-        //                 println!("pce {}", pce);
-        //                 //println!("k {}", k);
-        //                 dir = pceDir[k as usize][pce as usize];
-        //                 //dir = dir_i as usize;
-        //                 t_sq = (i as i32) + dir;
-                        
-        //                 println!("i {}", i);
-        //                 // println!("dir_i {}", dir_i);
-        //                 // println!("dir {}", dir);
-                        
-                        
-        //                 if t_sq >= 0 {
-        //                     while(sq_on_board(t_sq)) {
-        //                         println!("t_sq {}", t_sq);
-        //                         if piece[t_sq as usize] != EMPTY {
-        //                             if piececol[piece[t_sq as usize] as usize] == side ^ 1 {
-        //                                 println!("Added capture move");
-        //                                 add_capture_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), piece[t_sq as usize], EMPTY, 0), list);
-        //                             }
-        //                             break;
-        //                         }
-        //                         else {
-        //                             println!("Added quiet move");
-        //                             add_quiet_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), EMPTY, EMPTY, 0), list);
-        //                         t_sq += dir;
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //             pce = loopSlidePce[pceIndex as usize];
-        //             pce += 1;
-        //         }
-        //     }  
-        // }  
+        // If there is piece in the square and its a sliding piece
+        if loopSlidePce.contains(&piece[i]) && piece[i] != EMPTY {
+                pce = loopSlidePce[pceIndex as usize];
+                    for i in 0..=numDir[pce as usize] {
+                        dir = pceDir[i as usize][pce as usize];
+                        t_sq = (i as i32) + dir;
+                        if t_sq >= 0 {
+                            while(sq_on_board(t_sq)) {
+                                if piece[t_sq as usize] != EMPTY {
+                                    if piececol[piece[t_sq as usize] as usize] == side ^ 1 {
+                                        println!("Added capture move");
+                                        add_capture_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), piece[t_sq as usize], EMPTY, 0), list);
+                                    }
+                                    break;
+                                }
+                                else {
+                                    println!("Added quiet move");
+                                    add_quiet_move(move_bytes(i.try_into().unwrap(), t_sq.try_into().unwrap(), EMPTY, EMPTY, 0), list);
+                                t_sq += dir;
+                                }
+                            }
+                        }
+                    pce += 1;
+                }
+        }  
         
         // if loopNonSlidePce.contains(&piece[i]) && piece[i] != EMPTY {
         //     for j in 0..3 {

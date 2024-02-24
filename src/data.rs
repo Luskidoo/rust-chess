@@ -7,8 +7,8 @@ pub const GEN_STACK: usize	= 1120;
 pub const MAX_PLY: usize = 32;
 pub const HIST_STACK: usize = 400;
 
-pub const WHITE: i32 = 1;
-pub const BLACK: i32 = 2;
+pub const WHITE: i32 = 0;
+pub const BLACK: i32 = 1;
 pub const BOTH: i32 = 2;
 
 pub const MAX_POSITION_MOVES: usize = 256;
@@ -28,7 +28,7 @@ pub const bR: i32 = 10;
 pub const bQ: i32 = 11;
 pub const bK: i32 = 12;
 
-pub const piececol: [i32; 13] = [
+pub const piece_col: [i32; 13] = [
 	BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK
 ];
 
@@ -84,7 +84,7 @@ pub fn rank_index(x: usize) -> usize {
     (x >> 3) ^ 7
 }
 pub fn file_index(x: usize) -> usize {
-    (x & 7) & 7
+    (x & 7) ^ 7
 }
 
 pub fn fr2sq(f: i32, r: i32) -> i32 {

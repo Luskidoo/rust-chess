@@ -31,6 +31,16 @@ pub struct Undo {
     pub enPas: i32,
 }
 
+impl Undo {
+    pub const fn default() -> Undo {
+        Undo {
+            m: 0,
+            castlePerm: 0,
+            enPas: NO_SQ,
+        }
+    }
+}
+
 pub struct Board {
     pub pieces: [i32; BRD_SQ_NUM],
     pub pawns: [u64; 3],
@@ -46,6 +56,30 @@ pub struct Board {
     pub history: [Undo; MAX_GAME_MOVES],
     pub pList: [[usize; 13]; 10],
 
+}
+
+impl Board {
+    pub const fn default() -> Board { 
+        Board {
+            pieces: [OFFBOARD; BRD_SQ_NUM],
+            pawns: [0; 3],
+            side: BOTH,
+            enPas: NO_SQ,
+            ply: 0,
+            hisPly: 0,
+            castlePerm: 0,
+            pceNum: [0; 13],
+            bigPce: [0; 2],
+            majPce: [0; 2],
+            minPce: [0; 2],
+            history: [Undo::default(); MAX_GAME_MOVES],
+            pList: [[0; 13]; 10],
+        }
+    }
+
+    pub fn from_fen() {
+        todo!()
+    }
 }
 
 /* an element of the history stack, with the information

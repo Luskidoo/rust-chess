@@ -6,6 +6,7 @@ use crate::data::*;
 use crate::board::*;
 use ndarray::*;
 use once_cell::sync::Lazy;
+use fen::*;
 
 pub fn main() {
     
@@ -15,32 +16,30 @@ pub fn main() {
         enPas: NO_SQ,
     };
 
-    let mut pos = Board {
-        pieces: [OFFBOARD; BRD_SQ_NUM],
-        pawns: [0; 3],
-        side: BOTH,
-        enPas: NO_SQ,
-        ply: 0,
-        hisPly: 0,
-        castlePerm: 0,
-        pceNum: [0; 13],
-        bigPce: [0; 2],
-        majPce: [0; 2],
-        minPce: [0; 2],
-        history: [undo; MAX_GAME_MOVES],
-        pList: [[0; 13]; 10],
-    };
+    let mut pos = Board::default();
+
     let mut list = board::MoveList {
         moves: [board::Move {m: 0, score: 0}; data::MAX_POSITION_MOVES],
         count: 0
     };
     unsafe {
+        let fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
+        let board = fen::BoardState::from_fen(fen).unwrap();
+        let piece = board.pieces[0]
+
+        match piece {
+            // The division was valid
+            Some(x) => println!("Result: {x}"),
+            // The division was invalid
+            None    => println!("Cannot divide by 0"),
+        }
+        //println!("{}", piece.Some(x))
         //board::init_hash();
         //board::init_board();
         //board::init_sq120_to_sq64();
         //board::init_files_ranks_board();
         //print_board();
-        board::generate_all_moves(&mut pos, &mut list);
+        //board::generate_all_moves(&mut pos, &mut list);
     }
 }
 

@@ -25,14 +25,17 @@ pub fn main() {
     unsafe {
         let fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
         let board = fen::BoardState::from_fen(fen).unwrap();
-        let piece = board.pieces[0]
-
-        match piece {
-            // The division was valid
-            Some(x) => println!("Result: {x}"),
-            // The division was invalid
-            None    => println!("Cannot divide by 0"),
+        for (sq, piece) in board.pieces.iter().enumerate() {
+            match piece {
+                // The division was valid
+                Some(piece) => println!("{} on square {}", piece.to_string(), sq),
+                // The division was invalid
+                None    => println!("Square {} empty", sq),
+            }
         }
+
+        println!("{}", board.white_can_oo)
+        
         //println!("{}", piece.Some(x))
         //board::init_hash();
         //board::init_board();

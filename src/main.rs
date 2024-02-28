@@ -8,6 +8,22 @@ use ndarray::*;
 use once_cell::sync::Lazy;
 use fen::*;
 
+fn piece_string(piece: &Option<Piece>, sq: usize) -> String {
+    match piece {
+        Some(piece) => piece.to_string(),
+        None    => String::from("No piece"),
+    }
+}
+
+fn piece_index(piece_string: String) -> usize {
+    let index = piece_char.iter().position(|&x| x == piece_string);
+    match index {
+        Some(index) => index,
+        None => Err(),
+    }
+
+}
+
 pub fn main() {
     
     let undo = Undo {
@@ -23,18 +39,13 @@ pub fn main() {
         count: 0
     };
     unsafe {
+        
         let fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
         let board = fen::BoardState::from_fen(fen).unwrap();
         for (sq, piece) in board.pieces.iter().enumerate() {
-            match piece {
-                // The division was valid
-                Some(piece) => println!("{} on square {}", piece.to_string(), sq),
-                // The division was invalid
-                None    => println!("Square {} empty", sq),
-            }
+            println!("{}", piece_index(piece_string(piece, sq)))
         }
-
-        println!("{}", board.white_can_oo)
+        
         
         //println!("{}", piece.Some(x))
         //board::init_hash();

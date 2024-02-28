@@ -515,7 +515,7 @@ pub unsafe fn generate_all_moves(pos: &mut Board, list: &mut MoveList)
     pce = loop_slide_pce[pce_index as usize];
     pce_index += 1;
 
-    while (pce != 0) {
+    while pce != 0 {
         for pce_num in 0..pos.pceNum[pce as usize] {
             sq = pos.pList[pce as usize][pce_num as usize];
             for i in 0..num_dir[pce as usize] {
@@ -543,7 +543,7 @@ pub unsafe fn generate_all_moves(pos: &mut Board, list: &mut MoveList)
     pce = loop_non_slide_index[pce_index as usize];
     pce_index += 1;
 
-    while (pce != 0){
+    while pce != 0 {
         for pce_num in 0..pos.pceNum[pce as usize] {
             sq = pos.pList[pce as usize][pce_num as usize];
             for i in 0..num_dir[pce as usize] {

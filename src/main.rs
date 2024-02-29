@@ -8,7 +8,7 @@ use ndarray::*;
 use once_cell::sync::Lazy;
 use fen::*;
 
-fn piece_string(piece: &Option<Piece>, sq: usize) -> String {
+fn piece_string(piece: &Option<Piece>) -> String {
     match piece {
         Some(piece) => piece.to_string(),
         None    => String::from("."),
@@ -48,9 +48,7 @@ pub fn main() {
     
     let fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
     let board = fen::BoardState::from_fen(fen).unwrap();
-    for (sq, piece) in board.pieces.iter().enumerate() {
-        println!("{}", piece_index(piece_string(piece, sq)))
-    }
+    print_board(board);
         
         
     //println!("{}", piece.Some(x))
@@ -62,17 +60,16 @@ pub fn main() {
     //board::generate_all_moves(&mut pos, &mut list);
 }
 
-// unsafe fn print_board(pieces: Vec)
-// {
-// 	let i: usize;
-	
-// 	print!("\n8");
-// 	for i in 0..64 {
-//         print!(" {}", piece_char[board::piece[i] as usize]);
-// 		if (i + 1) % 8 == 0 && i != 63 {
-//             print!("\n{0}", data::rank_index(i));
-//     }
+fn print_board(board: BoardState)
+{
+
+	print!("\n8");
+	for (sq, piece) in board.pieces.iter().enumerate().rev() {
+        print!(" {}", sq);
+		if (sq + 1) % 8 == 0 && sq != 63 {
+            print!("\n{0}", 8 - data::rank_index(sq));
+    }
     
-// 	}
-// 	print!("\n  a b c d e f g h\n\n");
-// }
+	}
+	print!("\n  a b c d e f g h\n\n");
+}

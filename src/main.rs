@@ -11,7 +11,7 @@ use fen::*;
 fn piece_string(piece: &Option<Piece>, sq: usize) -> String {
     match piece {
         Some(piece) => piece.to_string(),
-        None    => String::from("No piece"),
+        None    => String::from("."),
     }
 }
 
@@ -19,7 +19,7 @@ fn piece_index(piece_string: String) -> usize {
     let index = piece_char.iter().position(|&x| x == piece_string);
     match index {
         Some(index) => index,
-        None => Err(),
+        None => 0,
     }
 
 }

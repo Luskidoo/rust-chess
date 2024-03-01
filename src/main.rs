@@ -82,15 +82,14 @@ macro_rules! fr2sq {
 
 fn print_board(board: BoardState)
 {
-	//print!("\n8");
 	for rank in (0..=7).rev() {
-        println!("{} ", char::from_digit(rank + 1, 10).unwrap());
+        print!("{} ", char::from_digit(rank + 1, 10).unwrap());
         for file in 0..=7 {
-            print!("{} ", mailbox[fr2sq!(file, rank) as usize])
+            let sq = mailbox[fr2sq!(file, rank) as usize];
+            let piece_string = piece_string(&board.pieces[sq as usize]);
+            print!("{} ", piece_string)
         }
-		// if (sq + 1) % 8 == 0 && sq != 63 {
-        //     print!("\n{0}", 8 - data::rank_index(sq));
-        //}   
+		println!(""); 
 	}
-	print!("\n  a b c d e f g h\n\n");
+	print!("  a b c d e f g h\n\n");
 }

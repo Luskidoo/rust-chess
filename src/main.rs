@@ -60,16 +60,37 @@ pub fn main() {
     //board::generate_all_moves(&mut pos, &mut list);
 }
 
+// fn print_board(board: BoardState)
+// {
+
+// 	print!("\n8");
+// 	for (sq, piece) in board.pieces.iter().enumerate().rev() {
+//         print!(" {}", sq);
+// 		if (sq + 1) % 8 == 0 && sq != 63 {
+//             print!("\n{0}", 8 - data::rank_index(sq));
+//     }
+    
+// 	}
+// 	print!("\n  a b c d e f g h\n\n");
+// }
+
+macro_rules! fr2sq {
+    ($file:expr, $rank:expr) => {
+        (21 + $file) + ($rank * 10)
+    };
+}
+
 fn print_board(board: BoardState)
 {
 
 	print!("\n8");
-	for (sq, piece) in board.pieces.iter().enumerate().rev() {
-        print!(" {}", sq);
-		if (sq + 1) % 8 == 0 && sq != 63 {
-            print!("\n{0}", 8 - data::rank_index(sq));
-    }
-    
+	for rank in (0..=7).rev() {
+        for file in 0..=7 {
+            print!("{}", fr2sq!(file, rank))
+        }
+		// if (sq + 1) % 8 == 0 && sq != 63 {
+        //     print!("\n{0}", 8 - data::rank_index(sq));
+        //}   
 	}
 	print!("\n  a b c d e f g h\n\n");
 }

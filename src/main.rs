@@ -1,12 +1,21 @@
 pub mod data;
 mod board;
+pub mod macros;
 mod validate;
-
+pub mod movegen;
+mod init;
+use crate::init::*;
 use crate::data::*;
 use crate::board::*;
 use ndarray::*;
 use once_cell::sync::Lazy;
 use fen::*;
+
+macro_rules! fr2sq {
+    ($file:expr, $rank:expr) => {
+        (21 + $file) + ($rank * 10)
+    };
+}
 
 fn piece_string(piece: &Option<Piece>) -> String {
     match piece {
@@ -28,11 +37,25 @@ fn piece_index(piece_string: String) -> usize {
         Some(index) => index,
         None => 0,
     }
+}
 
+fn from_fen(fen: String, pos: Board) -> () {
+    let board = fen::BoardState::from_fen(&fen).unwrap();
+    for sq64 in 0..64 {
+        let piece = piece_index(piece_string(&board.pieces[sq64]));
+        match piece {
+            wR => {
+                pList[wR][pceNum[wR]] = sq64_to_sq120[sq64];
+                pceNum[wR] += 1;
+        }
+    }
+    
+}
 }
 
 pub fn main() {
-    
+    init_all();
+
     let undo = Undo {
         m: 0,
         castlePerm: 0,
@@ -50,7 +73,7 @@ pub fn main() {
     let board = fen::BoardState::from_fen(fen).unwrap();
     print_board(board);
         
-        
+    
     //println!("{}", piece.Some(x))
     //board::init_hash();
     //board::init_board();
@@ -74,11 +97,7 @@ pub fn main() {
 // 	print!("\n  a b c d e f g h\n\n");
 // }
 
-macro_rules! fr2sq {
-    ($file:expr, $rank:expr) => {
-        (21 + $file) + ($rank * 10)
-    };
-}
+
 
 fn print_board(board: BoardState)
 {

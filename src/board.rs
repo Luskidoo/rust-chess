@@ -18,14 +18,13 @@ pub struct Board {
     pub majPce: [i32; 2],
     pub minPce: [i32; 2],
     pub history: [Undo; MAX_GAME_MOVES],
-    pub pList: [[usize; 13]; 10],
-
+    pub pList: [[usize; 10]; 13],
 }
 
 impl Board {
     pub const fn default() -> Board { 
         Board {
-            pieces: [OFFBOARD; BRD_SQ_NUM],
+            pieces: [0; BRD_SQ_NUM],
             pawns: [0; 3],
             side: BOTH,
             enPas: NO_SQ,
@@ -37,7 +36,7 @@ impl Board {
             majPce: [0; 2],
             minPce: [0; 2],
             history: [Undo::default(); MAX_GAME_MOVES],
-            pList: [[0; 13]; 10],
+            pList: [[0; 10]; 13],
         }
     }
 
@@ -61,6 +60,39 @@ const empty_move: Move = Move {
     m: 0,
 	score: 0,
 };
+
+pub fn sq_120_to_sq64(index: usize) -> usize {
+    let board120: [i32; 120] = [
+        65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+        65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+        65,  0,  1,  2,  3,  4,  5,  6,  7, 65,
+        65,  8,  9, 10, 11, 12, 13, 14, 15, 65,
+        65, 16, 17, 18, 19, 20, 21, 22, 23, 65,
+        65, 24, 25, 26, 27, 28, 29, 30, 31, 65,
+        65, 32, 33, 34, 35, 36, 37, 38, 39, 65,
+        65, 40, 41, 42, 43, 44, 45, 46, 47, 65,
+        65, 48, 49, 50, 51, 52, 53, 54, 55, 65,
+        65, 56, 57, 58, 59, 60, 61, 62, 63, 65,
+        65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+        65, 65, 65, 65, 65, 65, 65, 65, 65, 65
+    ];
+
+    board120[index].try_into().unwrap()
+}
+
+pub fn sq64_to_sq120(index: usize) -> usize {
+    let board64: [i32; 64] = [
+        21, 22, 23, 24, 25, 26, 27, 28,
+        31, 32, 33, 34, 35, 36, 37, 38,
+        41, 42, 43, 44, 45, 46, 47, 48,
+        51, 52, 53, 54, 55, 56, 57, 58,
+        61, 62, 63, 64, 65, 66, 67, 68,
+        71, 72, 73, 74, 75, 76, 77, 78,
+        81, 82, 83, 84, 85, 86, 87, 88,
+        91, 92, 93, 94, 95, 96, 97, 98
+    ];
+    board64[index].try_into().unwrap()
+}
 
 static init_color: [i32; 64] = [
 	1, 1, 1, 1, 1, 1, 1, 1,

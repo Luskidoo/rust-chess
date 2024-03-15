@@ -44,6 +44,11 @@ fn piece_index(piece_string: String) -> usize {
 fn from_fen(fen: String, mut pos: Board) -> Board {
     let board = fen::BoardState::from_fen(&fen).unwrap();
     let masks = BitMasks::init_masks();
+    match board.side_to_play {
+        White => pos.side = WHITE,
+        Black => pos.side = BLACK,
+        _     => (),
+    }
     for sq64 in 0..64 {
         let piece = piece_index(piece_string(&board.pieces[sq64])) as i32;
         match piece {
@@ -132,7 +137,7 @@ fn from_fen(fen: String, mut pos: Board) -> Board {
     return pos
 }
 
-pub fn main() {
+fn main() {
     init_all();
     let masks = BitMasks::init_masks();
     let set_mask = masks.SetMask;
@@ -157,12 +162,15 @@ pub fn main() {
     pos = from_fen(fen, pos);
     
     println!("My board");
-    print_my_board(pos);
+    //print_my_board(&pos);
     //board::init_board();
     //board::init_sq120_to_sq64();
     //board::init_files_ranks_board();
     //print_board();
-    //board::generate_all_moves(&mut pos, &mut list);
+    unsafe{
+        board::generate_all_moves(&mut pos, &mut list);
+    }
+    
 }
 
 fn print_board(board: BoardState)

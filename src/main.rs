@@ -9,6 +9,7 @@ use crate::init::*;
 use crate::data::*;
 use crate::board::*;
 use crate::bitboards::*;
+use crate::movegen::*;
 use ndarray::*;
 use once_cell::sync::Lazy;
 use fen::*;
@@ -49,7 +50,7 @@ fn from_fen(fen: String, mut pos: Board) -> Board {
         Black => pos.side = BLACK,
         _     => (),
     }
-    for sq64 in 0..64 {
+    for sq64 in 0..63 {
         let piece = piece_index(piece_string(&board.pieces[sq64])) as i32;
         match piece {
 
@@ -121,12 +122,16 @@ fn from_fen(fen: String, mut pos: Board) -> Board {
 
             wP => {
                 pos.pieces[sq64_to_sq120(sq64) as usize] = wP;
+                pos.pList[wP as usize][pos.pceNum[wP as usize] as usize] = sq64_to_sq120(sq64);
+                pos.pceNum[wP as usize] += 1;
                 set_bit(pos.pawns[WHITE as usize], sq64, masks);
                 set_bit(pos.pawns[BOTH as usize], sq64, masks);
             }
 
             bP => {
                 pos.pieces[sq64_to_sq120(sq64) as usize] = bP;
+                pos.pList[bP as usize][pos.pceNum[bP as usize] as usize] = sq64_to_sq120(sq64);
+                pos.pceNum[bP as usize] += 1;
                 set_bit(pos.pawns[BLACK as usize], sq64, masks);
                 set_bit(pos.pawns[BOTH as usize], sq64, masks);
             }
@@ -147,7 +152,7 @@ fn main() {
         enPas: NO_SQ,
     };
 
-    let mut pos = Board::default();
+    let mut init_pos = Board::default();
     
 
     let mut list = board::MoveList {
@@ -159,7 +164,7 @@ fn main() {
     let board = fen::BoardState::from_fen(&fen).unwrap();
     print_board(board);
         
-    pos = from_fen(fen, pos);
+    let mut pos = from_fen(fen, init_pos);
     
     println!("My board");
     //print_my_board(&pos);
@@ -168,7 +173,7 @@ fn main() {
     //board::init_files_ranks_board();
     //print_board();
     unsafe{
-        board::generate_all_moves(&mut pos, &mut list);
+        movegen::generate_all_moves(&mut pos, &mut list);
     }
     
 }

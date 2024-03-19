@@ -142,7 +142,7 @@ unsafe fn add_quiet_move(m: i32, list: &mut MoveList) {
     //assert!(sq_on_board(to_sq(m)));
 
     list.moves[list.count].m = m;
-    list.moves[list.count].score = history[[from_square(m), to_square(m)]];
+    //list.moves[list.count].score = history[[from_square(m), to_square(m)]];
     list.count += 1;
 }
 
@@ -266,7 +266,6 @@ pub unsafe fn init_files_ranks_board() {
 pub unsafe fn generate_all_moves(pos: &mut Board, list: &mut MoveList)
 {
     list.count = 0;
-
     let mut pce = EMPTY;
     let side = pos.side;
     let mut sq: usize = 0;
@@ -278,8 +277,12 @@ pub unsafe fn generate_all_moves(pos: &mut Board, list: &mut MoveList)
 
     let mut n: i32 = 0;
     if side == WHITE {
+        println!("Side is {}", side);
+        println!("White pawns: {}", pos.pceNum[wP as usize]);
         for pce_num in 0..pos.pceNum[wP as usize] {
-            sq = pos.pList[pce_num as usize][wP as usize];
+            
+            sq = pos.pList[wP as usize][pce_num as usize];
+            println!("{} {}", sq, rank_index(sq));
             if pos.pieces[sq + 10] == EMPTY {
                 add_white_pawn_move(sq.try_into().unwrap(), (sq + 10).try_into().unwrap(), list);
                 if rank_index(sq) == 1 && (pos.pieces[(sq + 20) as usize] == EMPTY) {

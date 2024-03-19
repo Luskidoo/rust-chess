@@ -1,209 +1,31 @@
-pub mod data;
-pub mod board;
-pub mod macros;
-pub mod bitboards;
-mod validate;
-pub mod movegen;
-mod init;
-use crate::init::*;
-use crate::data::*;
-use crate::board::*;
-use crate::bitboards::*;
-use crate::movegen::*;
-use ndarray::*;
-use once_cell::sync::Lazy;
-use fen::*;
+mod bitboard;
+use crate::bitboard::*;
 
-macro_rules! fr2sq {
-    ($file:expr, $rank:expr) => {
-        (21 + $file) + <u32 as TryInto<usize>>::try_into(($rank * 10)).unwrap()
-    };
+const index64: [u64; 64] = [
+    0, 47,  1, 56, 48, 27,  2, 60,
+   57, 49, 41, 37, 28, 16,  3, 61,
+   54, 58, 35, 52, 50, 42, 21, 44,
+   38, 32, 29, 23, 17, 11,  4, 62,
+   46, 55, 26, 59, 40, 36, 15, 53,
+   34, 51, 20, 43, 31, 22, 10, 45,
+   25, 39, 14, 33, 19, 30,  9, 24,
+   13, 18,  8, 12,  7,  6,  5, 63
+];
+
+
+fn bitScanForwardWithReset(mut bb: u64) -> u64 { // also called dropForward
+    let idx = bitScanForward(bb);
+    bb &= bb - 1; // reset bit outside
+    return idx;
 }
 
-fn piece_string(piece: &Option<Piece>) -> String {
-    match piece {
-        Some(piece) => piece.to_string(),
-        None    => String::from("."),
-    }
-}
-
-// fn get_piece_type(piece: &Option<Piece>) -> PieceKind {
-//     match piece {
-//         Some(piece) => piece.kind,
-//         None        => piece.kind,
-//     }
-// }
-
-fn piece_index(piece_string: String) -> usize {
-    let index = piece_char.iter().position(|&x| x == piece_string.chars().next().unwrap());
-    match index {
-        Some(index) => index,
-        None => 0,
-    }
-}
-
-fn from_fen(fen: String, mut pos: Board) -> Board {
-    let board = fen::BoardState::from_fen(&fen).unwrap();
-    let masks = BitMasks::init_masks();
-    match board.side_to_play {
-        White => pos.side = WHITE,
-        Black => pos.side = BLACK,
-        _     => (),
-    }
-    for sq64 in 0..63 {
-        let piece = piece_index(piece_string(&board.pieces[sq64])) as i32;
-        match piece {
-
-            wN => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = wN;
-                pos.pList[wN as usize][pos.pceNum[wN as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[wN as usize] += 1;
-            }
-
-            wB => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = wB;
-                pos.pList[wB as usize][pos.pceNum[wB as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[wB as usize] += 1;
-            }
-
-            wR => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = wR;
-                pos.pList[wR as usize][pos.pceNum[wR as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[wR as usize] += 1;
-            }
-
-            wQ => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = wQ;
-                pos.pList[wQ as usize][pos.pceNum[wQ as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[wQ as usize] += 1;
-            }
-
-            wK => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = wK;
-                pos.pList[wK as usize][pos.pceNum[wK as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[wK as usize] += 1;
-            }
-
-            wR => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = wR;
-                pos.pList[wR as usize][pos.pceNum[wR as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[wR as usize] += 1;
-            }
-
-            bN => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = bN;
-                pos.pList[bN as usize][pos.pceNum[bN as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[bN as usize] += 1;
-            }
-
-            bB => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = bB;
-                pos.pList[bB as usize][pos.pceNum[bB as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[bB as usize] += 1;
-            }
-
-            bR => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = bR;
-                pos.pList[bR as usize][pos.pceNum[bR as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[bR as usize] += 1;
-            }
-
-            bQ => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = bQ;
-                pos.pList[bQ as usize][pos.pceNum[bQ as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[bQ as usize] += 1;
-            }
-
-            bK => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = bK;
-                pos.pList[bK as usize][pos.pceNum[bK as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[bK as usize] += 1;
-            }
-
-            wP => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = wP;
-                pos.pList[wP as usize][pos.pceNum[wP as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[wP as usize] += 1;
-                set_bit(pos.pawns[WHITE as usize], sq64, masks);
-                set_bit(pos.pawns[BOTH as usize], sq64, masks);
-            }
-
-            bP => {
-                pos.pieces[sq64_to_sq120(sq64) as usize] = bP;
-                pos.pList[bP as usize][pos.pceNum[bP as usize] as usize] = sq64_to_sq120(sq64);
-                pos.pceNum[bP as usize] += 1;
-                set_bit(pos.pawns[BLACK as usize], sq64, masks);
-                set_bit(pos.pawns[BOTH as usize], sq64, masks);
-            }
-
-            _ => (),
-        }
-    }
-    return pos
+fn bitScanForward(bb: u64) -> u64 {
+    let debruijn64: u64 = 0x03f79d71b4cb0a89u64;
+    return index64[(((bb ^ (bb.wrapping_sub(1))).wrapping_mul(debruijn64).wrapping_shr(58))) as usize].try_into().unwrap();
 }
 
 fn main() {
-    init_all();
-    let masks = BitMasks::init_masks();
-    let set_mask = masks.SetMask;
-    let undo = Undo {
-        m: 0,
-        castlePerm: 0,
-        enPas: NO_SQ,
-    };
+    let mut bb : BitBoard = BitBoard(0b11111111000000000000000000000000000000000000000000000000);
 
-    let mut init_pos = Board::default();
-    
-
-    let mut list = board::MoveList {
-        moves: [board::Move {m: 0, score: 0}; data::MAX_POSITION_MOVES],
-        count: 0
-    };
-    
-    let fen = String::from("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
-    let board = fen::BoardState::from_fen(&fen).unwrap();
-    print_board(board);
-        
-    let mut pos = from_fen(fen, init_pos);
-    
-    println!("My board");
-    //print_my_board(&pos);
-    //board::init_board();
-    //board::init_sq120_to_sq64();
-    //board::init_files_ranks_board();
-    //print_board();
-    unsafe{
-        movegen::generate_all_moves(&mut pos, &mut list);
-    }
-    
-}
-
-fn print_board(board: BoardState)
-{
-	for rank in (0..=7).rev() {
-        print!("{} ", char::from_digit(rank + 1, 10).unwrap());
-        for file in 0..=7 {
-            let sq = mailbox[fr2sq!(file, rank) as usize];
-            let piece_string = piece_string(&board.pieces[sq as usize]);
-            print!("{} ", piece_string)
-        }
-		println!(""); 
-	}
-	print!("  a b c d e f g h\n\n");
-}
-
-fn print_my_board(pos: Board)
-{
-	for rank in (0..=7).rev() {
-        print!("{} ", char::from_digit(rank + 1, 10).unwrap());
-        for file in 0..=7 {
-            let sq = fr2sq!(file, rank);
-            //println!("{}", sq);
-            //println!("{}", pos.pieces[sq as usize]);
-            let piece_string = piece_char[pos.pieces[sq as usize] as usize];
-            print!("{} ", piece_string)
-        }
-		println!(""); 
-	}
-	print!("  a b c d e f g h\n\n");
+    println!("{}", bitScanForwardWithReset(bb.0));
 }

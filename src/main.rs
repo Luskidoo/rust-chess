@@ -1,4 +1,8 @@
 mod bitboard;
+mod board;
+mod fen;
+use crate::fen::*;
+use crate::board::*;
 use crate::bitboard::*;
 use fen::*;
 
@@ -25,23 +29,12 @@ fn bitScanForward(bb: u64) -> u64 {
     return index64[(((bb ^ (bb.wrapping_sub(1))).wrapping_mul(debruijn64).wrapping_shr(58))) as usize].try_into().unwrap();
 }
 
-fn get_piece(x: fen::Piece) {
+fn get_piece() {
     todo!();
 }
 
 fn from_fen(fen: String, bb: BitBoard) -> BitBoard {
-    let board = fen::BoardState::from_fen(&fen).unwrap();
-    for sq in 0..64 {
-        let fen_piece = board.pieces[sq];
-        let piece = match fen_piece {
-            Some(x) => x,
-            None() => {},
-        };
-    }
-    //if piece.kind == fen::PieceKind::Pawn {
-    bb.set_bit(bitboard::BitBoard(3));
-    //}
-    bb
+    todo!()
 }
 
 fn main() {
@@ -49,7 +42,7 @@ fn main() {
     let mut bb : BitBoard = BitBoard::empty;
     bb = bitboard::BitBoard(4);
     let bb2 = bitboard::BitBoard(3);
-    let fen = String::from("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
-    from_fen(fen, bb);
-    println!("{:?}", bb.set_bit(BitBoard(3)));
+    board::fen_read("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
+    //from_fen(fen, bb);
+    //println!("{:?}", bb.set_bit(BitBoard(3)));
 }

@@ -28,6 +28,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 // kings in check at the same time, or with black in check but white to
 // move.
 
+use crate::BitBoard;
+
 use super::{
     defs::{Files, Pieces, Ranks, Squares, BB_SQUARES},
     Board,
@@ -121,17 +123,17 @@ fn pieces(board: &mut Board, part: &str) -> bool {
     for c in part.chars() {
         let square = ((rank * 8) + file) as usize;
         match c {
-            'k' => board.bb_pieces[Side::BLACK][Pieces::KING] |= BB_SQUARES[square],
-            'q' => board.bb_pieces[Side::BLACK][Pieces::QUEEN] |= BB_SQUARES[square],
-            'r' => board.bb_pieces[Side::BLACK][Pieces::ROOK] |= BB_SQUARES[square],
-            'b' => board.bb_pieces[Side::BLACK][Pieces::BISHOP] |= BB_SQUARES[square],
-            'n' => board.bb_pieces[Side::BLACK][Pieces::KNIGHT] |= BB_SQUARES[square],
+            'k' => board.king[Side::BLACK] | BitBoard(square),
+            'q' => board.queens[Side::BLACK] | BitBoard(square),
+            'r' => board.rooks[Side::BLACK] | BitBoard(square),
+            'b' => board.bishops[Side::BLACK] | BitBoard(square),
+            'n' => board.knights[Side::BLACK] | BitBoard(square),
             'p' => board.pawns[Side::BLACK] | BitBoard(square),
-            'K' => board.bb_pieces[Side::WHITE][Pieces::KING] |= BB_SQUARES[square],
-            'Q' => board.bb_pieces[Side::WHITE][Pieces::QUEEN] |= BB_SQUARES[square],
-            'R' => board.bb_pieces[Side::WHITE][Pieces::ROOK] |= BB_SQUARES[square],
-            'B' => board.bb_pieces[Side::WHITE][Pieces::BISHOP] |= BB_SQUARES[square],
-            'N' => board.bb_pieces[Side::WHITE][Pieces::KNIGHT] |= BB_SQUARES[square],
+            'K' => board.king[Side::WHITE] | BitBoard(square),
+            'Q' => board.queens[Side::WHITE] | BitBoard(square),
+            'R' => board.rooks[Side::WHITE] | BitBoard(square),
+            'B' => board.bishops[Side::WHITE] | BitBoard(square),
+            'N' => board.knights[Side::WHITE] | BitBoard(square),
             'P' => board.pawns[Side::WHITE] | BitBoard(square),
             '1'..='8' => {
                 if let Some(x) = c.to_digit(10) {

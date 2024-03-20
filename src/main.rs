@@ -25,14 +25,18 @@ fn bitScanForward(bb: u64) -> u64 {
     return index64[(((bb ^ (bb.wrapping_sub(1))).wrapping_mul(debruijn64).wrapping_shr(58))) as usize].try_into().unwrap();
 }
 
+fn get_piece(x: fen::Piece) {
+    todo!();
+}
+
 fn from_fen(fen: String, bb: BitBoard) -> BitBoard {
     let board = fen::BoardState::from_fen(&fen).unwrap();
     for sq in 0..64 {
-        let piece = board.pieces[sq].as_ref().unwrap();
-        match piece.kind {
-            fen::PieceKind::Pawn => println!("PAWN"),
-            _ => (),
-        }
+        let fen_piece = board.pieces[sq];
+        let piece = match fen_piece {
+            Some(x) => x,
+            None() => {},
+        };
     }
     //if piece.kind == fen::PieceKind::Pawn {
     bb.set_bit(bitboard::BitBoard(3));

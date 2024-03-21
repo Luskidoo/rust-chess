@@ -28,16 +28,18 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 // kings in check at the same time, or with black in check but white to
 // move.
 
-use crate::BitBoard;
-
-use super::{
-    defs::{Files, Pieces, Ranks, Squares, BB_SQUARES},
-    Board,
-};
-use crate::{
-    defs::{Castling, Side, Square, FEN_START_POSITION, MAX_GAME_MOVES, MAX_MOVE_RULE},
-    misc::parse,
-};
+use crate::bitboard::*;
+use crate::board::*;
+use crate::defs::{Castling, Sides, Square, FEN_START_POSITION, MAX_GAME_MOVES, MAX_MOVE_RULE, Ranks, Files, Squares};
+use crate::misc::algebraic_square_to_number;
+// use super::{
+//     defs::{Files, Pieces, Ranks, Squares, BB_SQUARES},
+//     Board,
+// };
+// use crate::{
+//     defs::{Castling, Sides, Square, FEN_START_POSITION, MAX_GAME_MOVES, MAX_MOVE_RULE},
+//     misc::parse,
+// };
 use if_chain::if_chain;
 use std::ops::RangeInclusive;
 
@@ -100,7 +102,7 @@ impl Board {
 
             // Replace original board with new one if setup was successful.
             if result == Ok(()) {
-                new_board.init();
+                //new_board.init();
                 *self = new_board;
             }
         }
@@ -113,31 +115,31 @@ impl Board {
 
 // Part 1: Parsing piece setup. Put each piece into its respective bitboard.
 fn pieces(board: &mut Board, part: &str) -> bool {
-    let mut rank = Ranks::R8 as u8;
-    let mut file = Files::A as u8;
+    let mut rank = Ranks::R8 as u64;
+    let mut file = Files::A as u64;
 
     // Assume parsing succeeds.
     let mut result = true;
 
     // Parse each character; it should be a piece, square count, or splitter.
     for c in part.chars() {
-        let square = ((rank * 8) + file) as usize;
+        let square = (rank * 8) + file;
         match c {
-            'k' => board.king[Side::BLACK] | BitBoard(square),
-            'q' => board.queens[Side::BLACK] | BitBoard(square),
-            'r' => board.rooks[Side::BLACK] | BitBoard(square),
-            'b' => board.bishops[Side::BLACK] | BitBoard(square),
-            'n' => board.knights[Side::BLACK] | BitBoard(square),
-            'p' => board.pawns[Side::BLACK] | BitBoard(square),
-            'K' => board.king[Side::WHITE] | BitBoard(square),
-            'Q' => board.queens[Side::WHITE] | BitBoard(square),
-            'R' => board.rooks[Side::WHITE] | BitBoard(square),
-            'B' => board.bishops[Side::WHITE] | BitBoard(square),
-            'N' => board.knights[Side::WHITE] | BitBoard(square),
-            'P' => board.pawns[Side::WHITE] | BitBoard(square),
+            'k' => board.king[Sides::BLACK] |= BitBoard(square),
+            'q' => board.queens[Sides::BLACK] |= BitBoard(square),
+            'r' => board.rooks[Sides::BLACK] |= BitBoard(square),
+            'b' => board.bishops[Sides::BLACK] |= BitBoard(square),
+            'n' => board.knights[Sides::BLACK] |= BitBoard(square),
+            'p' => board.pawns[Sides::BLACK] |= BitBoard(square),
+            'K' => board.king[Sides::WHITE] |= BitBoard(square),
+            'Q' => board.queens[Sides::WHITE] |= BitBoard(square),
+            'R' => board.rooks[Sides::WHITE] |= BitBoard(square),
+            'B' => board.bishops[Sides::WHITE] |= BitBoard(square),
+            'N' => board.knights[Sides::WHITE] |= BitBoard(square),
+            'P' => board.pawns[Sides::WHITE] |= BitBoard(square),
             '1'..='8' => {
                 if let Some(x) = c.to_digit(10) {
-                    file += x as u8;
+                    file += x as u64;
                 }
             }
             SPLITTER => {
@@ -175,8 +177,8 @@ fn color(board: &mut Board, part: &str) -> bool {
         if WHITE_OR_BLACK.contains(x);
         then {
             match x {
-                'w' => board.game_state.active_color = Side::WHITE as u8,
-                'b' => board.game_state.active_color = Side::BLACK as u8,
+                'w' => board.game_state.side_to_move = Sides::WHITE as u8,
+                'b' => board.game_state.side_to_move = Sides::BLACK as u8,
                 _ => (),
             }
 
@@ -234,7 +236,7 @@ fn ep(board: &mut Board, part: &str) -> bool {
 
     // If length is 2, try to parse the part to a square number.
     if length == 2 {
-        let square = parse::algebraic_square_to_number(part);
+        let square = misc::algebraic_square_to_number(part);
 
         match square {
             Some(s) if EP_SQUARES_WHITE.contains(&s) || EP_SQUARES_BLACK.contains(&s) => {

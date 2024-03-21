@@ -1,4 +1,4 @@
-use std::ops::BitOr;
+use std::ops::{BitOr, BitOrAssign};
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct BitBoard(pub u64);
@@ -16,5 +16,12 @@ impl BitOr for BitBoard {
     #[inline]
     fn bitor(self, other: BitBoard) -> BitBoard {
         BitBoard(self.0 | other.0)
+    }
+}
+
+impl BitOrAssign for BitBoard {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: Self) {
+        *self |= rhs;
     }
 }

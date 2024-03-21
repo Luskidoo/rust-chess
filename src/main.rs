@@ -1,10 +1,12 @@
 mod bitboard;
 mod board;
-mod fen;
-use crate::fen::*;
-use crate::board::*;
+//mod fen;
+mod defs;
+mod misc;
+//use crate::fen::*;
+use board::Board;
 use crate::bitboard::*;
-use fen::*;
+//use fen::*;
 
 const index64: [u64; 64] = [
     0, 47,  1, 56, 48, 27,  2, 60,
@@ -42,7 +44,8 @@ fn main() {
     let mut bb : BitBoard = BitBoard::empty;
     bb = bitboard::BitBoard(4);
     let bb2 = bitboard::BitBoard(3);
-    board::fen_read("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
+    let board = Board::new();
+    let fen = board.fen_read(Some("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"));
     //from_fen(fen, bb);
     //println!("{:?}", bb.set_bit(BitBoard(3)));
 }

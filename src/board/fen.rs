@@ -31,7 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 use crate::bitboard::*;
 use crate::board::*;
 use crate::defs::{Castling, Sides, Square, FEN_START_POSITION, MAX_GAME_MOVES, MAX_MOVE_RULE, Ranks, Files, Squares};
-use crate::misc::algebraic_square_to_number;
+
 // use super::{
 //     defs::{Files, Pieces, Ranks, Squares, BB_SQUARES},
 //     Board,
@@ -125,18 +125,54 @@ fn pieces(board: &mut Board, part: &str) -> bool {
     for c in part.chars() {
         let square = (rank * 8) + file;
         match c {
-            'k' => board.king[Sides::BLACK] |= BitBoard(square),
-            'q' => board.queens[Sides::BLACK] |= BitBoard(square),
-            'r' => board.rooks[Sides::BLACK] |= BitBoard(square),
-            'b' => board.bishops[Sides::BLACK] |= BitBoard(square),
-            'n' => board.knights[Sides::BLACK] |= BitBoard(square),
-            'p' => board.pawns[Sides::BLACK] |= BitBoard(square),
-            'K' => board.king[Sides::WHITE] |= BitBoard(square),
-            'Q' => board.queens[Sides::WHITE] |= BitBoard(square),
-            'R' => board.rooks[Sides::WHITE] |= BitBoard(square),
-            'B' => board.bishops[Sides::WHITE] |= BitBoard(square),
-            'N' => board.knights[Sides::WHITE] |= BitBoard(square),
-            'P' => board.pawns[Sides::WHITE] |= BitBoard(square),
+            'k' => {
+                board.king[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.king[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'q' => {
+                board.queens[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.queens[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            }
+            'r' => {
+                board.rooks[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.rooks[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'b' => {
+                board.bishops[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.bishops[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            }
+            'n' => {
+                board.knights[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.knights[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'p' => {
+                board.pawns[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.pawns[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'K' => {
+                board.king[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.king[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'Q' => {
+                board.queens[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.queens[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'R' => {
+                board.rooks[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.rooks[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'B' => {
+                board.bishops[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.bishops[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'N' => {
+                board.knights[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.knights[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
+            'P' => {
+                board.pawns[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.pawns[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+            },
             '1'..='8' => {
                 if let Some(x) = c.to_digit(10) {
                     file += x as u64;
@@ -236,7 +272,7 @@ fn ep(board: &mut Board, part: &str) -> bool {
 
     // If length is 2, try to parse the part to a square number.
     if length == 2 {
-        let square = misc::algebraic_square_to_number(part);
+        let square = algebraic_square_to_number(part);
 
         match square {
             Some(s) if EP_SQUARES_WHITE.contains(&s) || EP_SQUARES_BLACK.contains(&s) => {
@@ -286,4 +322,10 @@ fn fmn(board: &mut Board, part: &str) -> bool {
     }
 
     result
+}
+
+pub fn algebraic_square_to_number(algebraic_square: &str) -> Option<Square> {
+    SQUARE_NAME
+        .iter()
+        .position(|&element| element == algebraic_square)
 }

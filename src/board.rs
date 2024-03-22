@@ -4,7 +4,7 @@ use crate::bitboard::*;
 use crate::defs::*;
 
 #[derive(Copy, Clone, PartialEq)]
-struct GameState {
+pub struct GameState {
     pub halfmove_clock: u8,
     pub en_passant: Option<u8>,
     pub fullmove_number: u16,
@@ -49,6 +49,26 @@ impl Board {
             king: [BitBoard::empty; 3],
             game_state: GameState::new(),
         }
+    }
+
+    pub fn empty_squares(self) -> BitBoard {
+        !(self.pawns[Sides::BOTH] | self.bishops[Sides::BOTH] | self.knights[Sides::BOTH] | self.rooks[Sides::BOTH] | self.queens[Sides::BOTH] | self.king[Sides::BOTH])
+    }
+
+    pub fn white_occupied(self) -> BitBoard {
+        self.pawns[Sides::WHITE] | self.bishops[Sides::WHITE] | self.knights[Sides::WHITE] | self.rooks[Sides::WHITE] | self.queens[Sides::WHITE] | self.king[Sides::WHITE]
+    }
+
+    pub fn black_occupied(self) -> BitBoard {
+        self.pawns[Sides::BLACK] | self.bishops[Sides::BLACK] | self.knights[Sides::BLACK] | self.rooks[Sides::BLACK] | self.queens[Sides::BLACK] | self.king[Sides::BLACK]
+    }
+
+    pub fn white_empty(self) -> BitBoard {
+        !(self.pawns[Sides::WHITE] | self.bishops[Sides::WHITE] | self.knights[Sides::WHITE] | self.rooks[Sides::WHITE] | self.queens[Sides::WHITE] | self.king[Sides::WHITE])
+    }
+
+    pub fn black_empty(self) -> BitBoard {
+        !(self.pawns[Sides::BLACK] | self.bishops[Sides::BLACK] | self.knights[Sides::BLACK] | self.rooks[Sides::BLACK] | self.queens[Sides::BLACK] | self.king[Sides::BLACK])
     }
 }
 

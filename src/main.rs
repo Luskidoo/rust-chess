@@ -3,8 +3,10 @@ mod board;
 //mod fen;
 mod defs;
 mod misc;
+mod movegen;
+use crate::movegen::*;
 //use crate::fen::*;
-use board::Board;
+use board::*;
 use crate::bitboard::*;
 //use fen::*;
 
@@ -40,12 +42,13 @@ fn from_fen(fen: String, bb: BitBoard) -> BitBoard {
 }
 
 fn main() {
-    let pawns: [BitBoard; 3] = [BitBoard::empty; 3];
-    let mut bb : BitBoard = BitBoard::empty;
-    bb = bitboard::BitBoard(4);
-    let bb2 = bitboard::BitBoard(3);
-    let board = Board::new();
-    let fen = board.fen_read(Some("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"));
-    //from_fen(fen, bb);
-    //println!("{:?}", bb.set_bit(BitBoard(3)));
+    let mut board = Board::new();
+    let init_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    let fen_result = board.fen_read(Some(init_fen));
+    let wp_moves = generate_pawn_moves(board);
+    let wn_moves = generate_knight_moves(board);
+    let wp_num_moves = wp_moves.pop_count();
+    let wn_num_moves = wn_moves.pop_count();
+    println!("{:?} , {:?}", wp_moves, wp_num_moves);
+    println!("{:?} , {:?}", wn_moves, wn_num_moves);
 }

@@ -11,7 +11,9 @@ impl BitBoard {
     pub const k1: BitBoard = BitBoard(0x5555555555555555); //  -1/3   
     pub const k2: BitBoard = BitBoard(0x3333333333333333); //  -1/5   
     pub const k4: BitBoard = BitBoard(0x0f0f0f0f0f0f0f0f); //  -1/17  
-    pub const kf: BitBoard = BitBoard(0x0101010101010101); //  -1/255 
+    pub const kf: BitBoard = BitBoard(0x0101010101010101); //  -1/255
+    pub const not_a_file: BitBoard = BitBoard(0xfefefefefefefefe);
+    pub const not_h_file: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f);  
     pub fn set_bit(mut self, x: BitBoard) -> BitBoard {
         self | x
     }
@@ -60,6 +62,13 @@ impl BitOrAssign for BitBoard {
 }
 
 impl Shl for BitBoard {
+    type Output = BitBoard;
+    fn shl(self, rhs: Self) -> Self{
+        BitBoard(self.0 << rhs.0)
+    }
+}
+
+impl ~const Shl for BitBoard {
     type Output = BitBoard;
     fn shl(self, rhs: Self) -> Self{
         BitBoard(self.0 << rhs.0)

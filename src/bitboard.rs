@@ -1,7 +1,7 @@
-use std::ops::{BitOr, BitOrAssign, Shl, Shr, BitAnd, Not, Add, Mul, Sub};
+use std::ops::{BitOr, BitXor, BitXorAssign, BitOrAssign, Shl, Shr, BitAnd, BitAndAssign, Not, Add, Mul, Sub};
 use crate::board::*;
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub struct BitBoard(pub u64);
 
 impl BitBoard {
@@ -43,7 +43,35 @@ impl BitBoard {
         let h2: BitBoard = l2 | r2;
         BitBoard((h1.0 << 16) | (h1.0 >> 16) | (h2.0 << 8) | (h2.0 >> 8))
     }
+
+    // pub fn bit_scan_forward_with_reset(mut bb: &BitBoard) -> u64 { // also called dropForward
+    //     let idx = Self::bit_scan_forward(bb);
+    //     bb &= bb - BitBoard(1); // reset bit outside
+    //     return idx;
+    // }
+    
+    // fn bit_scan_forward(bb: &BitBoard) -> u64 {
+    //     let debruijn64: u64 = 0x03f79d71b4cb0a89u64;
+    //     return index64[(((bb ^ BitBoard((bb.0.wrapping_sub(1)))).0.wrapping_mul(debruijn64).wrapping_shr(58))) as usize].try_into().unwrap();
+    // }
+
+    pub fn next(bitboard: &mut BitBoard) -> u64 {
+        let square: u64 = bitboard.0.trailing_zeros() as u64;
+        *bitboard ^= BitBoard(1u64 << square);
+        square
+    }
 }
+
+const index64: [u64; 64] = [
+    0, 47,  1, 56, 48, 27,  2, 60,
+   57, 49, 41, 37, 28, 16,  3, 61,
+   54, 58, 35, 52, 50, 42, 21, 44,
+   38, 32, 29, 23, 17, 11,  4, 62,
+   46, 55, 26, 59, 40, 36, 15, 53,
+   34, 51, 20, 43, 31, 22, 10, 45,
+   25, 39, 14, 33, 19, 30,  9, 24,
+   13, 18,  8, 12,  7,  6,  5, 63
+];
 
 impl BitOr for BitBoard {
     type Output = BitBoard;
@@ -86,6 +114,26 @@ impl BitAnd for BitBoard {
     type Output = BitBoard;
     fn bitand(self, rhs: Self) -> Self{
         BitBoard(self.0 & rhs.0)
+    }
+}
+
+impl BitAndAssign for BitBoard {
+    fn bitand_assign(&mut self, rhs: Self) {
+        self.0 &= rhs.0
+    }
+}
+
+impl BitXor for BitBoard {
+    type Output = Self;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Self(self.0 ^ rhs.0)
+    }
+}
+
+impl BitXorAssign for BitBoard {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        self.0 ^= rhs.0
     }
 }
 

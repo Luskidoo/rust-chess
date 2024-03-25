@@ -73,6 +73,7 @@ impl Ranks {
 pub const FEN_START_POSITION: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 pub const MAX_MOVE_RULE: u8 = 100; // 50/75 move rule
 pub const MAX_GAME_MOVES: usize = 2048;
+pub const MAX_LEGAL_MOVES: usize = 255;
 
 #[rustfmt::skip]
 pub const SQUARE_NAME: [&str; 64] = [

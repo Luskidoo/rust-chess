@@ -4,6 +4,8 @@ use crate::board::*;
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub struct BitBoard(pub u64);
 
+#![feature(const_fn_trait_bound)]
+
 impl BitBoard {
     pub const empty: BitBoard = BitBoard(0u64);
     pub const rank4: BitBoard = BitBoard(0x00000000FF000000);
@@ -96,6 +98,7 @@ impl Shl for BitBoard {
     }
 }
 
+#![feature(const_trait_impl)]
 impl ~const Shl for BitBoard {
     type Output = BitBoard;
     fn shl(self, rhs: Self) -> Self{

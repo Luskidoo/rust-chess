@@ -7,6 +7,7 @@ mod misc;
 mod movegen;
 mod bitmove;
 mod movelist;
+mod extra;
 use crate::movegen::*;
 use crate::bitmove::*;
 use crate::movelist::*;

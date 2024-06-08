@@ -4,8 +4,6 @@ use crate::board::*;
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub struct BitBoard(pub u64);
 
-#![feature(const_fn_trait_bound)]
-
 impl BitBoard {
     pub const empty: BitBoard = BitBoard(0u64);
     pub const rank4: BitBoard = BitBoard(0x00000000FF000000);
@@ -59,7 +57,9 @@ impl BitBoard {
 
     pub fn next(bitboard: &mut BitBoard) -> u64 {
         let square: u64 = bitboard.0.trailing_zeros() as u64;
+        //println!("Bitboard before {:?}", bitboard);
         *bitboard ^= BitBoard(1u64 << square);
+        //println!("Bitboard after {:?}", bitboard);
         square
     }
 }
@@ -98,13 +98,13 @@ impl Shl for BitBoard {
     }
 }
 
-#![feature(const_trait_impl)]
-impl ~const Shl for BitBoard {
-    type Output = BitBoard;
-    fn shl(self, rhs: Self) -> Self{
-        BitBoard(self.0 << rhs.0)
-    }
-}
+// #![feature(const_trait_impl)]
+// impl ~const Shl for BitBoard {
+//     type Output = BitBoard;
+//     fn shl(self, rhs: Self) -> Self{
+//         BitBoard(self.0 << rhs.0)
+//     }
+// }
 
 impl Shr for BitBoard {
     type Output = BitBoard;

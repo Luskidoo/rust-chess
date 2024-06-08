@@ -32,6 +32,8 @@ fn main() {
     let fen_result = board.fen_read(Some(init_fen));
     let mut list = MoveList::default();
     let moves = generate_all_moves(board, &mut list);
-    println!("Move count {}", list.count);
-    println!("{:?}", board.knights[0]);
+    println!("{} moves", list.count);
+    //println!("Move count {}", list.count);
+    //println!("{:?}", board.knights[0]);
+    //println!("{:?}", BitBoard::knight_attacks(BitBoard(33792)));
 }

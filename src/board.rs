@@ -71,23 +71,23 @@ impl Board {
         !(self.pawns[Sides::BLACK] | self.bishops[Sides::BLACK] | self.knights[Sides::BLACK] | self.rooks[Sides::BLACK] | self.queens[Sides::BLACK] | self.king[Sides::BLACK])
     }
 
-    pub fn init_knights() -> [BitBoard; 64] {
-        let attacks = [BitBoard(0); 64];
-        for sq in 0..63 {
-            let bb_square: BitBoard = BitBoard(1) << BitBoard(square);
-            let bb_moves =
-            (bb_square & !BB_RANKS[Ranks::R8] & !BB_RANKS[Ranks::R7] & !BB_FILES[Files::A]) << BitBoard(15)
-            | (bb_square & !BB_RANKS[Ranks::R8] & !BB_RANKS[Ranks::R7] & !BB_FILES[Files::H]) << BitBoard(17)
-            | (bb_square & !BB_FILES[Files::A] & !BB_FILES[Files::B] & !BB_RANKS[Ranks::R8]) << BitBoard(6)
-            | (bb_square & !BB_FILES[Files::G] & !BB_FILES[Files::H] & !BB_RANKS[Ranks::R8]) << BitBoard(10)
-            | (bb_square & !BB_RANKS[Ranks::R1] & !BB_RANKS[Ranks::R2] & !BB_FILES[Files::A]) >> BitBoard(17)
-            | (bb_square & !BB_RANKS[Ranks::R1] & !BB_RANKS[Ranks::R2] & !BB_FILES[Files::H]) >> BitBoard(15)
-            | (bb_square & !BB_FILES[Files::A] & !BB_FILES[Files::B] & !BB_RANKS[Ranks::R1]) >> BitBoard(10)
-            | (bb_square & !BB_FILES[Files::G] & !BB_FILES[Files::H] & !BB_RANKS[Ranks::R1]) >> BitBoard(6);
-            attacks[sq] = bb_moves;
-        }
-        attacks
-    }
+    // pub fn init_knights() -> [BitBoard; 64] {
+    //     let attacks = [BitBoard(0); 64];
+    //     for sq in 0..63 {
+    //         let bb_square: BitBoard = BitBoard(1) << BitBoard(square);
+    //         let bb_moves =
+    //         (bb_square & !BB_RANKS[Ranks::R8] & !BB_RANKS[Ranks::R7] & !BB_FILES[Files::A]) << BitBoard(15)
+    //         | (bb_square & !BB_RANKS[Ranks::R8] & !BB_RANKS[Ranks::R7] & !BB_FILES[Files::H]) << BitBoard(17)
+    //         | (bb_square & !BB_FILES[Files::A] & !BB_FILES[Files::B] & !BB_RANKS[Ranks::R8]) << BitBoard(6)
+    //         | (bb_square & !BB_FILES[Files::G] & !BB_FILES[Files::H] & !BB_RANKS[Ranks::R8]) << BitBoard(10)
+    //         | (bb_square & !BB_RANKS[Ranks::R1] & !BB_RANKS[Ranks::R2] & !BB_FILES[Files::A]) >> BitBoard(17)
+    //         | (bb_square & !BB_RANKS[Ranks::R1] & !BB_RANKS[Ranks::R2] & !BB_FILES[Files::H]) >> BitBoard(15)
+    //         | (bb_square & !BB_FILES[Files::A] & !BB_FILES[Files::B] & !BB_RANKS[Ranks::R1]) >> BitBoard(10)
+    //         | (bb_square & !BB_FILES[Files::G] & !BB_FILES[Files::H] & !BB_RANKS[Ranks::R1]) >> BitBoard(6);
+    //         attacks[sq] = bb_moves;
+    //     }
+    //     attacks
+    // }
 }
 
 impl Board {

@@ -87,17 +87,17 @@ pub const SQUARE_NAME: [&str; 64] = [
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"
 ];
 
-const fn init_bb_ranks() -> [BitBoard; 8] {
-    let BB_RANK_1: BitBoard = BitBoard(0xFF);
-    let mut bb_ranks = [BitBoard(0); 8];
-    let mut i = 0;
+// const fn init_bb_ranks() -> [BitBoard; 8] {
+//     let BB_RANK_1: BitBoard = BitBoard(0xFF);
+//     let mut bb_ranks = [BitBoard(0); 8];
+//     let mut i = 0;
 
-    while i < 8 {
-        bb_ranks[i] = BB_RANK_1 << BitBoard((i * 8) as u64);
-        i += 1;
-    }
+//     while i < 8 {
+//         bb_ranks[i] = BB_RANK_1 << BitBoard((i * 8) as u64);
+//         i += 1;
+//     }
 
-    bb_ranks
-}
+//     bb_ranks
+// }
 
-pub const BB_RANKS: [BitBoard; 8] = init_bb_ranks();
+// pub const BB_RANKS: [BitBoard; 8] = init_bb_ranks();

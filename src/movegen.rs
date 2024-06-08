@@ -24,17 +24,18 @@ fn b_pawn_double_push(bb: BitBoard, empty: BitBoard) -> BitBoard {
 }
 
 fn w_knight_moves(mut bb: BitBoard, w_empty: BitBoard, list: &mut MoveList) {
+    //println!("Initial bitboard {:?}", bb);
     while bb > BitBoard(0) {
         let from = BitBoard::next(&mut bb);
-        println!("From {}", from);
+        //println!("From {}", from);
         let from_bb: BitBoard = BitBoard(1) << BitBoard(from);
-        println!("From bb {:?}", from_bb);
-        let mut to_bb: BitBoard = bb.knight_attacks() & w_empty;
-        println!("To bb {:?}", to_bb);
+        //println!("From bb {:?}", from_bb);
+        let mut to_bb: BitBoard = from_bb.knight_attacks() & w_empty;
+        //println!("To bb {:?}", to_bb);
         while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
             list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
-            println!("Knight move from {} to {}", from, to);
+            //println!("Knight move from {} to {}", from, to);
         }
     }
     //bb.knight_attacks() & w_empty
@@ -42,6 +43,7 @@ fn w_knight_moves(mut bb: BitBoard, w_empty: BitBoard, list: &mut MoveList) {
 
 pub fn generate_w_pawn_moves(board: Board, list: &mut MoveList) {
     let mut w_pawns = board.pawns[Sides::WHITE];
+    //println!("Initial pawns bitboard {:?}", w_pawns);
     let empty_bb: BitBoard = board.empty_squares();
     while w_pawns > BitBoard(0) {
         let from = BitBoard::next(&mut w_pawns);
@@ -64,7 +66,7 @@ pub fn generate_b_pawn_moves(board: Board) {
         let mut to_bb: BitBoard = b_pawn_single_push(from_bb, empty_bb) | b_pawn_double_push(from_bb, empty_bb);
         while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
-            println!("Move from {} to {}", from, to);
+            //println!("Move from {} to {}", from, to);
         }
     }
 }

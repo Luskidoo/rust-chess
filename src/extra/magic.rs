@@ -1,3 +1,210 @@
+use crate::bitboard::BitBoard;
+use rand::SeedableRng;
+use rand_chacha::ChaChaRng;
+
+const ROOK_TABLE_SIZE: usize = 102400;
+const BISHOP_TABLE_SIZE: usize = 5248;
+
+pub type Location = (u8, u8);
+pub type Square = usize;
+type TBBFiles = [BitBoard; 8];
+type TBBRanks = [BitBoard; 8];
+type TBBSquares = [BitBoard; 64];
+
+pub fn bb_ray(bb_in: BitBoard, square: Square, direction: Direction) -> Bitboard {
+    let mut file = square_on_file_rank(square).0 as usize;
+    let mut rank = square_on_file_rank(square).1 as usize;
+    let mut bb_square = BB_SQUARES[square];
+    let mut bb_ray = 0;
+    let mut done = false;
+    while !done {
+        done = true;
+        match direction {
+            Direction::Up => {
+                if rank != Ranks::R8 {
+                    bb_square <<= 8;
+                    bb_ray |= bb_square;
+                    rank += 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+            Direction::Right => {
+                if file != Files::H {
+                    bb_square <<= 1;
+                    bb_ray |= bb_square;
+                    file += 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+            Direction::Down => {
+                if rank != Ranks::R1 {
+                    bb_square >>= 8;
+                    bb_ray |= bb_square;
+                    rank -= 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+            Direction::Left => {
+                if file != Files::A {
+                    bb_square >>= 1;
+                    bb_ray |= bb_square;
+                    file -= 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+            Direction::UpLeft => {
+                if (rank != Ranks::R8) && (file != Files::A) {
+                    bb_square <<= 7;
+                    bb_ray |= bb_square;
+                    rank += 1;
+                    file -= 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+            Direction::UpRight => {
+                if (rank != Ranks::R8) && (file != Files::H) {
+                    bb_square <<= 9;
+                    bb_ray |= bb_square;
+                    rank += 1;
+                    file += 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+            Direction::DownRight => {
+                if (rank != Ranks::R1) && (file != Files::H) {
+                    bb_square >>= 7;
+                    bb_ray |= bb_square;
+                    rank -= 1;
+                    file += 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+            Direction::DownLeft => {
+                if (rank != Ranks::R1) && (file != Files::A) {
+                    bb_square >>= 9;
+                    bb_ray |= bb_square;
+                    rank -= 1;
+                    file -= 1;
+                    done = (bb_square & bb_in) > 0;
+                }
+            }
+        };
+    }
+    bb_ray
+}
+
+const fn init_bb_files() -> TBBFiles {
+    const BB_FILE_A: u64 = 0x0101_0101_0101_0101;
+    let mut bb_files: TBBFiles = [BitBoard(0); 8];
+    let mut i = 0;
+
+    while i < (8) {
+        bb_files[i] = BitBoard(BB_FILE_A << (i as u64));
+        i += 1;
+    }
+
+    bb_files
+}
+
+const fn init_bb_ranks() -> TBBRanks {
+    let bb_rank_1: u64 = 0xFF;
+    let mut bb_ranks = [BitBoard(0); 8];
+    let mut i = 0;
+
+    while i < 8 {
+        bb_ranks[i] = BitBoard(bb_rank_1 << ((i * 8) as u64));
+        i += 1;
+    }
+
+    bb_ranks
+}
+
+const fn init_bb_squares() -> TBBSquares {
+    let mut bb_squares: TBBSquares = [BitBoard(0); 64];
+    let mut i = 0;
+
+    while i < 64 {
+        bb_squares[i] = BitBoard(1u64 << i as u64);
+        i += 1;
+    }
+
+    bb_squares
+}
+
+
+const BB_FILES: TBBFiles = init_bb_files();
+const BB_RANKS: TBBRanks = init_bb_ranks();
+const BB_SQUARES: TBBSquares = init_bb_squares();
+
+
+pub fn square_on_file_rank(square: Square) -> Location {
+    let file = (square % 8) as u8; // square mod 8
+    let rank = (square / 8) as u8; // square div 8
+    (file, rank)
+}
+
+pub fn rook_mask(square: Square) -> BitBoard {
+    let location = square_on_file_rank(square);
+    let bb_rook_square = BB_SQUARES[square];
+    let bb_edges = edges_without_piece(location);
+    let bb_mask = BB_FILES[location.0 as usize] | BB_RANKS[location.1 as usize];
+
+    bb_mask & !bb_edges & !bb_rook_square
+}
+
+pub fn bishop_mask(square: Square) -> BitBoard {
+    let location = square_on_file_rank(square);
+    let bb_edges = edges_without_piece(location);
+    let bb_up_left = MoveGenerator::bb_ray(0, square, Direction::UpLeft);
+    let bb_up_right = MoveGenerator::bb_ray(0, square, Direction::UpRight);
+    let bb_down_right = MoveGenerator::bb_ray(0, square, Direction::DownRight);
+    let bb_down_left = MoveGenerator::bb_ray(0, square, Direction::DownLeft);
+
+    (bb_up_left | bb_up_right | bb_down_right | bb_down_left) & !bb_edges
+}
+pub struct Files;
+impl Files {
+    pub const A: usize = 0;
+    pub const B: usize = 1;
+    pub const G: usize = 6;
+    pub const H: usize = 7;
+}
+
+pub struct Ranks;
+impl Ranks {
+    pub const R1: usize = 0;
+    pub const R2: usize = 1;
+    pub const R4: usize = 3;
+    pub const R5: usize = 4;
+    pub const R7: usize = 6;
+    pub const R8: usize = 7;
+}
+
+fn edges_without_piece(location: Location) -> BitBoard {
+    let bb_piece_file = BB_FILES[location.0 as usize];
+    let bb_piece_rank = BB_RANKS[location.1 as usize];
+
+    (BB_FILES[Files::A] & !bb_piece_file)
+        | (BB_FILES[Files::H] & !bb_piece_file)
+        | (BB_RANKS[Ranks::R1] & !bb_piece_rank)
+        | (BB_RANKS[Ranks::R8] & !bb_piece_rank)
+}
+
+pub type Piece = usize;
+pub struct Pieces;
+impl Pieces {
+    pub const KING: Piece = 0;
+    pub const QUEEN: Piece = 1;
+    pub const ROOK: Piece = 2;
+    pub const BISHOP: Piece = 3;
+    pub const KNIGHT: Piece = 4;
+    pub const PAWN: Piece = 5;
+    pub const NONE: Piece = 6;
+}
+
+pub const PIECE_NAME: [&str; 6 + 1] =
+    ["King", "Queen", "Rook", "Bishop", "Knight", "Pawn", "-"];
+
 pub fn find_magics(piece: Piece) {
     // First check if we're actually dealing with a rook or a bishop.
     let ok = piece == Pieces::ROOK || piece == Pieces::BISHOP;
@@ -5,16 +212,16 @@ pub fn find_magics(piece: Piece) {
 
     // Create working variables.
     let is_rook = piece == Pieces::ROOK;
-    let mut rook_table: Vec<Bitboard> = vec![EMPTY; ROOK_TABLE_SIZE];
-    let mut bishop_table: Vec<Bitboard> = vec![EMPTY; BISHOP_TABLE_SIZE];
+    let mut rook_table: Vec<BitBoard> = vec![BitBoard(0); ROOK_TABLE_SIZE];
+    let mut bishop_table: Vec<BitBoard> = vec![BitBoard(0); BISHOP_TABLE_SIZE];
     let mut random = ChaChaRng::from_entropy();
     let mut offset = 0;
 
     println!("Finding magics for: {}", PIECE_NAME[piece]);
-    for sq in RangeOf::SQUARES {
+    for sq in 0..64 {
         // Create the mask for either the rook or bishop.
-        let r_mask = MoveGenerator::rook_mask(sq);
-        let b_mask = MoveGenerator::bishop_mask(sq);
+        let r_mask = rook_mask(sq);
+        let b_mask = bishop_mask(sq);
         let mask = if is_rook { r_mask } else { b_mask };
 
         // Precalculate needed values.
@@ -59,10 +266,10 @@ pub fn find_magics(piece: Piece) {
                 // Use either a reference to the rook or bishop table.
                 let r_table = &mut rook_table[..];
                 let b_table = &mut bishop_table[..];
-                let table: &mut [Bitboard] = if is_rook { r_table } else { b_table };
+                let table: &mut [BitBoard] = if is_rook { r_table } else { b_table };
 
                 // If the table at this index is empty...
-                if table[index] == EMPTY {
+                if table[index] == 0 {
                     // Check if we're within the expected range
                     let fail_low = index < offset as usize;
                     let fail_high = index > end as usize;
@@ -75,7 +282,7 @@ pub fn find_magics(piece: Piece) {
                     // collision. This magic doesn't work. Wipe the part of
                     // the table we are working with. Try a new number.
                     for wipe_index in offset..=end {
-                        table[wipe_index as usize] = EMPTY;
+                        table[wipe_index as usize] = 0;
                     }
                     found = false;
                     break;

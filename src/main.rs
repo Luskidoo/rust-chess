@@ -14,6 +14,7 @@ use crate::movelist::*;
 //use crate::fen::*;
 use board::*;
 use crate::bitboard::*;
+use crate::extra::magic::*;
 //use fen::*;
 
 

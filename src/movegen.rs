@@ -5,6 +5,29 @@ use crate::movelist::*;
 use crate::sq::*;
 use crate::defs::{Sides};
 
+struct MoveGenerator {
+    
+}
+
+impl MoveGenerator {
+    
+    pub fn knight_attacks(mut self) -> BitBoard {
+        let l1: BitBoard = (self >> BitBoard(1)) & BitBoard(0x7f7f7f7f7f7f7f7f);
+        let l2: BitBoard = (self >> BitBoard(2)) & BitBoard(0x3f3f3f3f3f3f3f3f);
+        let r1: BitBoard = (self << BitBoard(1)) & BitBoard(0xfefefefefefefefe);
+        let r2: BitBoard = (self << BitBoard(2)) & BitBoard(0xfcfcfcfcfcfcfcfc);
+        let h1: BitBoard = l1 | r1;
+        let h2: BitBoard = l2 | r2;
+        BitBoard((h1.0 << 16) | (h1.0 >> 16) | (h2.0 << 8) | (h2.0 >> 8))
+    }
+    fn generate_knight_moves() {
+        let moves = [BitBoard(0), 64];
+        for sq in 0..64 {
+
+        }
+    }
+}
+
 fn w_pawn_single_push(bb: BitBoard, empty: BitBoard) -> BitBoard {
     bb.north_one() & empty
 }

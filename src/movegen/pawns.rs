@@ -21,7 +21,7 @@ impl MoveGenerator {
         single_pushes.south_one() & empty & BitBoard::rank5
     }
 
-    pub fn generate_w_pawn_moves(board: Board, list: &mut MoveList) {
+    pub fn generate_w_pawn_pushes(board: Board, list: &mut MoveList) {
         let mut w_pawns = board.pawns[Sides::WHITE];
         //println!("Initial pawns bitboard {:?}", w_pawns);
         let empty_bb: BitBoard = board.empty_squares();
@@ -34,6 +34,20 @@ impl MoveGenerator {
                 list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
                 //println!("Pawn move from {} to {}", from, to);
             }
+        }
+    }
+
+    pub fn generate_w_pawn_attacks(&self, board: Board, list: &mut MoveList) {
+        let mut w_pawns = board.pawns[Sides::WHITE];
+        while w_pawns > BitBoard(0) {
+            let from = BitBoard::next(&mut w_pawns);
+            let mut to_bb: BitBoard = self.white_pawn_attacks[from as usize] & board.black_occupied();
+            while to_bb > BitBoard(0) {
+                let to = BitBoard::next(&mut to_bb);
+                list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
+                //println!("Pawn move from {} to {}", from, to);
+            }
+
         }
     }
     

@@ -48,14 +48,13 @@ impl MoveGenerator {
         }
       }
       
-      
       for f in (file + 1)..=6 {
         result |= BitBoard(1u64 << (f + rank*8));
       }
 
       if file >= 1 {
         for f in (1..(file - 1)).rev() {
-            result |= BitBoard(1u64.wrapping_shl((f + rank.wrapping_mul(8)) as u32))
+            result |= BitBoard(1u64 << ((f + rank*8)))
           }
       }
       result

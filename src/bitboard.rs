@@ -26,13 +26,10 @@ impl BitBoard {
         self << BitBoard(8)
     }
 
-    pub fn pop_count(mut self) -> u64 {
-        self = self - ((self >> BitBoard(1)) & BitBoard::k1);
-        self = (self & BitBoard::k2) + ((self >> BitBoard(2)) & BitBoard::k2);
-        self = self + (self >> BitBoard(4)) & BitBoard::k4;
-        self = BitBoard(self.0.wrapping_mul((BitBoard::kf).0)) >> BitBoard(56);
-        self.0
+    pub fn pop_count(mut self) -> u32 {
+        self.0.count_ones()
     }
+
 
     pub fn knight_attacks(mut self) -> BitBoard {
         let l1: BitBoard = (self >> BitBoard(1)) & BitBoard(0x7f7f7f7f7f7f7f7f);

@@ -27,15 +27,15 @@ fn from_fen(fen: String, bb: BitBoard) -> BitBoard {
 }
 
 fn main() {
-    let mut board = Board::new();
-    let init_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    let kiwi_fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
-    let fen_result = board.fen_read(Some(init_fen));
-    let mut list = MoveList::default();
-    let move_gen = MoveGenerator::new();
-    move_gen.generate_all_moves(board, &mut list);
-    println!("{} moves", list.count);
-    //println!("Move count {}", list.count);
-    //println!("{:?}", board.knights[0]);
-    //println!("{:?}", BitBoard::knight_attacks(BitBoard(33792)));
+    // let mut board = Board::new();
+    // let init_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    // let kiwi_fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
+    // let fen_result = board.fen_read(Some(init_fen));
+    // let mut list = MoveList::default();
+    //let move_gen = MoveGenerator::new();
+    // move_gen.generate_all_moves(board, &mut list);
+    // println!("{} moves", list.count);
+    let sq: u8 = 0;
+    println!("{:?}", MoveGenerator::rook_mask(sq));
+    println!("{:?}", MoveGenerator::bishop_mask(sq));
 }

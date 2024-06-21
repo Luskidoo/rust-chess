@@ -42,17 +42,22 @@ impl MoveGenerator {
         result |= BitBoard(1u64 << (file + r*8));
       }
       
-      for r in (1..(rank.wrapping_sub(1))).rev() {
-        result |= BitBoard(1u64.wrapping_shl((file + r.wrapping_mul(8)) as u32))
+      if rank >= 1 {
+        for r in (1..(rank - 1)).rev() {
+          result |= BitBoard(1u64 << ((file + r*8)))
+        }
       }
+      
       
       for f in (file + 1)..=6 {
         result |= BitBoard(1u64 << (f + rank*8));
       }
 
-      for f in (1..(file.wrapping_sub(1))).rev() {
-          result |= BitBoard(1u64.wrapping_shl((f + rank.wrapping_mul(8)) as u32))
-        }
+      if file >= 1 {
+        for f in (1..(file - 1)).rev() {
+            result |= BitBoard(1u64.wrapping_shl((f + rank.wrapping_mul(8)) as u32))
+          }
+      }
       result
     }
 
@@ -68,7 +73,7 @@ impl MoveGenerator {
           f += 1;
         }
 
-        if file >= 2 {
+        if file >= 1 {
           r = rank + 1;
           f = file - 1;
           while r <= 6 && f >= 1 {
@@ -78,7 +83,7 @@ impl MoveGenerator {
           }
         }
         
-        if rank >= 2 {
+        if rank >= 1 {
           r = rank - 1;
           f = file + 1;
           while r >= 1 && f <= 6 {
@@ -88,7 +93,7 @@ impl MoveGenerator {
           }
         }
 
-        if rank >= 2 && file >= 2 {
+        if rank >= 1 && file >= 1 {
           r = rank - 1;
           f = file - 1;
           while r >= 1 && f >= 1 {

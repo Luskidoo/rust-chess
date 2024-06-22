@@ -37,22 +37,23 @@ impl MoveGenerator {
                 MoveGenerator::bishop_mask(sq)
             };
 
-            let bits = mask.pop_count(); // Number of set bits in the mask
+            let bits = mask.0.count_ones(); // Number of set bits in the mask
             let permutations = 2u64.pow(bits); // Number of blocker boards to be indexed.
             let end = offset + permutations - 1; // End point in the attack table.
             let blocker_boards = MoveGenerator::blocker_boards(mask);
             let mut r_ab: Vec<BitBoard> = vec![];
             let mut b_ab: Vec<BitBoard> = vec![];
-            for blocker in blocker_boards.iter() {
-                r_ab.push(MoveGenerator::rook_attacks(sq, *blocker));
-                b_ab.push(MoveGenerator::bishop_attacks(sq, *blocker));
-            };
+            let blocker_boards = MoveGenerator::blocker_boards(mask);
             
-            let attack_boards = if is_rook { r_ab } else { b_ab };
+            let attack_boards: Vec<BitBoard> = blocker_boards.iter()
+            .map(|blocker| if is_rook {
+                MoveGenerator::rook_attacks(sq, *blocker)
+            } else {
+                MoveGenerator::bishop_attacks(sq, *blocker)
+            })
+            .collect();
 
             let mut magic: Magic = Magic::new();
-            let r_magic_nr = magic_nr_array[sq as usize];
-            let b_magic_nr = magic_nr_array[sq as usize];
 
             magic.mask = mask;
             magic.shift = (64 - bits) as u8;
@@ -62,16 +63,17 @@ impl MoveGenerator {
             let rook_table = &mut self.rook[..];
             let bishop_table = &mut self.bishop[..];
             let table = if is_rook { rook_table } else { bishop_table };
-            for i in 0..permutations {
-                //let next = i as usize;
-                let index = magic.get_index(blocker_boards[i as usize]);
+            for (i, &blocker) in blocker_boards.iter().enumerate() {
+                let index = magic.get_index(blocker);
+                
+                if index < offset as usize || index > end as usize {
+                    panic!("Indexing error. Error in Magics. Square: {}, Index: {}, Offset: {}, End: {}", sq, index, offset, end);
+                }
+                
                 if table[index] == BitBoard(0) {
-                    let fail_low = index < offset as usize;
-                    let fail_high = index > end as usize;
-                    assert!(!fail_low && !fail_high, "Indexing error. Error in Magics.");
-                    table[index] = attack_boards[i as usize];
+                    table[index] = attack_boards[i];
                 } else {
-                    panic!("Attack table index not empty. Error in Magics.");
+                    panic!("Attack table index not empty. Error in Magics. Square: {}, Index: {}", sq, index);
                 }
             }
 

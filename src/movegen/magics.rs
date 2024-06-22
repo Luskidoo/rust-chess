@@ -23,7 +23,6 @@ impl Magic {
 
     pub fn get_index(&self, occupancy: BitBoard) -> usize {
       let blockerboard = occupancy & self.mask;
-      println!("Get index shift is {}", self.shift);
       ((blockerboard.0.wrapping_mul(self.nr) >> self.shift) + self.offset) as usize
   }
 }
@@ -56,6 +55,20 @@ static b_bits: [u64; 64] = [
   5, 5, 5, 5, 5, 5, 5, 5,
   6, 5, 5, 5, 5, 5, 5, 6
 ];
+
+const BIT_TABLE: [u64; 64] = [
+    63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
+    51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
+    26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28,
+    58, 20, 37, 17, 36, 8
+];
+
+fn pop_1st_bit(bb: &mut u64) -> u64 {
+    let b = *bb ^ (*bb - 1);
+    let fold = ((b & 0xffffffff) ^ (b >> 32)) as u32;
+    *bb &= *bb - 1;
+    BIT_TABLE[((fold.wrapping_mul(0x783a9b23)) >> 26) as usize]
+}
 
 fn random_u64() -> u64 {
   let mut rng = rand::thread_rng();
@@ -148,7 +161,7 @@ impl MoveGenerator {
       let mut result = BitBoard(0);
       let mut j: u64 = 0;
       for i in 0..bits {
-        j = BitBoard::next(&mut m);
+        j = pop_1st_bit(&mut m.0);
         if index & (1 << i) != 0 {
           result |= BitBoard(1u64 << j);
         }

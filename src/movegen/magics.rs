@@ -3,6 +3,25 @@ use rand::{rngs::ThreadRng, Rng};
 
 use super::{MoveGenerator, SQ};
 
+#[derive(Copy, Clone)]
+pub struct Magic {
+    pub mask: BitBoard,
+    pub shift: u8,
+    pub offset: u64,
+    pub nr: u64,
+}
+
+impl Magic {
+    pub fn new() -> Self {
+        Self {
+            mask: BitBoard(0),
+            shift: 0,
+            offset: 0,
+            nr: 0
+        }
+    }
+}
+
 static bit_table: [u64; 64] = [
   63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
   51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
@@ -43,8 +62,10 @@ impl MoveGenerator {
       }
       
       if rank >= 1 {
-        for r in (1..(rank - 1)).rev() {
-          result |= BitBoard(1u64 << ((file + r*8)))
+        let mut r = rank - 1;
+        while r >= 1 {
+          result |= BitBoard(1u64 << ((file + r*8)));
+          r -= 1;
         }
       }
       
@@ -52,11 +73,15 @@ impl MoveGenerator {
         result |= BitBoard(1u64 << (f + rank*8));
       }
 
+      
       if file >= 1 {
-        for f in (1..(file - 1)).rev() {
-            result |= BitBoard(1u64 << ((f + rank*8)))
+        let mut f = file - 1;
+        while f >= 1 {
+            result |= BitBoard(1u64 << ((f + rank*8)));
+            f -= 1;
           }
       }
+      
       result
     }
 
@@ -104,7 +129,7 @@ impl MoveGenerator {
         result
     }
 
-    fn rook_attacks(sq: u8, block: BitBoard) -> BitBoard {
+    pub fn rook_attacks(sq: u8, block: BitBoard) -> BitBoard {
       let rank = sq/8;
       let file = sq % 8;
       let mut result = BitBoard(0);
@@ -144,7 +169,7 @@ impl MoveGenerator {
       result
     }
 
-    fn bishop_attacks(sq: u8, block: BitBoard) -> BitBoard {
+    pub fn bishop_attacks(sq: u8, block: BitBoard) -> BitBoard {
       let rank = sq/8;
       let file = sq % 8;
       let mut result = BitBoard(0);
@@ -251,11 +276,10 @@ impl MoveGenerator {
       BitBoard(0)
     }
 
-    pub fn generate_magics() {
+    pub fn generate_magic(sq: u8, is_rook: bool) -> BitBoard {
       let mut rng = rand::thread_rng();
-      println!("Rook magics");
-      for square in 0..64 {
-        println!("{}, {:?}", square, Self::find_magic(square, r_bits[square as usize], true, rng.clone()))
-      }
+      Self::find_magic(sq, r_bits[sq as usize], is_rook, rng.clone())
+        //println!("{}, {:?}", square, Self::find_magic(square, r_bits[square as usize], true, rng.clone()))
+    
     }
 }

@@ -1,3 +1,5 @@
+use magics::Magic;
+
 use crate::bitboard::*;
 use crate::board::*;
 use crate::bitmove::*;
@@ -8,11 +10,16 @@ use crate::defs::{Sides};
 mod pawns;
 mod knights;
 mod magics;
+mod init;
 
 pub(crate) struct MoveGenerator {
     pub knight_moves_array: [BitBoard; 64],
     pub white_pawn_attacks: [BitBoard; 64],
-    pub black_pawn_attacks: [BitBoard; 64]
+    pub black_pawn_attacks: [BitBoard; 64],
+    pub rook: Vec<BitBoard>,
+    pub bishop: Vec<BitBoard>
+    pub rook_magics: [Magic; 64],
+    pub bishop_magics: [Magic; 64],
 }
 
 impl MoveGenerator {
@@ -20,7 +27,11 @@ impl MoveGenerator {
         Self {
             knight_moves_array: Self::init_knight_moves(),
             white_pawn_attacks: Self::init_white_pawn_attacks(),
-            black_pawn_attacks: Self::init_black_pawn_attacks()
+            black_pawn_attacks: Self::init_black_pawn_attacks(),
+            rook_magics: [Magic::new(); 64],
+            bishop_magics: [Magic::new(); 64],
+            rook: vec![BitBoard(0); 102400],
+            bishop: vec![BitBoard(0); 5_248],
         }
         
     }
@@ -47,30 +58,6 @@ impl MoveGenerator {
         east_attacks | west_attacks
     }
     
-    fn init_knight_moves() -> [BitBoard; 64] {
-        let mut moves = [BitBoard(0); 64];
-        for sq in 0..64 {
-            moves[sq] = Self::knight_moves((1u64 << sq) as u64);
-        }
-        moves
-    }
-
-    fn init_white_pawn_attacks() -> [BitBoard; 64] {
-        let mut moves = [BitBoard(0); 64];
-        for sq in 0..64 {
-            moves[sq] = Self::white_pawn_attacks((1u64 << sq) as u64);
-        }
-        moves
-    }
-
-    fn init_black_pawn_attacks() -> [BitBoard; 64] {
-        let mut moves = [BitBoard(0); 64];
-        for sq in 0..64 {
-            moves[sq] = Self::black_pawn_attacks((1u64 << sq) as u64);
-        }
-        moves
-    }
-
     fn generate_knight_moves(&self, board: Board, list: &mut MoveList) {
         let w_knights = board.knights[Sides::WHITE];
         let w_empty = board.white_empty();

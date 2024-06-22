@@ -35,7 +35,8 @@ fn main() {
     //let move_gen = MoveGenerator::new();
     // move_gen.generate_all_moves(board, &mut list);
     // println!("{} moves", list.count);
-    let sq: u8 = 44;
-    println!("{:?}", MoveGenerator::rook_mask(sq));
+    //let sq: u8 = 55;
+    //println!("{:?}", MoveGenerator::rook_mask(sq));
     //println!("{:?}", MoveGenerator::bishop_mask(sq));
+    MoveGenerator::generate_magics();
 }

@@ -29,12 +29,13 @@ impl MoveGenerator {
 
     pub fn init_magics(&mut self, is_rook: bool) {
         let mut offset = 0;
-        let r_magic_nr_array = Self::generate_magics(true);
-        let b_magic_nr_array = Self::generate_magics(false);
+        let magic_nr_array = Self::generate_magics(is_rook);
         for sq in 0..64 {
-            let r_mask = MoveGenerator::rook_mask(sq);
-            let b_mask = MoveGenerator::bishop_mask(sq);
-            let mask = if is_rook { r_mask } else { b_mask };
+            let mask = if is_rook {
+                MoveGenerator::rook_mask(sq)
+            } else {
+                MoveGenerator::bishop_mask(sq)
+            };
 
             let bits = mask.pop_count(); // Number of set bits in the mask
             let permutations = 2u64.pow(bits); // Number of blocker boards to be indexed.
@@ -50,21 +51,20 @@ impl MoveGenerator {
             let attack_boards = if is_rook { r_ab } else { b_ab };
 
             let mut magic: Magic = Magic::new();
-            let r_magic_nr = r_magic_nr_array[sq as usize];
-            let b_magic_nr = b_magic_nr_array[sq as usize];
+            let r_magic_nr = magic_nr_array[sq as usize];
+            let b_magic_nr = magic_nr_array[sq as usize];
 
             magic.mask = mask;
-            magic.shift = (64u64 - bits as u64) as u8;
+            magic.shift = (64 - bits) as u8;
             magic.offset = offset;
-            magic.nr = if is_rook { r_magic_nr.0 } else { b_magic_nr.0 };
+            magic.nr = magic_nr_array[sq as usize].0;
 
+            let rook_table = &mut self.rook[..];
+            let bishop_table = &mut self.bishop[..];
+            let table = if is_rook { rook_table } else { bishop_table };
             for i in 0..permutations {
                 //let next = i as usize;
                 let index = magic.get_index(blocker_boards[i as usize]);
-                let rook_table = &mut self.rook[..];
-                let bishop_table = &mut self.bishop[..];
-                let table = if is_rook { rook_table } else { bishop_table };
-
                 if table[index] == BitBoard(0) {
                     let fail_low = index < offset as usize;
                     let fail_high = index > end as usize;
@@ -75,7 +75,7 @@ impl MoveGenerator {
                 }
             }
 
-            // No failures  during indexing. Store this magic.
+            // No failures during indexing. Store this magic.
             if is_rook {
                 self.rook_magics[sq as usize] = magic;
             } else {

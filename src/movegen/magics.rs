@@ -23,6 +23,7 @@ impl Magic {
 
     pub fn get_index(&self, occupancy: BitBoard) -> usize {
       let blockerboard = occupancy & self.mask;
+      println!("Get index shift is {}", self.shift);
       ((blockerboard.0.wrapping_mul(self.nr) >> self.shift) + self.offset) as usize
   }
 }
@@ -72,79 +73,25 @@ fn random_u64_fewbits() -> u64 {
 impl MoveGenerator {
 
     pub fn rook_mask(sq: u8) -> BitBoard {
-      let rank = sq/8;
-      let file = sq % 8;
-      let mut result = BitBoard(0);
-      for r in (rank + 1)..=6 {
-        result |= BitBoard(1u64 << (file + r*8));
-      }
-      
-      if rank >= 1 {
-        let mut r = rank - 1;
-        while r >= 1 {
-          result |= BitBoard(1u64 << ((file + r*8)));
-          r -= 1;
-        }
-      }
-      
-      for f in (file + 1)..=6 {
-        result |= BitBoard(1u64 << (f + rank*8));
-      }
-
-      
-      if file >= 1 {
-        let mut f = file - 1;
-        while f >= 1 {
-            result |= BitBoard(1u64 << ((f + rank*8)));
-            f -= 1;
-          }
-      }
-      
-      result
+      let mut result = 0u64;
+      let rk = sq / 8;
+      let fl = sq % 8;
+      for r in (rk + 1)..=6 { result |= 1u64 << (fl + r * 8); }
+      for r in (1..rk).rev() { result |= 1u64 << (fl + r * 8); }
+      for f in (fl + 1)..=6 { result |= 1u64 << (f + rk * 8); }
+      for f in (1..fl).rev() { result |= 1u64 << (f + rk * 8); }
+      BitBoard(result)
     }
 
     pub fn bishop_mask(sq: u8) -> BitBoard {
-        let rank = sq/8;
-        let file = sq % 8;
-        let mut result = BitBoard(0);
-        let mut r = rank + 1;
-        let mut f = file + 1;
-        while r <= 6 && f <= 6 {
-          result |= BitBoard(1u64 << (f + r*8));
-          r += 1;
-          f += 1;
-        }
-
-        if file >= 1 {
-          r = rank + 1;
-          f = file - 1;
-          while r <= 6 && f >= 1 {
-            result |= BitBoard(1u64 << (f + r*8));
-            r += 1;
-            f -= 1;
-          }
-        }
-        
-        if rank >= 1 {
-          r = rank - 1;
-          f = file + 1;
-          while r >= 1 && f <= 6 {
-            result |= BitBoard(1u64 << (f + r*8));
-            r -= 1;
-            f += 1;
-          }
-        }
-
-        if rank >= 1 && file >= 1 {
-          r = rank - 1;
-          f = file - 1;
-          while r >= 1 && f >= 1 {
-            result |= BitBoard(1u64 << (f + r*8));
-            r -= 1;
-            f -= 1;
-          }
-        }
-        result
+      let mut result = 0u64;
+      let rk = sq / 8;
+      let fl = sq % 8;
+      for (r, f) in (rk + 1..=6).zip(fl + 1..=6) { result |= 1u64 << (f + r * 8); }
+      for (r, f) in (rk + 1..=6).zip((1..fl).rev()) { result |= 1u64 << (f + r * 8); }
+      for (r, f) in (1..rk).rev().zip(fl + 1..=6) { result |= 1u64 << (f + r * 8); }
+      for (r, f) in (1..rk).rev().zip((1..fl).rev()) { result |= 1u64 << (f + r * 8); }
+      BitBoard(result)
     }
 
     pub fn rook_attacks(sq: u8, block: BitBoard) -> BitBoard {

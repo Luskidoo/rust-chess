@@ -7,6 +7,7 @@ mod misc;
 mod movegen;
 mod bitmove;
 mod movelist;
+
 //mod extra;
 use crate::bitmove::*;
 use crate::movelist::*;
@@ -35,8 +36,10 @@ fn main() {
     //let move_gen = MoveGenerator::new();
     // move_gen.generate_all_moves(board, &mut list);
     // println!("{} moves", list.count);
-    //let sq: u8 = 55;
+    let sq: u8 = 0;
     //println!("{:?}", MoveGenerator::rook_mask(sq));
     //println!("{:?}", MoveGenerator::bishop_mask(sq));
-    MoveGenerator::generate_magics();
+    //println!("{:?}", MoveGenerator::rook_attacks(sq, BitBoard(8)));
+    //MoveGenerator::new();
+    MoveGenerator::generate_magic(sq, false);
 }

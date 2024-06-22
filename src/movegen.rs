@@ -24,15 +24,18 @@ pub(crate) struct MoveGenerator {
 
 impl MoveGenerator {
     pub fn new () -> Self {
-        Self {
+        let mut mg = Self {
             knight_moves_array: Self::init_knight_moves(),
             white_pawn_attacks: Self::init_white_pawn_attacks(),
             black_pawn_attacks: Self::init_black_pawn_attacks(),
             rook_magics: [Magic::new(); 64],
             bishop_magics: [Magic::new(); 64],
             rook: vec![BitBoard(0); 102400],
-            bishop: vec![BitBoard(0); 5_248],
-        }
+            bishop: vec![BitBoard(0); 5248],
+        };
+        mg.init_magics(true);
+        mg.init_magics(false);
+        mg
         
     }
 

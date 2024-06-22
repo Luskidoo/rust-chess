@@ -20,6 +20,11 @@ impl Magic {
             nr: 0
         }
     }
+
+    pub fn get_index(&self, occupancy: BitBoard) -> usize {
+      let blockerboard = occupancy & self.mask;
+      ((blockerboard.0.wrapping_mul(self.nr) >> self.shift) + self.offset) as usize
+  }
 }
 
 static bit_table: [u64; 64] = [
@@ -136,32 +141,53 @@ impl MoveGenerator {
 
       for r in (rank + 1)..=7 {
         result |= BitBoard(1u64 << (file + r*8));
-        if (block & BitBoard(1u64 << (file + r*8))) == BitBoard(0xffffffffffffffff) {
+        //println!("{:?}", block & BitBoard(1u64 << (file + r*8)));
+        if (block & BitBoard(1u64 << (file + r*8))) != BitBoard(0) {
           break;  
         }
       };
 
-      if rank >= 2 {
-        for r in (0..(rank - 1)).rev() {
+      if rank >= 1 {
+        let mut r = rank - 1;
+        while r >= 0 {
           result |= BitBoard(1u64 << (file + r*8));
-          if (block & BitBoard(1u64 << (file + r*8))) == BitBoard(0xffffffffffffffff) {
+          //println!("{:?}", block & BitBoard(1u64 << (file + r*8)));
+          if (block & BitBoard(1u64 << (file + r*8))) != BitBoard(0) {
             break;  
+          }
+          if r != 0 {
+            r -= 1;
+          }
+          else {
+            result |= BitBoard(1u64 << (file + r*8));
+            break; 
           }
         }
       }
       
+      
       for f in (file + 1)..=7 {
         result |= BitBoard(1u64 << (f + rank*8));
-        if (block & BitBoard(1u64 << (f + rank*8))) == BitBoard(0xffffffffffffffff) {
+        //println!("{:?}", block & BitBoard(1u64 << (f + rank*8)));
+        if (block & BitBoard(1u64 << (f + rank*8))) != BitBoard(0) {
           break;  
         }
       }
 
-      if file >= 2 {
-        for f in (0..(file - 1)).rev() {
+      if file >= 1 {
+        let mut f = file - 1;
+        while f >= 0 {
           result |= BitBoard(1u64 << (f + rank*8));
-          if (block & BitBoard(1u64 << (f + rank*8))) == BitBoard(0xffffffffffffffff) {
+          //println!("{:?}", block & BitBoard(1u64 << (f + rank*8)));
+          if (block & BitBoard(1u64 << (f + rank*8))) != BitBoard(0) {
             break;  
+          }
+          if f != 0 {
+            f -= 1;
+          }
+          else {
+            result |= BitBoard(1u64 << (f + rank*8));
+            break; 
           }
         }
       }
@@ -178,45 +204,72 @@ impl MoveGenerator {
       
       while r <= 7 && f <= 7 {
         result |= BitBoard(1u64 << (f + r*8));
+        if (block & BitBoard(1u64 << (f + r*8))) != BitBoard(0) {
+          break;  
+        }
         r += 1;
         f += 1;
-        if (block & BitBoard(1u64 << ((file as u64) + r*8))) == BitBoard(0xffffffffffffffff) {
-          break;  
-        }
       }
 
-      r = (rank + 1).into();
-      f = (file - 1).into();
-      while r <= 7 && f >= 0 {
-        result |= BitBoard(1u64 << (f + r*8));
-        r += 1;
-        f -= 1;
-        if (block & BitBoard(1u64 << ((file as u64) + r*8))) == BitBoard(0xffffffffffffffff) {
-          break;  
+      if file >= 1 {
+        r = (rank + 1).into();
+        f = (file - 1).into();
+        while r <= 7 && f >= 0 {
+          result |= BitBoard(1u64 << (f + r*8));
+          if (block & BitBoard(1u64 << (f + r*8))) != BitBoard(0) {
+            break;  
+          }
+          if f != 0 {
+            r += 1;
+            f -= 1;
+          }
+          else {
+            result |= BitBoard(1u64 << (f + r*8));
+            break;
+          }
         }
       }
-
-      r = (rank - 1).into();
-      f = (file + 1).into();
-      while r >= 0 && f <= 7 {
-        result |= BitBoard(1u64 << (f + r*8));
-        r -= 1;
-        f += 1;
-        if (block & BitBoard(1u64 << ((file as u64) + r*8))) == BitBoard(0xffffffffffffffff) {
-          break;  
+      
+      if rank >= 1 {
+        r = (rank - 1).into();
+        f = (file + 1).into();
+        while r >= 0 && f <= 7 {
+          result |= BitBoard(1u64 << (f + r*8));
+          if (block & BitBoard(1u64 << (f  + r*8))) != BitBoard(0) {
+            break;  
+          }
+          if r != 0 {
+            r -= 1;
+            f += 1;
+          }
+          else {
+            result |= BitBoard(1u64 << (f + r*8));
+            break;
+          }
+          
         }
       }
-
-      r = (rank - 1).into();
-      f = (file - 1).into();
+      
+      if rank >= 1 && file >= 1 {
+        r = (rank - 1).into();
+        f = (file - 1).into();
       while r >= 0 && f >= 0 {
         result |= BitBoard(1u64 << (f + r*8));
-        r -= 1;
-        f += 1;
-        if (block & BitBoard(1u64 << ((file as u64) + r*8))) == BitBoard(0xffffffffffffffff) {
+        if (block & BitBoard(1u64 << (f + r*8))) != BitBoard(0) {
           break;  
         }
+        if r !=0 && f !=0 {
+          r -= 1;
+          f -= 1;
+        }
+        else {
+          result |= BitBoard(1u64 << (f + r*8));
+          break;
+        }
+        
       }
+      }
+      
       result
     }
 
@@ -229,7 +282,7 @@ impl MoveGenerator {
       let mut j: u64 = 0;
       for i in 0..bits {
         j = BitBoard::next(&mut m);
-        if index & (1 << i) == 1 {
+        if index & (1 << i) != 0 {
           result |= BitBoard(1u64 << j);
         }
       }
@@ -251,13 +304,16 @@ impl MoveGenerator {
         a[i] = if is_rook { Self::rook_attacks(sq, b[i]) } else { Self::bishop_attacks(sq, b[i]) };
       }
     
-      let mut fail = 0;
+      let mut fail = false;
       for k in 0..100000000 {
-        //println!("k: {}", k);
+        if k % 1000 == 0 {
+          println!("k: {}", k);
+        }
         let magic = BitBoard(rng.gen::<u64>());
-        if (BitBoard(mask.0.wrapping_mul(magic.0)) & BitBoard(0xFF00000000000000u64)).pop_count() < 6 {
+        if ((BitBoard(mask.0.wrapping_mul(magic.0)) & BitBoard(0xFF00000000000000u64)).pop_count()) < 6 {
           continue;
         }
+        used.fill(BitBoard(0));
         for i in 0..(1 << n) {
           //println!("{} out of {}", i, 1 << n);
           j = Self::transform(b[i], magic, m);
@@ -265,11 +321,11 @@ impl MoveGenerator {
             used[j.0 as usize] = a[i];
           }
           else if used[j.0 as usize] != a[i] {
-            fail = 1;
-            println!("Failed");
+            fail = true;
+            //println!("Failed");
           }
         }
-        if fail == 0 {
+        if !fail {
           return magic;
         }
       }
@@ -278,8 +334,26 @@ impl MoveGenerator {
 
     pub fn generate_magic(sq: u8, is_rook: bool) -> BitBoard {
       let mut rng = rand::thread_rng();
+      println!("{}, {:?}", sq, Self::find_magic(sq, r_bits[sq as usize], true, rng.clone()));
       Self::find_magic(sq, r_bits[sq as usize], is_rook, rng.clone())
-        //println!("{}, {:?}", square, Self::find_magic(square, r_bits[square as usize], true, rng.clone()))
     
     }
+
+    pub fn blocker_boards(mask: BitBoard) -> Vec<BitBoard> {
+      let d: BitBoard = mask;
+      let mut bb_blocker_boards: Vec<BitBoard> = Vec::new();
+      let mut n: BitBoard = BitBoard(0);
+
+      // Carry-Rippler
+      // https://www.chessprogramming.org/Traversing_Subsets_of_a_Set
+      loop {
+          bb_blocker_boards.push(n);
+          n = BitBoard(n.0.wrapping_sub(d.0) & d.0);
+          if n == BitBoard(0) {
+              break;
+          }
+      }
+
+      bb_blocker_boards
+  }
 }

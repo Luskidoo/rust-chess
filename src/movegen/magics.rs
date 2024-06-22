@@ -56,6 +56,19 @@ static b_bits: [u64; 64] = [
   6, 5, 5, 5, 5, 5, 5, 6
 ];
 
+fn random_u64() -> u64 {
+  let mut rng = rand::thread_rng();
+  let u1: u64 = rng.gen::<u16>() as u64;
+  let u2: u64 = rng.gen::<u16>() as u64;
+  let u3: u64 = rng.gen::<u16>() as u64;
+  let u4: u64 = rng.gen::<u16>() as u64;
+  u1 | (u2 << 16) | (u3 << 32) | (u4 << 48)
+}
+
+fn random_u64_fewbits() -> u64 {
+  random_u64() & random_u64() & random_u64()
+}
+
 impl MoveGenerator {
 
     pub fn rook_mask(sq: u8) -> BitBoard {
@@ -135,146 +148,53 @@ impl MoveGenerator {
     }
 
     pub fn rook_attacks(sq: u8, block: BitBoard) -> BitBoard {
-      let rank = sq/8;
-      let file = sq % 8;
-      let mut result = BitBoard(0);
-
-      for r in (rank + 1)..=7 {
-        result |= BitBoard(1u64 << (file + r*8));
-        //println!("{:?}", block & BitBoard(1u64 << (file + r*8)));
-        if (block & BitBoard(1u64 << (file + r*8))) != BitBoard(0) {
-          break;  
-        }
-      };
-
-      if rank >= 1 {
-        let mut r = rank - 1;
-        while r >= 0 {
-          result |= BitBoard(1u64 << (file + r*8));
-          //println!("{:?}", block & BitBoard(1u64 << (file + r*8)));
-          if (block & BitBoard(1u64 << (file + r*8))) != BitBoard(0) {
-            break;  
-          }
-          if r != 0 {
-            r -= 1;
-          }
-          else {
-            result |= BitBoard(1u64 << (file + r*8));
-            break; 
-          }
-        }
+      let mut result = 0u64;
+      let rk = sq / 8;
+      let fl = sq % 8;
+      for r in rk + 1..=7 {
+          result |= 1u64 << (fl + r * 8);
+          if block.0 & (1u64 << (fl + r * 8)) != 0 { break; }
       }
-      
-      
-      for f in (file + 1)..=7 {
-        result |= BitBoard(1u64 << (f + rank*8));
-        //println!("{:?}", block & BitBoard(1u64 << (f + rank*8)));
-        if (block & BitBoard(1u64 << (f + rank*8))) != BitBoard(0) {
-          break;  
-        }
+      for r in (0..rk).rev() {
+          result |= 1u64 << (fl + r * 8);
+          if block.0 & (1u64 << (fl + r * 8)) != 0 { break; }
       }
-
-      if file >= 1 {
-        let mut f = file - 1;
-        while f >= 0 {
-          result |= BitBoard(1u64 << (f + rank*8));
-          //println!("{:?}", block & BitBoard(1u64 << (f + rank*8)));
-          if (block & BitBoard(1u64 << (f + rank*8))) != BitBoard(0) {
-            break;  
-          }
-          if f != 0 {
-            f -= 1;
-          }
-          else {
-            result |= BitBoard(1u64 << (f + rank*8));
-            break; 
-          }
-        }
+      for f in fl + 1..=7 {
+          result |= 1u64 << (f + rk * 8);
+          if block.0 & (1u64 << (f + rk * 8)) != 0 { break; }
       }
-
-      result
+      for f in (0..fl).rev() {
+          result |= 1u64 << (f + rk * 8);
+          if block.0 & (1u64 << (f + rk * 8)) != 0 { break; }
+      }
+      BitBoard(result)
     }
 
     pub fn bishop_attacks(sq: u8, block: BitBoard) -> BitBoard {
-      let rank = sq/8;
-      let file = sq % 8;
-      let mut result = BitBoard(0);
-      let mut r: u64 = (rank + 1).into();
-      let mut f: u64 = (file + 1).into();
-      
-      while r <= 7 && f <= 7 {
-        result |= BitBoard(1u64 << (f + r*8));
-        if (block & BitBoard(1u64 << (f + r*8))) != BitBoard(0) {
-          break;  
-        }
-        r += 1;
-        f += 1;
+      let mut result = 0u64;
+      let rk = sq / 8;
+      let fl = sq % 8;
+      for (r, f) in (rk + 1..=7).zip(fl + 1..=7) {
+          result |= 1u64 << (f + r * 8);
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
-
-      if file >= 1 {
-        r = (rank + 1).into();
-        f = (file - 1).into();
-        while r <= 7 && f >= 0 {
-          result |= BitBoard(1u64 << (f + r*8));
-          if (block & BitBoard(1u64 << (f + r*8))) != BitBoard(0) {
-            break;  
-          }
-          if f != 0 {
-            r += 1;
-            f -= 1;
-          }
-          else {
-            result |= BitBoard(1u64 << (f + r*8));
-            break;
-          }
-        }
+      for (r, f) in (rk + 1..=7).zip((0..fl).rev()) {
+          result |= 1u64 << (f + r * 8);
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
-      
-      if rank >= 1 {
-        r = (rank - 1).into();
-        f = (file + 1).into();
-        while r >= 0 && f <= 7 {
-          result |= BitBoard(1u64 << (f + r*8));
-          if (block & BitBoard(1u64 << (f  + r*8))) != BitBoard(0) {
-            break;  
-          }
-          if r != 0 {
-            r -= 1;
-            f += 1;
-          }
-          else {
-            result |= BitBoard(1u64 << (f + r*8));
-            break;
-          }
-          
-        }
+      for (r, f) in (0..rk).rev().zip(fl + 1..=7) {
+          result |= 1u64 << (f + r * 8);
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
-      
-      if rank >= 1 && file >= 1 {
-        r = (rank - 1).into();
-        f = (file - 1).into();
-      while r >= 0 && f >= 0 {
-        result |= BitBoard(1u64 << (f + r*8));
-        if (block & BitBoard(1u64 << (f + r*8))) != BitBoard(0) {
-          break;  
-        }
-        if r !=0 && f !=0 {
-          r -= 1;
-          f -= 1;
-        }
-        else {
-          result |= BitBoard(1u64 << (f + r*8));
-          break;
-        }
-        
+      for (r, f) in (0..rk).rev().zip((0..fl).rev()) {
+          result |= 1u64 << (f + r * 8);
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
-      }
-      
-      result
+    BitBoard(result)
     }
 
-    fn transform(bb: BitBoard, magic: BitBoard, bits: u64) -> BitBoard {
-      BitBoard(bb.0.wrapping_mul(magic.0)) >> BitBoard(64 - bits)
+    fn transform(bb: BitBoard, magic: BitBoard, bits: u64) -> usize {
+      (bb.0.wrapping_mul(magic.0) >> (64 - bits)) as usize
     }
 
     fn index_to_u64(index: usize, bits: u64, mut m: BitBoard) -> BitBoard {
@@ -293,7 +213,7 @@ impl MoveGenerator {
       let mut b: [BitBoard; 4096] = [BitBoard(0); 4096];
       let mut a: [BitBoard; 4096] = [BitBoard(0); 4096];
       let mut used: [BitBoard; 4096] = [BitBoard(0); 4096];
-      let mut j: BitBoard = BitBoard(0);
+      let mut j: usize = 0;
       let rook_mask = Self::rook_mask(sq);
       let bishop_mask = Self::bishop_mask(sq);
       let mask = if is_rook { rook_mask } else { bishop_mask };
@@ -304,23 +224,23 @@ impl MoveGenerator {
         a[i] = if is_rook { Self::rook_attacks(sq, b[i]) } else { Self::bishop_attacks(sq, b[i]) };
       }
     
-      let mut fail = false;
       for k in 0..100000000 {
-        if k % 1000 == 0 {
-          println!("k: {}", k);
-        }
-        let magic = BitBoard(rng.gen::<u64>());
-        if ((BitBoard(mask.0.wrapping_mul(magic.0)) & BitBoard(0xFF00000000000000u64)).pop_count()) < 6 {
+        // if k % 100000 == 0 {
+        //   println!("k: {}", k);
+        // }
+        let magic = BitBoard(random_u64_fewbits());
+        if BitBoard(mask.0.wrapping_mul(magic.0) & 0xFF00000000000000u64).pop_count() < 6 {
           continue;
         }
         used.fill(BitBoard(0));
+        let mut fail = false;
         for i in 0..(1 << n) {
           //println!("{} out of {}", i, 1 << n);
           j = Self::transform(b[i], magic, m);
-          if used[j.0 as usize] == BitBoard(0) {
-            used[j.0 as usize] = a[i];
+          if used[j] == BitBoard(0) {
+            used[j] = a[i];
           }
-          else if used[j.0 as usize] != a[i] {
+          else if used[j] != a[i] {
             fail = true;
             //println!("Failed");
           }
@@ -332,11 +252,16 @@ impl MoveGenerator {
       BitBoard(0)
     }
 
-    pub fn generate_magic(sq: u8, is_rook: bool) -> BitBoard {
+    pub fn generate_magics(is_rook: bool) -> [BitBoard; 64] {
       let mut rng = rand::thread_rng();
-      println!("{}, {:?}", sq, Self::find_magic(sq, r_bits[sq as usize], true, rng.clone()));
-      Self::find_magic(sq, r_bits[sq as usize], is_rook, rng.clone())
-    
+      let mut magics = [BitBoard(0); 64];
+      for sq in 0..64 {
+        let magic = Self::find_magic(sq, r_bits[sq as usize], is_rook, rng.clone());
+        println!("{}, {:?}", sq, magic);
+        magics[sq as usize] = magic;
+      }
+      
+      magics
     }
 
     pub fn blocker_boards(mask: BitBoard) -> Vec<BitBoard> {

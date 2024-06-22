@@ -29,6 +29,8 @@ impl MoveGenerator {
 
     pub fn init_magics(&mut self, is_rook: bool) {
         let mut offset = 0;
+        let r_magic_nr_array = Self::generate_magics(true);
+        let b_magic_nr_array = Self::generate_magics(false);
         for sq in 0..64 {
             let r_mask = MoveGenerator::rook_mask(sq);
             let b_mask = MoveGenerator::bishop_mask(sq);
@@ -48,8 +50,8 @@ impl MoveGenerator {
             let attack_boards = if is_rook { r_ab } else { b_ab };
 
             let mut magic: Magic = Magic::new();
-            let r_magic_nr = Self::generate_magic(sq, true);
-            let b_magic_nr = Self::generate_magic(sq, false);
+            let r_magic_nr = r_magic_nr_array[sq as usize];
+            let b_magic_nr = b_magic_nr_array[sq as usize];
 
             magic.mask = mask;
             magic.shift = (64u64 - bits as u64) as u8;

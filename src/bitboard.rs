@@ -1,7 +1,7 @@
 use std::ops::{BitOr, BitXor, BitXorAssign, BitOrAssign, Shl, Shr, BitAnd, BitAndAssign, Not, Add, Mul, Sub};
 use crate::board::*;
 
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct BitBoard(pub u64);
 
 impl BitBoard {
@@ -165,5 +165,24 @@ impl Sub for BitBoard {
 
     fn sub(self, rhs: Self) -> Self {
         BitBoard(self.0 - rhs.0)
+    }
+}
+
+impl std::fmt::Debug for BitBoard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "BitBoard(0x{:016x})", self.0)
+    }
+}
+
+impl std::fmt::Display for BitBoard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for rank in (0..8).rev() {
+            for file in 0..8 {
+                let sq = rank * 8 + file;
+                write!(f, "{} ", if self.0 & (1 << sq) != 0 { "1" } else { "0" })?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }

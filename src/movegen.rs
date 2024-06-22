@@ -17,7 +17,7 @@ pub(crate) struct MoveGenerator {
     pub white_pawn_attacks: [BitBoard; 64],
     pub black_pawn_attacks: [BitBoard; 64],
     pub rook: Vec<BitBoard>,
-    pub bishop: Vec<BitBoard>
+    pub bishop: Vec<BitBoard>,
     pub rook_magics: [Magic; 64],
     pub bishop_magics: [Magic; 64],
 }

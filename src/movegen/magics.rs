@@ -63,11 +63,10 @@ const BIT_TABLE: [u64; 64] = [
     58, 20, 37, 17, 36, 8
 ];
 
-fn pop_1st_bit(bb: &mut u64) -> u64 {
-    let b = *bb ^ (*bb - 1);
-    let fold = ((b & 0xffffffff) ^ (b >> 32)) as u32;
-    *bb &= *bb - 1;
-    BIT_TABLE[((fold.wrapping_mul(0x783a9b23)) >> 26) as usize]
+fn pop_1st_bit(bb: &mut BitBoard) -> u64 {
+    let mut lsb = bb.0 & (!bb.0 + 1);
+    bb.0 &= bb.0 - 1;
+    lsb.trailing_zeros() as u64
 }
 
 fn random_u64() -> u64 {
@@ -161,7 +160,7 @@ impl MoveGenerator {
       let mut result = BitBoard(0);
       let mut j: u64 = 0;
       for i in 0..bits {
-        j = pop_1st_bit(&mut m.0);
+        j = pop_1st_bit(&mut m);
         if index & (1 << i) != 0 {
           result |= BitBoard(1u64 << j);
         }
@@ -216,8 +215,8 @@ impl MoveGenerator {
       let mut rng = rand::thread_rng();
       let mut magics = [BitBoard(0); 64];
       for sq in 0..64 {
-        let magic = Self::find_magic(sq, r_bits[sq as usize], is_rook, rng.clone());
-        println!("{}, {:?}", sq, magic);
+        let magic = Self::find_magic(sq, if is_rook { r_bits[sq as usize] } else { b_bits[sq as usize] }, is_rook, rng.clone());
+        //println!("{}, {:?}", sq, magic);
         magics[sq as usize] = magic;
       }
       

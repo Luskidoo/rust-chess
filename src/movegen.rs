@@ -33,7 +33,7 @@ impl MoveGenerator {
             rook: vec![BitBoard(0); 102400],
             bishop: vec![BitBoard(0); 5248],
         };
-        //mg.init_magics(true);
+        mg.init_magics(true);
         mg.init_magics(false);
         mg
         

@@ -11,6 +11,7 @@ mod pawns;
 mod knights;
 mod magics;
 mod init;
+mod slide;
 
 pub(crate) struct MoveGenerator {
     pub knight_moves_array: [BitBoard; 64],
@@ -71,6 +72,9 @@ impl MoveGenerator {
         Self::generate_w_pawn_pushes(board, list);
         Self::generate_w_pawn_attacks(&self, board, list);
         Self::generate_knight_moves(&self, board, list);
+        Self::generate_rook_moves(&self, board, list);
+        Self::generate_bishop_moves(&self, board, list);
+        Self::generate_queen_moves(&self, board, list);
     }
 }
 

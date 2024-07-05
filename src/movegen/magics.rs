@@ -1,7 +1,7 @@
-use crate::{sq, BitBoard};
-use rand::{rngs::ThreadRng, Rng};
+use crate::BitBoard;
+use rand::Rng;
 
-use super::{MoveGenerator, SQ};
+use super::MoveGenerator;
 
 #[derive(Copy, Clone)]
 pub struct Magic {
@@ -27,14 +27,7 @@ impl Magic {
   }
 }
 
-static bit_table: [u64; 64] = [
-  63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
-  51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
-  26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28,
-  58, 20, 37, 17, 36, 8
-];
-
-static r_bits: [u64; 64] = [
+static R_BITS: [u64; 64] = [
   12, 11, 11, 11, 11, 11, 11, 12,
   11, 10, 10, 10, 10, 10, 10, 11,
   11, 10, 10, 10, 10, 10, 10, 11,
@@ -45,7 +38,7 @@ static r_bits: [u64; 64] = [
   12, 11, 11, 11, 11, 11, 11, 12
 ];
 
-static b_bits: [u64; 64] = [
+static B_BITS: [u64; 64] = [
   6, 5, 5, 5, 5, 5, 5, 6,
   5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 7, 7, 7, 7, 5, 5,
@@ -56,15 +49,8 @@ static b_bits: [u64; 64] = [
   6, 5, 5, 5, 5, 5, 5, 6
 ];
 
-const BIT_TABLE: [u64; 64] = [
-    63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
-    51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
-    26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28,
-    58, 20, 37, 17, 36, 8
-];
-
 fn pop_1st_bit(bb: &mut BitBoard) -> u64 {
-    let mut lsb = bb.0 & (!bb.0 + 1);
+    let lsb = bb.0 & (!bb.0 + 1);
     bb.0 &= bb.0 - 1;
     lsb.trailing_zeros() as u64
 }
@@ -158,7 +144,7 @@ impl MoveGenerator {
 
     fn index_to_u64(index: usize, bits: u64, mut m: BitBoard) -> BitBoard {
       let mut result = BitBoard(0);
-      let mut j: u64 = 0;
+      let mut j: u64;
       for i in 0..bits {
         j = pop_1st_bit(&mut m);
         if index & (1 << i) != 0 {
@@ -168,11 +154,11 @@ impl MoveGenerator {
       result
     }
 
-    fn find_magic(sq: u8, m: u64, is_rook: bool, mut rng: ThreadRng) -> BitBoard {
+    fn find_magic(sq: u8, m: u64, is_rook: bool) -> BitBoard {
       let mut b: [BitBoard; 4096] = [BitBoard(0); 4096];
       let mut a: [BitBoard; 4096] = [BitBoard(0); 4096];
       let mut used: [BitBoard; 4096] = [BitBoard(0); 4096];
-      let mut j: usize = 0;
+      let mut j: usize;
       let rook_mask = Self::rook_mask(sq);
       let bishop_mask = Self::bishop_mask(sq);
       let mask = if is_rook { rook_mask } else { bishop_mask };
@@ -183,7 +169,7 @@ impl MoveGenerator {
         a[i] = if is_rook { Self::rook_attacks(sq, b[i]) } else { Self::bishop_attacks(sq, b[i]) };
       }
     
-      for k in 0..100000000 {
+      for _k in 0..100000000 {
         // if k % 100000 == 0 {
         //   println!("k: {}", k);
         // }
@@ -212,10 +198,9 @@ impl MoveGenerator {
     }
 
     pub fn generate_magics(is_rook: bool) -> [BitBoard; 64] {
-      let mut rng = rand::thread_rng();
       let mut magics = [BitBoard(0); 64];
       for sq in 0..64 {
-        let magic = Self::find_magic(sq, if is_rook { r_bits[sq as usize] } else { b_bits[sq as usize] }, is_rook, rng.clone());
+        let magic = Self::find_magic(sq, if is_rook { R_BITS[sq as usize] } else { B_BITS[sq as usize] }, is_rook);
         //println!("{}, {:?}", sq, magic);
         magics[sq as usize] = magic;
       }

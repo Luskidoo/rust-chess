@@ -26,6 +26,16 @@ impl MoveGenerator {
         moves
     }
 
+    pub fn init_king_moves() -> [BitBoard; 64] {
+        let mut moves = [BitBoard(0); 64];
+        let mut sq_bb = BitBoard(1);
+        for sq in 0..64 {
+            moves[sq] = Self::king_moves(sq_bb);
+            sq_bb <<= BitBoard(1);
+        }
+        moves
+    }
+
     pub fn init_magics(&mut self, is_rook: bool) {
         let mut offset = 0;
         let magic_nr_array = Self::generate_magics(is_rook);

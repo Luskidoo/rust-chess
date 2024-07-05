@@ -12,11 +12,13 @@ mod knights;
 mod magics;
 mod init;
 mod slide;
+mod king;
 
 pub(crate) struct MoveGenerator {
     pub knight_moves_array: [BitBoard; 64],
     pub white_pawn_attacks: [BitBoard; 64],
     pub black_pawn_attacks: [BitBoard; 64],
+    pub king_attacks: [BitBoard; 64],
     pub rook: Vec<BitBoard>,
     pub bishop: Vec<BitBoard>,
     pub rook_magics: [Magic; 64],
@@ -29,6 +31,7 @@ impl MoveGenerator {
             knight_moves_array: Self::init_knight_moves(),
             white_pawn_attacks: Self::init_white_pawn_attacks(),
             black_pawn_attacks: Self::init_black_pawn_attacks(),
+            king_attacks: Self::init_king_moves(),
             rook_magics: [Magic::new(); 64],
             bishop_magics: [Magic::new(); 64],
             rook: vec![BitBoard(0); 102400],
@@ -51,14 +54,14 @@ impl MoveGenerator {
     }
 
     fn white_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = BitBoard(sq << 9u64) & BitBoard::not_a_file;
-        let west_attacks = BitBoard(sq << 7u64) & BitBoard::not_h_file;
+        let east_attacks = BitBoard(sq << 9u64) & BitBoard::NOT_A_FILE;
+        let west_attacks = BitBoard(sq << 7u64) & BitBoard::NOT_H_FILE;
         east_attacks | west_attacks
     }
 
     fn black_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = BitBoard(sq >> 7u64) & BitBoard::not_a_file;
-        let west_attacks = BitBoard(sq >> 9u64) & BitBoard::not_h_file;
+        let east_attacks = BitBoard(sq >> 7u64) & BitBoard::NOT_A_FILE;
+        let west_attacks = BitBoard(sq >> 9u64) & BitBoard::NOT_H_FILE;
         east_attacks | west_attacks
     }
     
@@ -66,6 +69,13 @@ impl MoveGenerator {
         let w_knights = board.knights[Sides::WHITE];
         let w_empty = board.white_empty();
         Self::w_knight_moves(&self, w_knights, w_empty, list);
+    }
+
+    fn king_moves(kings: BitBoard) -> BitBoard {
+        let mut attacks = kings.east_one() | kings.west_one();
+        let intermediate = kings | attacks;
+        attacks |= intermediate.north_one() | intermediate.south_one();
+        attacks
     }
     
     pub fn generate_all_moves(self, board: Board, list: &mut MoveList) {
@@ -75,6 +85,7 @@ impl MoveGenerator {
         Self::generate_rook_moves(&self, board, list);
         Self::generate_bishop_moves(&self, board, list);
         Self::generate_queen_moves(&self, board, list);
+        Self::generate_king_moves(&self, board, list);
     }
 }
 

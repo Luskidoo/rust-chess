@@ -1,4 +1,4 @@
-use std::ops::{BitOr, BitXor, BitXorAssign, BitOrAssign, Shl, Shr, BitAnd, BitAndAssign, Not, Add, Mul, Sub};
+use std::ops::{Add, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Mul, Not, Shl, ShlAssign, Shr, Sub};
 use crate::board::*;
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -12,8 +12,8 @@ impl BitBoard {
     pub const k2: BitBoard = BitBoard(0x3333333333333333); //  -1/5   
     pub const k4: BitBoard = BitBoard(0x0f0f0f0f0f0f0f0f); //  -1/17  
     pub const kf: BitBoard = BitBoard(0x0101010101010101); //  -1/255
-    pub const not_a_file: BitBoard = BitBoard(0xfefefefefefefefe);
-    pub const not_h_file: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f);  
+    pub const NOT_A_FILE: BitBoard = BitBoard(0xfefefefefefefefe);
+    pub const NOT_H_FILE: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f);  
     pub fn set_bit(mut self, x: BitBoard) -> BitBoard {
         self | x
     }
@@ -29,6 +29,15 @@ impl BitBoard {
     pub fn pop_count(mut self) -> u32 {
         self.0.count_ones()
     }
+
+    pub fn east_one(mut self) -> Self {
+        self << BitBoard(1) & Self::NOT_A_FILE
+    }
+
+    pub fn west_one(mut self) -> Self {
+        self >> BitBoard(1) & Self::NOT_H_FILE
+    }
+
 
 
     pub fn knight_attacks(mut self) -> BitBoard {
@@ -93,6 +102,13 @@ impl Shl for BitBoard {
     fn shl(self, rhs: Self) -> Self{
         BitBoard(self.0 << rhs.0)
     }
+}
+
+impl ShlAssign for BitBoard {
+    #[inline]
+    fn shl_assign(&mut self, rhs: Self) {
+        self.0 <<= rhs.0
+    }   
 }
 
 // #![feature(const_trait_impl)]

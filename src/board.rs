@@ -1,5 +1,6 @@
 mod fen;
 mod game_state;
+mod zobrist;
 
 use game_state::GameState;
 

@@ -1,35 +1,14 @@
-/* =======================================================================
-Rustic is a chess playing engine.
-Copyright (C) 2019-2024, Marcel Vanthoor
-https://rustic-chess.org/
-
-Rustic is written in the Rust programming language. It is an original
-work, not derived from any engine that came before it. However, it does
-use a lot of concepts which are well-known and are in use by most if not
-all classical alpha/beta-based chess engines.
-
-Rustic is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License version 3 as published by
-the Free Software Foundation.
-
-Rustic is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program.  If not, see <http://www.gnu.org/licenses/>.
-======================================================================= */
-
-use crate::defs::{NrOf, Piece, Side, Sides, Square, EMPTY};
+use crate::defs::{Side, Sides, Square};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
 
+use super::{NrOf, Piece};
+
 /* Random number for all sides for all pieces on all squares */
-type PieceRandoms = [[[u64; 64]; 6]; 2];
-type CastlingRandoms = [u64; 16];
-type SideRandoms = [u64; 2];
-type EpRandoms = [u64; 65];
+type PieceRandoms = [[[u64; NrOf::SQUARES]; NrOf::PIECE_TYPES]; Sides::BOTH];
+type CastlingRandoms = [u64; NrOf::CASTLING_PERMISSIONS];
+type SideRandoms = [u64; Sides::BOTH];
+type EpRandoms = [u64; NrOf::SQUARES + 1];
 
 pub type ZobristKey = u64;
 
@@ -47,10 +26,10 @@ impl ZobristRandoms {
     pub fn new() -> Self {
         let mut random = ChaChaRng::from_seed(RNG_SEED);
         let mut zobrist_randoms = Self {
-            rnd_pieces: [[[EMPTY; NrOf::SQUARES]; NrOf::PIECE_TYPES]; Sides::BOTH],
-            rnd_castling: [EMPTY; NrOf::CASTLING_PERMISSIONS],
-            rnd_sides: [EMPTY; Sides::BOTH],
-            rnd_en_passant: [EMPTY; NrOf::SQUARES + 1],
+            rnd_pieces: [[[0; NrOf::SQUARES]; NrOf::PIECE_TYPES]; Sides::BOTH],
+            rnd_castling: [0; NrOf::CASTLING_PERMISSIONS],
+            rnd_sides: [0; Sides::BOTH],
+            rnd_en_passant: [0; NrOf::SQUARES + 1],
         };
 
         zobrist_randoms.rnd_pieces.iter_mut().for_each(|side| {
@@ -80,7 +59,7 @@ impl ZobristRandoms {
     }
 
     pub fn piece(&self, side: Side, piece: Piece, square: Square) -> ZobristKey {
-        self.rnd_pieces[side][piece][square]
+        self.rnd_pieces[side][piece][square.0]
     }
 
     pub fn castling(&self, castling_permissions: u8) -> ZobristKey {

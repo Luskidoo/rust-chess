@@ -1,14 +1,27 @@
 use crate::bitboard::*;
 
 pub type Side = usize;
+pub type Piece = usize;
 
-//#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Sides;
-
 impl Sides {
     pub const WHITE: Side = 0;
     pub const BLACK: Side = 1;
     pub const BOTH: Side = 2;
+}
+
+pub const FEN_START_POSITION: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+pub const FEN_KIWIPETE_POSITION: &str =
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+
+pub struct NrOf;
+impl NrOf {
+    pub const PIECE_TYPES: usize = 6;
+    pub const CASTLING_PERMISSIONS: usize = 16; // 0-15
+    pub const SQUARES: usize = 64;
+    pub const FILES: usize = 8;
+    pub const RANKS: usize = 8;
 }
 
 pub struct Castling;
@@ -20,36 +33,40 @@ impl Castling {
     pub const ALL: BitBoard = BitBoard(15);
 }
 
-pub type Square = usize;
-pub struct Squares;
-impl Squares {
+#[derive(PartialEq, PartialOrd)]
+pub struct Square(pub usize);
+impl Square {
     // White side squares that are important for castling
-    pub const A1: Square = 0;
-    pub const B1: Square = 1;
-    pub const C1: Square = 2;
-    pub const D1: Square = 3;
-    pub const E1: Square = 4;
-    pub const F1: Square = 5;
-    pub const G1: Square = 6;
-    pub const H1: Square = 7;
+    pub const A1: Self = Square(0);
+    pub const B1: Self = Square(1);
+    pub const C1: Self = Square(2);
+    pub const D1: Self = Square(3);
+    pub const E1: Self = Square(4);
+    pub const F1: Self = Square(5);
+    pub const G1: Self = Square(6);
+    pub const H1: Self = Square(7);
 
     // Black side squares that are important for castling
-    pub const A8: Square = 56;
-    pub const B8: Square = 57;
-    pub const C8: Square = 58;
-    pub const D8: Square = 59;
-    pub const E8: Square = 60;
-    pub const F8: Square = 61;
-    pub const G8: Square = 62;
-    pub const H8: Square = 63;
+    pub const A8: Self = Square(56);
+    pub const B8: Self = Square(57);
+    pub const C8: Self = Square(58);
+    pub const D8: Self = Square(59);
+    pub const E8: Self = Square(60);
+    pub const F8: Self = Square(61);
+    pub const G8: Self = Square(62);
+    pub const H8: Self = Square(63);
 
     // White EP-squares start/end
-    pub const A3: Square = 16;
-    pub const H3: Square = 23;
+    pub const A3: Self = Square(16);
+    pub const H3: Self = Square(23);
 
     // Black EP-squares start/end
-    pub const A6: Square = 40;
-    pub const H6: Square = 47;
+    pub const A6: Self = Square(40);
+    pub const H6: Self = Square(47);
+
+    pub fn to_bb(self) -> BitBoard {
+        BitBoard(1 << self.0)
+    }
 }
 
 pub struct Files;
@@ -70,7 +87,6 @@ impl Ranks {
     pub const R8: usize = 7;
 }
 
-pub const FEN_START_POSITION: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 pub const MAX_MOVE_RULE: u8 = 100; // 50/75 move rule
 pub const MAX_GAME_MOVES: usize = 2048;
 pub const MAX_LEGAL_MOVES: usize = 255;

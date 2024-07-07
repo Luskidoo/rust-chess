@@ -35,6 +35,14 @@ impl Board {
         !(self.pawns[Sides::BOTH] | self.bishops[Sides::BOTH] | self.knights[Sides::BOTH] | self.rooks[Sides::BOTH] | self.queens[Sides::BOTH] | self.king[Sides::BOTH])
     }
 
+    pub fn occupancy(self, side: Side) -> BitBoard {
+        match side {
+            Sides::WHITE => self.white_occupied(),
+            Sides::BLACK => self.black_occupied(),
+            Sides::BOTH => self.white_occupied() | self.black_occupied()
+        }
+    }
+
     pub fn white_occupied(self) -> BitBoard {
         self.pawns[Sides::WHITE] | self.bishops[Sides::WHITE] | self.knights[Sides::WHITE] | self.rooks[Sides::WHITE] | self.queens[Sides::WHITE] | self.king[Sides::WHITE]
     }

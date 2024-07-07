@@ -3,6 +3,8 @@ use magics::Magic;
 use crate::bitboard::*;
 use crate::board::*;
 use crate::bitmove::*;
+use crate::defs::Side;
+use crate::defs::Square;
 use crate::movelist::*;
 use crate::sq::*;
 use crate::defs::{Sides};
@@ -13,6 +15,8 @@ mod magics;
 mod init;
 mod slide;
 mod king;
+mod bit_move;
+mod castle;
 
 pub(crate) struct MoveGenerator {
     pub knight_moves_array: [BitBoard; 64],
@@ -86,6 +90,30 @@ impl MoveGenerator {
         Self::generate_bishop_moves(&self, board, list);
         Self::generate_queen_moves(&self, board, list);
         Self::generate_king_moves(&self, board, list);
+    }
+
+    pub fn square_attacked(&self, board: &Board, attacker: Side, square: Square) -> bool {
+        // Use the super-piece method: get the moves for each piece,
+        // starting from the given square. This provides the sqaures where
+        // a piece has to be, to be able to reach the given square.
+        let occupancy = board.occupancy(board.game_state.side_to_move);
+        let bb_king = self.get_non_slider_attacks(Pieces::KING, square);
+        let bb_rook = self.get_slider_attacks(Pieces::ROOK, square, occupancy);
+        let bb_bishop = self.get_slider_attacks(Pieces::BISHOP, square, occupancy);
+        let bb_knight = self.get_non_slider_attacks(Pieces::KNIGHT, square);
+        let bb_pawns = self.get_pawn_attacks(attacker ^ 1, square);
+        let bb_queen = bb_rook | bb_bishop;
+
+        // Then determine if such a piece is actually there: see if a rook
+        // is on one of the squares a rook has to be to reach the given
+        // square. Same for the queen, knight, etc... As soon as one is
+        // found, the square is attacked.
+        (bb_king & board.king[attacker] > 0)
+            || (bb_rook & board.rooks[attacker] > 0)
+            || (bb_queen & board.queens[attacker] > 0)
+            || (bb_bishop & board.bishops[attacker] > 0)
+            || (bb_knight & board.knights[attacker] > 0)
+            || (bb_pawns & board.pawns[attacker] > 0)
     }
 }
 

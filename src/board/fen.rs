@@ -7,7 +7,7 @@
 
 use crate::bitboard::*;
 use crate::board::*;
-use crate::defs::{Castling, Sides, Square, FEN_START_POSITION, MAX_GAME_MOVES, MAX_MOVE_RULE, Ranks, Files, Squares};
+use crate::defs::{Castling, Sides, Square, FEN_START_POSITION, MAX_GAME_MOVES, MAX_MOVE_RULE, Ranks, Files};
 
 // use super::{
 //     defs::{Files, Pieces, Ranks, Squares, BB_SQUARES},
@@ -24,8 +24,8 @@ use std::ops::RangeInclusive;
 const NR_OF_FEN_PARTS: usize = 6;
 const SHORT_FEN_PARTS: usize = 4;
 const LIST_OF_PIECES: &str = "kqrbnpKQRBNP";
-const EP_SQUARES_WHITE: RangeInclusive<Square> = Squares::A3..=Squares::H3;
-const EP_SQUARES_BLACK: RangeInclusive<Square> = Squares::A6..=Squares::H6;
+const EP_SQUARES_WHITE: RangeInclusive<Square> = Square::A3..=Square::H3;
+const EP_SQUARES_BLACK: RangeInclusive<Square> = Square::A6..=Square::H6;
 const WHITE_OR_BLACK: &str = "wb";
 const CASTLING_RIGHTS: &str = "KQkq-";
 const SPLITTER: char = '/';
@@ -190,8 +190,8 @@ fn color(board: &mut Board, part: &str) -> bool {
         if WHITE_OR_BLACK.contains(x);
         then {
             match x {
-                'w' => board.game_state.side_to_move = Sides::WHITE as u8,
-                'b' => board.game_state.side_to_move = Sides::BLACK as u8,
+                'w' => board.game_state.side_to_move = Sides::WHITE,
+                'b' => board.game_state.side_to_move = Sides::BLACK,
                 _ => (),
             }
 
@@ -253,7 +253,7 @@ fn ep(board: &mut Board, part: &str) -> bool {
 
         match square {
             Some(s) if EP_SQUARES_WHITE.contains(&s) || EP_SQUARES_BLACK.contains(&s) => {
-                board.game_state.en_passant = Some(s as u8);
+                board.game_state.en_passant = Some(s.0 as u8);
                 char_ok += 2;
             }
             Some(_) | None => (),
@@ -302,7 +302,8 @@ fn fmn(board: &mut Board, part: &str) -> bool {
 }
 
 pub fn algebraic_square_to_number(algebraic_square: &str) -> Option<Square> {
-    SQUARE_NAME
+    let index = SQUARE_NAME
         .iter()
-        .position(|&element| element == algebraic_square)
+        .position(|&element| element == algebraic_square).unwrap();
+    Some(Square(index))
 }

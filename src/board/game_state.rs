@@ -1,12 +1,14 @@
 use crate::BitBoard;
 
+use super::Side;
+
 #[derive(Copy, Clone, PartialEq)]
 pub struct GameState {
     pub halfmove_clock: u8,
     pub en_passant: Option<u8>,
     pub fullmove_number: u16,
     pub castling: BitBoard,
-    pub side_to_move: u8,
+    pub side_to_move: Side,
 }
 
 impl GameState {

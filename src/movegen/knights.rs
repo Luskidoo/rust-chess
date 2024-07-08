@@ -1,4 +1,4 @@
-use crate::{BitBoard, BitMove, MoveList};
+use crate::{defs::Square, BitBoard, BitMove, MoveList};
 
 use super::{MoveGenerator, SQ};
 
@@ -18,5 +18,10 @@ impl MoveGenerator {
             }
         }
         //bb.knight_attacks() & w_empty 
+    }
+
+    // Return knight attacks for the given square.
+    pub fn get_knight_attacks(&self, square: &Square) -> BitBoard {
+        self.knight_moves_array[square.0]
     }
 }

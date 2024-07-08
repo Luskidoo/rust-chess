@@ -1,6 +1,6 @@
 use super::{MoveGenerator, SQ};
 
-use crate::{bitboard::*, defs::Sides, BitMove, Board, MoveList};
+use crate::{bitboard::*, defs::{Side, Sides, Square}, BitMove, Board, MoveList};
 
 impl MoveGenerator {
     fn w_pawn_single_push(bb: BitBoard, empty: BitBoard) -> BitBoard {
@@ -41,7 +41,7 @@ impl MoveGenerator {
         let mut w_pawns = board.pawns[Sides::WHITE];
         while w_pawns > BitBoard(0) {
             let from = BitBoard::next(&mut w_pawns);
-            let mut to_bb: BitBoard = self.white_pawn_attacks[from as usize] & board.black_occupied();
+            let mut to_bb: BitBoard = self.pawns[Sides::WHITE][from as usize] & board.black_occupied();
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
                 list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
@@ -63,6 +63,10 @@ impl MoveGenerator {
                 //println!("Move from {} to {}", from, to);
             }
         }
+    }
+
+    pub fn get_pawn_attacks_from_square(&self, side: Side, square: &Square) -> BitBoard {
+        self.pawns[side][square.0]
     }
 }
 

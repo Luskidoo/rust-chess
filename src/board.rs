@@ -1,6 +1,7 @@
 mod fen;
 mod game_state;
 mod zobrist;
+mod utils;
 
 use game_state::GameState;
 
@@ -9,85 +10,80 @@ use crate::defs::*;
 
 #[derive(Copy, Clone, PartialEq)]
 pub struct Board {
-    pub pawns: [BitBoard; 3],
-    pub bishops: [BitBoard; 3],
-    pub knights: [BitBoard; 3],
-    pub rooks: [BitBoard; 3],
-    pub queens: [BitBoard; 3],
-    pub king: [BitBoard; 3],
+    pub pieces: [[BitBoard; NrOf::PIECE_TYPES]; Sides::BOTH],
+    pub piece_list: [Piece; NrOf::SQUARES],
     pub game_state: GameState,
 }
 
 impl Board {
     pub fn new() -> Self { 
         Self {
-            pawns: [BitBoard::empty; 3],
-            bishops: [BitBoard::empty; 3],
-            knights: [BitBoard::empty; 3],
-            rooks: [BitBoard::empty; 3],
-            queens: [BitBoard::empty; 3],
-            king: [BitBoard::empty; 3],
+            pieces: [[BitBoard(0); NrOf::PIECE_TYPES]; Sides::BOTH],
+            piece_list: [Pieces::NONE; NrOf::SQUARES],
             game_state: GameState::new(),
         }
-    }
-
-    pub fn empty_squares(self) -> BitBoard {
-        !(self.pawns[Sides::BOTH] | self.bishops[Sides::BOTH] | self.knights[Sides::BOTH] | self.rooks[Sides::BOTH] | self.queens[Sides::BOTH] | self.king[Sides::BOTH])
     }
 
     pub fn occupancy(self, side: Side) -> BitBoard {
         match side {
             Sides::WHITE => self.white_occupied(),
             Sides::BLACK => self.black_occupied(),
-            Sides::BOTH => self.white_occupied() | self.black_occupied()
+            Sides::BOTH => self.white_occupied() | self.black_occupied(),
+            _ => panic!("Invalid side")
         }
     }
 
     pub fn white_occupied(self) -> BitBoard {
-        self.pawns[Sides::WHITE] | self.bishops[Sides::WHITE] | self.knights[Sides::WHITE] | self.rooks[Sides::WHITE] | self.queens[Sides::WHITE] | self.king[Sides::WHITE]
+        self.pieces[Pieces::PAWN][Sides::WHITE] | self.pieces[Pieces::BISHOP][Sides::WHITE] | self.pieces[Pieces::KNIGHT][Sides::WHITE] | self.pieces[Pieces::ROOK][Sides::WHITE] | self.pieces[Pieces::QUEEN][Sides::WHITE] | self.pieces[Pieces::KING][Sides::WHITE]
     }
 
     pub fn black_occupied(self) -> BitBoard {
-        self.pawns[Sides::BLACK] | self.bishops[Sides::BLACK] | self.knights[Sides::BLACK] | self.rooks[Sides::BLACK] | self.queens[Sides::BLACK] | self.king[Sides::BLACK]
+        self.pieces[Pieces::PAWN][Sides::BLACK] | self.pieces[Pieces::BISHOP][Sides::BLACK] | self.pieces[Pieces::KNIGHT][Sides::BLACK] | self.pieces[Pieces::ROOK][Sides::BLACK] | self.pieces[Pieces::QUEEN][Sides::BLACK] | self.pieces[Pieces::KING][Sides::BLACK]
     }
+    
+    // Initialize the piece list. This list is used to quickly determine
+    // which piece type (rook, knight...) is on a square without having to
+    // loop through the piece bitboards.
+    fn init_piece_list(&self) -> [Piece; NrOf::SQUARES] {
+        let bb_w = self.pieces[Sides::WHITE]; // White piece bitboards
+        let bb_b = self.pieces[Sides::BLACK]; // Black piece bitboards
+        let mut piece_list: [Piece; NrOf::SQUARES] = [Pieces::NONE; NrOf::SQUARES];
 
-    pub fn white_empty(self) -> BitBoard {
-        !(self.pawns[Sides::WHITE] | self.bishops[Sides::WHITE] | self.knights[Sides::WHITE] | self.rooks[Sides::WHITE] | self.queens[Sides::WHITE] | self.king[Sides::WHITE])
+        // piece_type is enumerated, from 0 to 6.
+        // 0 = KING, 1 = QUEEN, and so on, as defined in board::defs.
+        for (piece_type, (w, b)) in bb_w.iter().zip(bb_b.iter()).enumerate() {
+            let mut white_pieces = *w; // White pieces of type "piece_type"
+            let mut black_pieces = *b; // Black pieces of type "piece_type"
+
+            // Put white pieces into the piece list.
+            while white_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut white_pieces);
+                piece_list[square as usize] = piece_type;
+            }
+
+            // Put black pieces into the piece list.
+            while black_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut black_pieces);
+                piece_list[square as usize] = piece_type;
+            }
+        }
+
+        piece_list
     }
-
-    pub fn black_empty(self) -> BitBoard {
-        !(self.pawns[Sides::BLACK] | self.bishops[Sides::BLACK] | self.knights[Sides::BLACK] | self.rooks[Sides::BLACK] | self.queens[Sides::BLACK] | self.king[Sides::BLACK])
-    }
-
-    // pub fn init_knights() -> [BitBoard; 64] {
-    //     let attacks = [BitBoard(0); 64];
-    //     for sq in 0..63 {
-    //         let bb_square: BitBoard = BitBoard(1) << BitBoard(square);
-    //         let bb_moves =
-    //         (bb_square & !BB_RANKS[Ranks::R8] & !BB_RANKS[Ranks::R7] & !BB_FILES[Files::A]) << BitBoard(15)
-    //         | (bb_square & !BB_RANKS[Ranks::R8] & !BB_RANKS[Ranks::R7] & !BB_FILES[Files::H]) << BitBoard(17)
-    //         | (bb_square & !BB_FILES[Files::A] & !BB_FILES[Files::B] & !BB_RANKS[Ranks::R8]) << BitBoard(6)
-    //         | (bb_square & !BB_FILES[Files::G] & !BB_FILES[Files::H] & !BB_RANKS[Ranks::R8]) << BitBoard(10)
-    //         | (bb_square & !BB_RANKS[Ranks::R1] & !BB_RANKS[Ranks::R2] & !BB_FILES[Files::A]) >> BitBoard(17)
-    //         | (bb_square & !BB_RANKS[Ranks::R1] & !BB_RANKS[Ranks::R2] & !BB_FILES[Files::H]) >> BitBoard(15)
-    //         | (bb_square & !BB_FILES[Files::A] & !BB_FILES[Files::B] & !BB_RANKS[Ranks::R1]) >> BitBoard(10)
-    //         | (bb_square & !BB_FILES[Files::G] & !BB_FILES[Files::H] & !BB_RANKS[Ranks::R1]) >> BitBoard(6);
-    //         attacks[sq] = bb_moves;
-    //     }
-    //     attacks
-    // }
 }
 
 impl Board {
     pub fn reset(&mut self) {
-        self.pawns = [BitBoard::empty; 3];
-        self.bishops =  [BitBoard::empty; 3];
-        self.knights = [BitBoard::empty; 3];
-        self.rooks = [BitBoard::empty; 3];
-        self.queens = [BitBoard::empty; 3];
-        self.king = [BitBoard::empty; 3];
+        self.pieces = [[BitBoard(0); NrOf::PIECE_TYPES]; Sides::BOTH];
         self.game_state = GameState::new();
+        self.piece_list = [Pieces::NONE; NrOf::SQUARES];
         //self.history.clear();
         //self.piece_list = [Pieces::NONE; NrOf::SQUARES];
+    }
+
+    // Main initialization function. This is used to initialize the "other"
+    // bit-boards that are not set up by the FEN-reader function.
+    fn init(&mut self) {
+        self.piece_list = self.init_piece_list();
     }
 }

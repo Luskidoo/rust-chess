@@ -18,6 +18,7 @@ use crate::defs::{Castling, Sides, Square, FEN_START_POSITION, MAX_GAME_MOVES, M
 //     misc::parse,
 // };
 use if_chain::if_chain;
+use std::borrow::Borrow;
 use std::ops::RangeInclusive;
 
 /** Definitions used by the FEN-reader */
@@ -79,7 +80,7 @@ impl Board {
 
             // Replace original board with new one if setup was successful.
             if result == Ok(()) {
-                //new_board.init();
+                new_board.init();
                 *self = new_board;
             }
         }
@@ -103,52 +104,52 @@ fn pieces(board: &mut Board, part: &str) -> bool {
         let square = (rank * 8) + file;
         match c {
             'k' => {
-                board.king[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
-                board.king[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KING][Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KING][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'q' => {
-                board.queens[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
-                board.queens[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::QUEEN][Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::QUEEN][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             }
             'r' => {
-                board.rooks[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
-                board.rooks[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::ROOK][Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::ROOK][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'b' => {
-                board.bishops[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
-                board.bishops[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::BISHOP][Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::BISHOP][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             }
             'n' => {
-                board.knights[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
-                board.knights[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KNIGHT][Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KNIGHT][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'p' => {
-                board.pawns[Sides::BLACK] |= BitBoard(1) << BitBoard(square);
-                board.pawns[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::PAWN][Sides::BLACK] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::PAWN][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'K' => {
-                board.king[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
-                board.king[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KING][Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KING][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'Q' => {
-                board.queens[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
-                board.queens[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::QUEEN][Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::QUEEN][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'R' => {
-                board.rooks[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
-                board.rooks[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::ROOK][Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::ROOK][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'B' => {
-                board.bishops[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
-                board.bishops[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::BISHOP][Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::BISHOP][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'N' => {
-                board.knights[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
-                board.knights[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KNIGHT][Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::KNIGHT][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             'P' => {
-                board.pawns[Sides::WHITE] |= BitBoard(1) << BitBoard(square);
-                board.pawns[Sides::BOTH] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::PAWN][Sides::WHITE] |= BitBoard(1) << BitBoard(square);
+                board.pieces[Pieces::PAWN][Sides::BOTH] |= BitBoard(1) << BitBoard(square);
             },
             '1'..='8' => {
                 if let Some(x) = c.to_digit(10) {

@@ -1,4 +1,4 @@
-use crate::{defs::{Side, Sides}, BitBoard, BitMove, Board, MoveList};
+use crate::{defs::{Piece, Pieces, Side, Sides, Square}, BitBoard, BitMove, Board, MoveList};
 
 use super::{MoveGenerator, SQ};
 
@@ -88,5 +88,25 @@ impl MoveGenerator {
                 }
         }
     }
+
+    pub fn get_slider_attacks(&self, piece: Piece, square: &Square, occupancy: BitBoard) -> BitBoard {
+        match piece {
+            Pieces::ROOK => {
+                let index = self.rook_magics[square.0].get_index(occupancy);
+                self.rook[index]
+            }
+            Pieces::BISHOP => {
+                let index = self.bishop_magics[square.0].get_index(occupancy);
+                self.bishop[index]
+            }
+            Pieces::QUEEN => {
+                let r_index = self.rook_magics[square.0].get_index(occupancy);
+                let b_index = self.bishop_magics[square.0].get_index(occupancy);
+                self.rook[r_index] ^ self.bishop[b_index]
+            }
+            _ => panic!("Not a sliding piece: {piece}"),
+        }
+    }
+
 
 }

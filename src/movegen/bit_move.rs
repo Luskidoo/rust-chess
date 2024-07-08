@@ -58,4 +58,8 @@ impl Move {
     pub fn castling(&self) -> bool {
         ((self.data >> Shift::CASTLING as u64) & 0x1) as u8 == 1
     }
+    #[inline]
+    pub const fn null() -> Self {
+        Self { data: 0 }
+    }
 }

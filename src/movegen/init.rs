@@ -1,13 +1,14 @@
 use super::MoveGenerator;
-use crate::{bitboard::BitBoard, movegen::magics::Magic};
+use crate::{bitboard::BitBoard, defs::{Sides, Square}, movegen::magics::Magic};
 
 impl MoveGenerator {
-    pub fn init_white_pawn_attacks() -> [BitBoard; 64] {
-        let mut moves = [BitBoard(0); 64];
+    pub fn init_pawn_attacks(&mut self) {
         for sq in 0..64 {
-            moves[sq] = Self::white_pawn_attacks((1u64 << sq) as u64);
+            let w = MoveGenerator::white_pawn_attacks(sq);
+            let b = MoveGenerator::black_pawn_attacks(sq);
+            self.pawns[Sides::WHITE][sq as usize] = w;
+            self.pawns[Sides::BLACK][sq as usize] = b;
         }
-        moves
     }
 
     pub fn init_black_pawn_attacks() -> [BitBoard; 64] {

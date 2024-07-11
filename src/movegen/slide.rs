@@ -5,12 +5,12 @@ use super::{MoveGenerator, SQ};
 impl MoveGenerator {
     pub fn generate_rook_moves(&self, board: Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut rooks = board.rooks[side];
+        let mut rooks = board.pieces[Pieces::ROOK][side];
         let occupancy = board.black_occupied() | board.white_occupied();
         //println!("{}", occupancy);
         while rooks > BitBoard(0) {
             let from = BitBoard::next(&mut rooks);
-            let index = self.rook_magics[from as usize].get_index(occupancy);
+            let index = self.rook_magics[from.0].get_index(occupancy);
             let mut to_bb = self.rook[index];
             // if white
             if side == 0 {
@@ -23,7 +23,7 @@ impl MoveGenerator {
             //println!("{}", to_bb);
             while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
-                list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
+                self.add_move(&board, list, Pieces::ROOK, from.clone(), to)
                 //println!("Rook move from {} to {}", from, to);
             }
         }
@@ -31,11 +31,11 @@ impl MoveGenerator {
 
     pub fn generate_bishop_moves(&self, board: Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut bishops = board.bishops[side];
+        let mut bishops = board.pieces[Pieces::BISHOP][side];
         let occupancy = board.black_occupied() | board.white_occupied();
         while bishops > BitBoard(0) {
             let from = BitBoard::next(&mut bishops);
-            let index = self.rook_magics[from as usize].get_index(occupancy);
+            let index = self.rook_magics[from.0].get_index(occupancy);
             let mut to_bb = self.rook[index];
             // if white
             if side == 0 {
@@ -46,7 +46,7 @@ impl MoveGenerator {
             }
             while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
-                list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
+                self.add_move(&board, list, Pieces::BISHOP, from.clone(), to)
             }
         }
     }
@@ -54,12 +54,12 @@ impl MoveGenerator {
 
     pub fn generate_queen_moves(&self, board: Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut queens = board.queens[side];
+        let mut queens = board.pieces[Pieces::QUEEN][side];
         let occupancy = board.black_occupied() | board.white_occupied();
         while queens > BitBoard(0) {
             let from = BitBoard::next(&mut queens);
             // Diagonal moves
-            let mut index = self.bishop_magics[from as usize].get_index(occupancy);
+            let mut index = self.bishop_magics[from.0].get_index(occupancy);
             let mut to_bb = self.bishop[index];
             // if white
             if side == 0 {
@@ -70,10 +70,10 @@ impl MoveGenerator {
             }
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                    list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
-                }
+                self.add_move(&board, list, Pieces::QUEEN, from.clone(), to);
+            }
             // Straight moves
-            index = self.rook_magics[from as usize].get_index(occupancy);
+            index = self.rook_magics[from.0].get_index(occupancy);
             to_bb = self.rook[index];
             // if white
             if side == 0 {
@@ -84,8 +84,8 @@ impl MoveGenerator {
             }
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                    list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
-                }
+                self.add_move(&board, list, Pieces::QUEEN, from.clone(), to);
+            }
         }
     }
 

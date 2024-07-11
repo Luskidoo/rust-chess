@@ -21,6 +21,7 @@ mod slide;
 mod king;
 pub mod bit_move;
 mod castle;
+mod make_move;
 
 // This is a list of all pieces a pawn can promote to.
 const PROMOTION_PIECES: [usize; 4] = [Pieces::QUEEN, Pieces::ROOK, Pieces::BISHOP, Pieces::KNIGHT];
@@ -76,9 +77,9 @@ impl MoveGenerator {
     }
     
     fn generate_knight_moves(&self, board: Board, list: &mut MoveList) {
-        let w_knights = board.knights[Sides::WHITE];
-        let w_empty = board.white_empty();
-        Self::w_knight_moves(&self, w_knights, w_empty, list);
+        let w_knights = board.pieces[Pieces::KNIGHT][Sides::WHITE];
+        let w_empty = !board.white_occupied();
+        Self::w_knight_moves(&self, &board, w_knights, w_empty, list);
     }
 
     fn king_moves(kings: BitBoard) -> BitBoard {
@@ -89,7 +90,7 @@ impl MoveGenerator {
     }
     
     pub fn generate_all_moves(self, board: Board, list: &mut MoveList) {
-        Self::generate_w_pawn_pushes(board, list);
+        Self::generate_w_pawn_pushes(&self,board, list);
         Self::generate_w_pawn_attacks(&self, board, list);
         Self::generate_knight_moves(&self, board, list);
         Self::generate_rook_moves(&self, board, list);
@@ -122,7 +123,7 @@ impl MoveGenerator {
             || (bb_pawns & board.pieces[Pieces::PAWN][attacker] > BitBoard(0))
     }
 
-    pub fn add_move(&self, board: Board, list: &mut MoveList, piece: Piece, from: Square, to: Square) {
+    pub fn add_move(&self, board: &Board, list: &mut MoveList, piece: Piece, from: Square, to: Square) {
             let is_pawn = piece == Pieces::PAWN;
             let promotion_rank = Board::promotion_rank(board.game_state.side_to_move);
             let promotion = is_pawn && Board::square_on_rank(&to, Square(promotion_rank));

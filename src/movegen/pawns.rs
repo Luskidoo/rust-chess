@@ -1,6 +1,6 @@
 use super::{MoveGenerator, SQ};
 
-use crate::{bitboard::*, defs::{Side, Sides, Square}, BitMove, Board, MoveList};
+use crate::{bitboard::*, defs::{Pieces, Side, Sides, Square}, BitMove, Board, MoveList};
 
 impl MoveGenerator {
     fn w_pawn_single_push(bb: BitBoard, empty: BitBoard) -> BitBoard {
@@ -21,30 +21,30 @@ impl MoveGenerator {
         single_pushes.south_one() & empty & BitBoard::rank5
     }
 
-    pub fn generate_w_pawn_pushes(board: Board, list: &mut MoveList) {
-        let mut w_pawns = board.pawns[Sides::WHITE];
+    pub fn generate_w_pawn_pushes(&self, board: Board, list: &mut MoveList) {
+        let mut w_pawns = board.pieces[Pieces::PAWN][Sides::WHITE];
         //println!("Initial pawns bitboard {:?}", w_pawns);
-        let empty_bb: BitBoard = board.empty_squares();
+        let empty_bb: BitBoard = !board.occupancy(Sides::BOTH);
         while w_pawns > BitBoard(0) {
             let from = BitBoard::next(&mut w_pawns);
-            let from_bb: BitBoard = BitBoard(1) << BitBoard(from);
+            let from_bb: BitBoard = BitBoard(1) << BitBoard(from.0.try_into().unwrap());
             let mut to_bb: BitBoard = Self::w_pawn_single_push(from_bb, empty_bb) | Self::w_pawn_double_push(from_bb, empty_bb);
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
+                self.add_move(&board, list, Pieces::PAWN, from.clone(), to)
                 //println!("Pawn move from {} to {}", from, to);
             }
         }
     }
 
     pub fn generate_w_pawn_attacks(&self, board: Board, list: &mut MoveList) {
-        let mut w_pawns = board.pawns[Sides::WHITE];
+        let mut w_pawns = board.pieces[Pieces::PAWN][Sides::WHITE];
         while w_pawns > BitBoard(0) {
             let from = BitBoard::next(&mut w_pawns);
-            let mut to_bb: BitBoard = self.pawns[Sides::WHITE][from as usize] & board.black_occupied();
+            let mut to_bb: BitBoard = self.pawns[Sides::WHITE][from.0] & board.black_occupied();
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
+                self.add_move(&board, list, Pieces::PAWN, from.clone(), to)
                 //println!("Pawn move from {} to {}", from, to);
             }
 
@@ -52,11 +52,11 @@ impl MoveGenerator {
     }
     
     pub fn generate_b_pawn_moves(board: Board) {
-        let mut b_pawns = board.pawns[Sides::WHITE];
-        let empty_bb: BitBoard = board.empty_squares();
+        let mut b_pawns = board.pieces[Pieces::PAWN][Sides::BLACK];
+        let empty_bb: BitBoard = !board.occupancy(Sides::BOTH);
         while b_pawns > BitBoard(0) {
             let from = BitBoard::next(&mut b_pawns);
-            let from_bb: BitBoard = BitBoard(1) << BitBoard(from);
+            let from_bb: BitBoard = BitBoard(1) << BitBoard(from.0.try_into().unwrap());
             let mut to_bb: BitBoard = Self::b_pawn_single_push(from_bb, empty_bb) | Self::b_pawn_double_push(from_bb, empty_bb);
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);

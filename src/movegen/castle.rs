@@ -24,8 +24,8 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E1)
                     && !self.square_attacked(board, opponent, &Square::F1)
                 {
-                    let to = Square(from.try_into().unwrap()).to_bb() << BitBoard(2);
-                    self.add_move(board, Pieces::KING, from, to, list);
+                    let to = Square((from.clone().to_bb() << BitBoard(2)).0.try_into().unwrap());
+                    self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
     
@@ -39,8 +39,8 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E1)
                     && !self.square_attacked(board, opponent, &Square::D1)
                 {
-                    let to = Square(from.try_into().unwrap()).to_bb() >> BitBoard(2);
-                    self.add_move(board, Pieces::KING, from, to, list);
+                    let to = Square((from.clone().to_bb() >> BitBoard(2)).0.try_into().unwrap());
+                    self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
         }
@@ -56,8 +56,8 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E8)
                     && !self.square_attacked(board, opponent, &Square::F8)
                 {
-                    let to = Square(from.try_into().unwrap()).to_bb() << BitBoard(2);
-                    self.add_move(board, Pieces::KING, from, to, list);
+                    let to = Square((from.clone().to_bb() << BitBoard(2)).0.try_into().unwrap());
+                    self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
     
@@ -71,8 +71,8 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E8)
                     && !self.square_attacked(board, opponent, &Square::D8)
                 {
-                    let to = Square(from.try_into().unwrap()).to_bb() >> BitBoard(2);
-                    self.add_move(board, Pieces::KING, from, to, list);
+                    let to = Square((from.clone().to_bb() >> BitBoard(2)).0.try_into().unwrap());
+                    self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
         }

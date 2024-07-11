@@ -1,5 +1,5 @@
 use std::ops::{Add, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Mul, Not, Shl, ShlAssign, Shr, Sub};
-use crate::board::*;
+use crate::{board::*, defs::Square};
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct BitBoard(pub u64);
@@ -61,12 +61,12 @@ impl BitBoard {
     //     return index64[(((bb ^ BitBoard((bb.0.wrapping_sub(1)))).0.wrapping_mul(debruijn64).wrapping_shr(58))) as usize].try_into().unwrap();
     // }
 
-    pub fn next(bitboard: &mut BitBoard) -> u64 {
+    pub fn next(bitboard: &mut BitBoard) -> Square {
         let square: u64 = bitboard.0.trailing_zeros() as u64;
         //println!("Bitboard before {:?}", bitboard);
         *bitboard ^= BitBoard(1u64 << square);
         //println!("Bitboard after {:?}", bitboard);
-        square
+        Square(square as usize)
     }
 }
 

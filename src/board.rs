@@ -10,7 +10,7 @@ use crate::defs::*;
 
 #[derive(Copy, Clone, PartialEq)]
 pub struct Board {
-    pub pieces: [[BitBoard; NrOf::PIECE_TYPES]; Sides::BOTH],
+    pub pieces: [[BitBoard; Sides::BOTH + 1]; NrOf::PIECE_TYPES],
     pub piece_list: [Piece; NrOf::SQUARES],
     pub game_state: GameState,
 }
@@ -18,7 +18,7 @@ pub struct Board {
 impl Board {
     pub fn new() -> Self { 
         Self {
-            pieces: [[BitBoard(0); NrOf::PIECE_TYPES]; Sides::BOTH],
+            pieces: [[BitBoard(0); Sides::BOTH + 1]; NrOf::PIECE_TYPES],
             piece_list: [Pieces::NONE; NrOf::SQUARES],
             game_state: GameState::new(),
         }
@@ -58,13 +58,13 @@ impl Board {
             // Put white pieces into the piece list.
             while white_pieces > BitBoard(0) {
                 let square = BitBoard::next(&mut white_pieces);
-                piece_list[square as usize] = piece_type;
+                piece_list[square.0] = piece_type;
             }
 
             // Put black pieces into the piece list.
             while black_pieces > BitBoard(0) {
                 let square = BitBoard::next(&mut black_pieces);
-                piece_list[square as usize] = piece_type;
+                piece_list[square.0] = piece_type;
             }
         }
 
@@ -74,7 +74,7 @@ impl Board {
 
 impl Board {
     pub fn reset(&mut self) {
-        self.pieces = [[BitBoard(0); NrOf::PIECE_TYPES]; Sides::BOTH];
+        self.pieces = [[BitBoard(0); Sides::BOTH + 1]; NrOf::PIECE_TYPES];
         self.game_state = GameState::new();
         self.piece_list = [Pieces::NONE; NrOf::SQUARES];
         //self.history.clear();

@@ -1,19 +1,19 @@
-use crate::{defs::Square, BitBoard, BitMove, MoveList};
+use crate::{defs::{Pieces, Square}, BitBoard, BitMove, Board, MoveList};
 
 use super::{MoveGenerator, SQ};
 
 impl MoveGenerator {
-    pub fn w_knight_moves(&self, mut bb: BitBoard, w_empty: BitBoard, list: &mut MoveList) {
+    pub fn w_knight_moves(&self, board: &Board, mut bb: BitBoard, w_empty: BitBoard, list: &mut MoveList) {
         //println!("Initial bitboard {:?}", bb);
         while bb > BitBoard(0) {
             let from = BitBoard::next(&mut bb);
             //println!("From {}", from);
             //println!("From bb {:?}", from_bb);
-            let mut to_bb: BitBoard = self.knight_moves_array[from as usize] & w_empty;
+            let mut to_bb: BitBoard = self.knight_moves_array[from.0] & w_empty;
             //println!("To bb {:?}", to_bb);
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
+                self.add_move(board, list, Pieces::KNIGHT, from.clone(), to)
                 //println!("Knight move from {} to {}", from, to);
             }
         }

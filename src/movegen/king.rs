@@ -9,7 +9,7 @@ impl MoveGenerator {
         //println!("{}", occupancy);
         while kings > BitBoard(0) {
             let from = BitBoard::next(&mut kings);
-            let mut to_bb = self.king_attacks[from as usize];
+            let mut to_bb = self.king_attacks[from.0];
             // if white
             if side == 0 {
                 to_bb &= !board.white_occupied()
@@ -20,7 +20,7 @@ impl MoveGenerator {
             println!("{}", to_bb);
             while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
-                list.push(BitMove::new(0, SQ(from as u8), SQ(to as u8)));
+                self.add_move(&board, list, Pieces::KING, from.clone(), to.clone());
                 println!("King move from {} to {}", from, to);
             }
         }

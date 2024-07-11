@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::bitboard::*;
 
 pub type Side = usize;
@@ -43,7 +45,7 @@ impl Castling {
     pub const ALL: BitBoard = BitBoard(15);
 }
 
-#[derive(PartialEq, PartialOrd)]
+#[derive(PartialEq, PartialOrd, Clone)]
 pub struct Square(pub usize);
 impl Square {
     // White side squares that are important for castling
@@ -76,6 +78,12 @@ impl Square {
 
     pub fn to_bb(self) -> BitBoard {
         BitBoard(1 << self.0)
+    }
+}
+
+impl fmt::Display for Square {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

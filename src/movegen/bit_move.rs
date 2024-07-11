@@ -3,8 +3,8 @@ use crate::defs::{Piece, Square};
 /* "Shift" is an enum which contains the number of bits that needed to be shifted to store
  * move data in a specific place within the u64 integer. This makes sure that, should the
  * format change, the location needs to be changed only within the integer. */
- pub struct Shift;
- impl Shift {
+pub struct Shift;
+impl Shift {
      pub const PIECE: usize = 0;
      pub const FROM_SQ: usize = 3;
      pub const TO_SQ: usize = 9;
@@ -14,7 +14,7 @@ use crate::defs::{Piece, Square};
      pub const DOUBLE_STEP: usize = 22;
      pub const CASTLING: usize = 23;
      pub const SORTSCORE: usize = 24;
- }
+}
 
 #[derive(Copy, Clone, PartialEq)]
 pub struct Move {

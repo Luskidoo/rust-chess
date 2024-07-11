@@ -39,7 +39,7 @@ impl Board {
         self.history.push(current_game_state);
 
         // Set "us" and "opponent"
-        let us = self.us();
+        let us = current_game_state.side_to_move;
         let opponent = us ^ 1;
 
         // Dissect the move so we don't need "m.function()" and type casts everywhere.

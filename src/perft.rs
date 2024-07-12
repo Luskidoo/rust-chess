@@ -102,19 +102,23 @@ pub fn perft(
     // }
 
     mg.generate_all_moves(board, &mut move_list);
+    println!("Depth: {}, Moves generated: {}", depth, move_list.len());
 
     // Run perft for each of the moves.
     for i in 0..move_list.len() {
         // Get the move to be executed and counted.
         let m = move_list.get_move(i);
-        println!("{}", m.as_string());
+        println!("Trying move: {}", m.as_string());
         // If the move is legal...
         if board.make(m, mg) {
             // Then count the number of leaf nodes it generates...
-            leaf_nodes += perft(board, depth - 1, mg);
-
+            let nodes = perft(board, depth - 1, mg);
+            println!("Move: {}, Nodes: {}", m.as_string(), nodes);
+            leaf_nodes += nodes;
             // Then unmake the move so the next one can be counted.
             board.unmake();
+        } else {
+            println!("Illegal move: {}", m.as_string());
         }
     }
 

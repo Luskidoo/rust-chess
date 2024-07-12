@@ -90,23 +90,44 @@ impl MoveGenerator {
     }
     
     pub fn generate_all_moves(&self, board: &Board, list: &mut MoveList) {
+        let initial_count = list.len();
         Self::generate_pawn_moves(&self, board, list);
+        println!("Pawn moves: {}", list.len() - initial_count);
+
+        let count_before = list.len();
         Self::generate_knight_moves(&self, board, list);
+        println!("Knight moves: {}", list.len() - count_before);
+
+        let count_before = list.len();
         Self::generate_rook_moves(&self, board, list);
+        println!("Rook moves: {}", list.len() - count_before);
+
+        let count_before = list.len();
         Self::generate_bishop_moves(&self, board, list);
+        println!("Bishop moves: {}", list.len() - count_before);
+
+        let count_before = list.len();
         Self::generate_queen_moves(&self, board, list);
+        println!("Queen moves: {}", list.len() - count_before);
+
+        let count_before = list.len();
         Self::generate_king_moves(&self, board, list);
+        println!("King moves: {}", list.len() - count_before);
+
+        let count_before = list.len();
+        Self::castling(&self, board, list);
+        println!("Castling moves: {}", list.len() - count_before);
     }
 
     pub fn square_attacked(&self, board: &Board, attacker: Side, square: &Square) -> bool {
         // Use the super-piece method: get the moves for each piece,
         // starting from the given square. This provides the sqaures where
         // a piece has to be, to be able to reach the given square.
-        let occupancy = board.occupancy(board.game_state.side_to_move);
-        let bb_king = self.get_knight_attacks(square);
+        let occupancy = board.occupancy(Sides::BOTH);
+        let bb_king = self.get_king_attacks(square);
         let bb_rook = self.get_slider_attacks(Pieces::ROOK, square, occupancy);
         let bb_bishop = self.get_slider_attacks(Pieces::BISHOP, square, occupancy);
-        let bb_knight = self.get_king_attacks(square);
+        let bb_knight = self.get_knight_attacks(square);
         let bb_pawns = self.get_pawn_attacks_from_square(attacker ^ 1, square);
         let bb_queen = bb_rook | bb_bishop;
 

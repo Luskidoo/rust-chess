@@ -8,12 +8,13 @@ use std::sync::Arc;
 
 use game_state::GameState;
 use history::History;
+use zobrist::ZobristKey;
 use zobrist::ZobristRandoms;
 
 use crate::bitboard::*;
 use crate::defs::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Board {
     pub pieces: [[BitBoard; Sides::BOTH + 1]; NrOf::PIECE_TYPES],
     pub piece_list: [Piece; NrOf::SQUARES],
@@ -140,6 +141,93 @@ impl Board {
         self.game_state.zobrist_key ^= self.zr.castling(self.game_state.castling);
         self.game_state.castling = new_permissions;
         self.game_state.zobrist_key ^= self.zr.castling(self.game_state.castling);
+    }
+
+    // Initialize the zobrist hash. This hash will later be updated incrementally.
+    pub fn init_zobrist_key(&self) -> ZobristKey {
+        // Keep the key here.
+        let mut key: u64 = 0;
+
+        // Same here: "bb_w" is shorthand for
+        // "self.bb_pieces[Sides::WHITE]".
+        let bb_w = self.pieces[Sides::WHITE];
+        let bb_b = self.pieces[Sides::BLACK];
+
+        // Iterate through all piece types, for both white and black.
+        // "piece_type" is enumerated, and it'll start at 0 (KING), then 1
+        // (QUEEN), and so on.
+        for (piece_type, (w, b)) in bb_w.iter().zip(bb_b.iter()).enumerate() {
+            // Assume the first iteration; piece_type will be 0 (KING). The
+            // following two statements will thus get all the pieces of
+            // type "KING" for white and black. (This will obviously only
+            // be one king, but with rooks, there will be two in the
+            // starting position.)
+            let mut white_pieces = *w;
+            let mut black_pieces = *b;
+
+            // Iterate through all the piece locations of the current piece
+            // type. Get the square the piece is on, and then hash that
+            // square/piece combination into the zobrist key.
+            while white_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut white_pieces);
+                key ^= self.zr.piece(Sides::WHITE, piece_type, square);
+            }
+
+            // Same for black.
+            while black_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut black_pieces);
+                key ^= self.zr.piece(Sides::BLACK, piece_type, square);
+            }
+        }
+
+        // Hash the castling, active color, and en-passant state into the key.
+        key ^= self.zr.castling(self.game_state.castling);
+        key ^= self.zr.side(self.game_state.side_to_move as usize);
+        key ^= self.zr.en_passant(self.game_state.en_passant);
+
+        // Done; return the key.
+        key
+    }
+
+    pub fn print_board(&self) {
+        let piece_chars = ['K', 'Q', 'R', 'B', 'N', 'P', 'k', 'q', 'r', 'b', 'n', 'p', '.'];
+        
+        println!("  a b c d e f g h");
+        println!("  ---------------");
+        for rank in (0..8).rev() {
+            print!("{} ", rank + 1);
+            for file in 0..8 {
+                let square = rank * 8 + file;
+                let mut piece_char = '.';
+                
+                for (piece_type, boards) in self.pieces.iter().enumerate() {
+                    if boards[Sides::WHITE].0 & (1 << square) != 0 {
+                        piece_char = piece_chars[piece_type];
+                        break;
+                    } else if boards[Sides::BLACK].0 & (1 << square) != 0 {
+                        piece_char = piece_chars[piece_type + 6];
+                        break;
+                    }
+                }
+                
+                print!("{} ", piece_char);
+            }
+            println!("| {}", rank + 1);
+        }
+        println!("  ---------------");
+        println!("  a b c d e f g h");
+        
+        println!("Side to move: {}", if self.game_state.side_to_move == Sides::WHITE { "White" } else { "Black" });
+        println!("Castling rights: {}{}{}{}", 
+            if self.game_state.castling.0 & Castling::WK.0 != 0 { "K" } else { "" },
+            if self.game_state.castling.0 & Castling::WQ.0 != 0 { "Q" } else { "" },
+            if self.game_state.castling.0 & Castling::BK.0 != 0 { "k" } else { "" },
+            if self.game_state.castling.0 & Castling::BQ.0 != 0 { "q" } else { "" }
+        );
+        println!("En passant square: {}", self.game_state.en_passant.map_or("None".to_string(), |sq| format!("{}", sq)));
+        println!("Halfmove clock: {}", self.game_state.halfmove_clock);
+        println!("Fullmove number: {}", self.game_state.fullmove_number);
+        println!();
     }
 }
 

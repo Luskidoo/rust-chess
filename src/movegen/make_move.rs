@@ -1,6 +1,6 @@
-use crate::{defs::{self, Castling, NrOf, Piece, Pieces, Side, Sides, Square}, BitBoard, Board};
+use crate::{defs::{self, Castling, NrOf, Piece, Pieces, Side, Sides, Square}, BitBoard};
 
-use super::{bit_move::Move, MoveGenerator};
+use super::{bit_move::Move, MoveGenerator, Board};
 
 // Castling Permissions Per Square
 type CPSquare = [BitBoard; NrOf::SQUARES];
@@ -33,6 +33,9 @@ impl Board {
     #[cfg_attr(debug_assertions, inline(never))]
     #[cfg_attr(not(debug_assertions), inline(always))]
     pub fn make(&mut self, m: Move, mg: &MoveGenerator) -> bool {
+        println!("Making move: {} for side {}", m.as_string(), self.game_state.side_to_move);
+        println!("Board state before move:");
+        self.print_board();
         // Create the unmake info and store it.
         let mut current_game_state = self.game_state;
         current_game_state.next_move = m;
@@ -120,15 +123,22 @@ impl Board {
             self.game_state.fullmove_number += 1;
         }
 
+        println!("Board state after move:");
+        self.print_board();
+
         /*** Validating move: see if "us" is in check. If so, undo everything. ***/
-        let is_legal = !mg.square_attacked(self, opponent, &Square(self.pieces[Pieces::KING][us].0.trailing_zeros().try_into().unwrap()));
+        let king_square = Square(self.pieces[Pieces::KING][us].0.trailing_zeros() as usize);
+        let is_legal = !mg.square_attacked(self, opponent, &king_square);
         if !is_legal {
+            println!("Move is illegal, unmaking");
             self.unmake();
+            println!("Board state after unmaking:");
+            self.print_board();
         }
 
         // When running in debug mode, check the incrementally updated
         // values such as Zobrist key and meterial count.
-        //debug_assert!(check_incrementals(self));
+        //assert!(check_incrementals(self));
 
         // Report if the move was legal or not.
         is_legal
@@ -218,4 +228,34 @@ fn put_piece(board: &mut Board, side: Side, piece: Piece, square: Square) {
 fn reverse_move(board: &mut Board, side: Side, piece: Piece, remove: Square, put: Square) {
     remove_piece(board, side, piece, remove);
     put_piece(board, side, piece, put);
+}
+
+// This function can be used to check if incrementally updated values are
+// kept correctly correctly during make() and unmake(). If one of the
+// values is found to be incorrect (= different as compared to that value
+// being generated from scratch), the engine will panic. This function only
+// runs in debug mode.
+
+fn check_incrementals(board: &Board) -> bool {
+    let from_scratch_key = board.init_zobrist_key();
+    //let from_scratch_psqt = crate::evaluation::psqt::apply(board);
+    let mut result = true;
+
+    // Waterfall: only report first error encountered and skip any others.
+    if result && from_scratch_key != board.game_state.zobrist_key {
+        println!("Check Incrementals: Error in Zobrist key.");
+        result = false;
+    };
+
+    // if result && from_scratch_psqt.0 != board.game_state.psqt[Sides::WHITE] {
+    //     println!("Check Incrementals: Error in PSQT for white.");
+    //     result = false;
+    // };
+
+    // if result && from_scratch_psqt.1 != board.game_state.psqt[Sides::BLACK] {
+    //     println!("Check Incrementals: Error in PSQT for black.");
+    //     result = false;
+    // };
+
+    result
 }

@@ -184,6 +184,13 @@ impl Sub for BitBoard {
     }
 }
 
+impl Not for &BitBoard {
+    type Output = Self;
+    fn not(self) -> Self {
+        &BitBoard(!self.0)
+    }
+}
+
 impl std::fmt::Debug for BitBoard {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "BitBoard(0x{:016x})", self.0)

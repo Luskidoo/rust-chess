@@ -22,10 +22,10 @@ impl MoveGenerator {
     }
 
     pub fn generate_w_pawn_pushes(&self, board: &Board, list: &mut MoveList) {
-        let mut w_pawns = board.pieces[Pieces::PAWN][Sides::WHITE];
+        let mut w_pawns = &board.pieces[Pieces::PAWN][Sides::WHITE];
         //println!("Initial pawns bitboard {:?}", w_pawns);
-        let empty_bb: BitBoard = !board.occupancy(Sides::BOTH);
-        while w_pawns > BitBoard(0) {
+        let &empty_bb: &BitBoard = !&board.occupancy(Sides::BOTH);
+        while w_pawns > &BitBoard(0) {
             let from = BitBoard::next(&mut w_pawns);
             let from_bb: BitBoard = BitBoard(1) << BitBoard(from.0.try_into().unwrap());
             let mut to_bb: BitBoard = Self::w_pawn_single_push(from_bb, empty_bb) | Self::w_pawn_double_push(from_bb, empty_bb);

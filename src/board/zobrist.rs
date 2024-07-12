@@ -63,7 +63,7 @@ impl ZobristRandoms {
     }
 
     pub fn castling(&self, castling_permissions: BitBoard) -> ZobristKey {
-        self.rnd_castling[castling_permissions.0 as usize]
+        self.rnd_castling[castling_permissions as usize]
     }
 
     pub fn side(&self, side: Side) -> u64 {

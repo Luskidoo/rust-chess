@@ -1,4 +1,4 @@
-use crate::{defs::{Pieces, Square}, BitBoard, BitMove, Board, MoveList};
+use crate::{defs::{Pieces, Square}, bitboard::*, BitMove, Board, MoveList};
 
 use super::{MoveGenerator, SQ};
 
@@ -7,8 +7,8 @@ impl MoveGenerator {
         let side = board.game_state.side_to_move as usize;
         let mut kings = board.pieces[Pieces::KING][side];
         //println!("{}", occupancy);
-        while kings > BitBoard(0) {
-            let from = BitBoard::next(&mut kings);
+        while kings > 0 {
+            let from = next(&mut kings);
             let mut to_bb = self.king_attacks[from.0];
             // if white
             if side == 0 {
@@ -18,8 +18,8 @@ impl MoveGenerator {
                 to_bb &= !board.black_occupied()
             }           
             //println!("{}", to_bb);
-            while to_bb > BitBoard(0) {
-            let to = BitBoard::next(&mut to_bb);
+            while to_bb > 0 {
+            let to = next(&mut to_bb);
                 self.add_move(&board, list, Pieces::KING, from.clone(), to.clone());
                 //println!("King move from {} to {}", from, to);
             }

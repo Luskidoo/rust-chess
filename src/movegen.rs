@@ -76,7 +76,7 @@ impl MoveGenerator {
         east_attacks | west_attacks
     }
     
-    fn generate_knight_moves(&self, board: Board, list: &mut MoveList) {
+    fn generate_knight_moves(&self, board: &Board, list: &mut MoveList) {
         let w_knights = board.pieces[Pieces::KNIGHT][Sides::WHITE];
         let w_empty = !board.white_occupied();
         Self::w_knight_moves(&self, &board, w_knights, w_empty, list);
@@ -89,9 +89,8 @@ impl MoveGenerator {
         attacks
     }
     
-    pub fn generate_all_moves(self, board: Board, list: &mut MoveList) {
-        Self::generate_w_pawn_pushes(&self,board, list);
-        Self::generate_w_pawn_attacks(&self, board, list);
+    pub fn generate_all_moves(&self, board: &Board, list: &mut MoveList) {
+        Self::generate_pawn_moves(&self, board, list);
         Self::generate_knight_moves(&self, board, list);
         Self::generate_rook_moves(&self, board, list);
         Self::generate_bishop_moves(&self, board, list);

@@ -4,8 +4,11 @@ mod zobrist;
 mod utils;
 mod history;
 
+use std::sync::Arc;
+
 use game_state::GameState;
 use history::History;
+use zobrist::ZobristRandoms;
 
 use crate::bitboard::*;
 use crate::defs::*;
@@ -15,7 +18,8 @@ pub struct Board {
     pub pieces: [[BitBoard; Sides::BOTH + 1]; NrOf::PIECE_TYPES],
     pub piece_list: [Piece; NrOf::SQUARES],
     pub game_state: GameState,
-    pub history: History
+    pub history: History,
+    zr: ZobristRandoms,
 }
 
 impl Board {
@@ -25,6 +29,7 @@ impl Board {
             piece_list: [Pieces::NONE; NrOf::SQUARES],
             game_state: GameState::new(),
             history: History::new(),
+            zr: ZobristRandoms::new(),
         }
     }
 
@@ -77,30 +82,30 @@ impl Board {
 
     // Remove a piece from the board, for the given side, piece, and square.
     pub fn remove_piece(&mut self, side: Side, piece: Piece, square: Square) {
-        self.pieces[piece][side] ^= square.to_bb();
-        self.bb_side[side] ^= square.to_bb();
+        self.pieces[piece][side] ^= square.clone().to_bb();
+        //self.bb_side[side] ^= square.to_bb();
         self.piece_list[square.0] = Pieces::NONE;
         self.game_state.zobrist_key ^= self.zr.piece(side, piece, square);
 
         // Incremental updates
         // =============================================================
         let flip = side == Sides::WHITE;
-        let s = if flip { FLIP[square.0] } else { square };
-        self.game_state.psqt[side] -= PSQT_MG[piece][s];
+        //let s = if flip { FLIP[square.0] } else { square };
+        //self.game_state.psqt[side] -= PSQT_MG[piece][s];
     }
 
     // Put a piece onto the board, for the given side, piece, and square.
     pub fn put_piece(&mut self, side: Side, piece: Piece, square: Square) {
-        self.pieces[piece][side] |= square.to_bb();
-        self.bb_side[side] |= square.to_bb();
+        self.pieces[piece][side] |= square.clone().to_bb();
+        //self.bb_side[side] |= square.to_bb();
         self.piece_list[square.0] = piece;
         self.game_state.zobrist_key ^= self.zr.piece(side, piece, square);
 
         // Incremental updates
         // =============================================================
-        let flip = side == Sides::WHITE;
-        let s = if flip { FLIP[square.0] } else { square };
-        self.game_state.psqt[side] += PSQT_MG[piece][s];
+        //let flip = side == Sides::WHITE;
+        //let s = if flip { FLIP[square.0] } else { square };
+        //self.game_state.psqt[side] += PSQT_MG[piece][s];
     }
 
     // Remove a piece from the from-square, and put it onto the to-square.
@@ -112,7 +117,7 @@ impl Board {
     // Set a square as being the current ep-square.
     pub fn set_ep_square(&mut self, square: Square) {
         self.game_state.zobrist_key ^= self.zr.en_passant(self.game_state.en_passant);
-        self.game_state.en_passant = Some(square as u8);
+        self.game_state.en_passant = Some(square.0 as u8);
         self.game_state.zobrist_key ^= self.zr.en_passant(self.game_state.en_passant);
     }
 
@@ -131,7 +136,7 @@ impl Board {
     }
 
     // Update castling permissions and take Zobrist-key into account.
-    pub fn update_castling_permissions(&mut self, new_permissions: u8) {
+    pub fn update_castling_permissions(&mut self, new_permissions: BitBoard) {
         self.game_state.zobrist_key ^= self.zr.castling(self.game_state.castling);
         self.game_state.castling = new_permissions;
         self.game_state.zobrist_key ^= self.zr.castling(self.game_state.castling);

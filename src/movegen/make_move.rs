@@ -1,4 +1,4 @@
-use crate::{defs::{Castling, NrOf, Piece, Pieces, Side, Sides, Square}, BitBoard, Board};
+use crate::{defs::{self, Castling, NrOf, Piece, Pieces, Side, Sides, Square}, BitBoard, Board};
 
 use super::{bit_move::Move, MoveGenerator};
 
@@ -55,7 +55,7 @@ impl Board {
         // Shorthands
         let is_promotion = promoted != Pieces::NONE;
         let is_capture = captured != Pieces::NONE;
-        let has_permissions = self.game_state.castling > 0;
+        let has_permissions = self.game_state.castling > BitBoard(0);
 
         // Assume this is not a pawn move or a capture.
         self.game_state.halfmove_clock += 1;
@@ -67,38 +67,38 @@ impl Board {
 
         // If a piece was captured with this move then remove it. Also reset halfmove_clock.
         if is_capture {
-            self.remove_piece(opponent, captured, to);
+            self.remove_piece(opponent, captured, to.clone());
             self.game_state.halfmove_clock = 0;
             // Change castling permissions on rook capture in the corner.
             if captured == Pieces::ROOK && has_permissions {
-                self.update_castling_permissions(self.game_state.castling & CASTLING_PERMS[to]);
+                self.update_castling_permissions(self.game_state.castling & CASTLING_PERMS[to.clone().0]);
             }
         }
 
         // Make the move. Just move the piece if it's not a pawn.
         if piece != Pieces::PAWN {
-            self.move_piece(us, piece, from, to);
+            self.move_piece(us, piece, from.clone(), to.clone());
         } else {
             // It's a pawn move. Take promotion into account and reset halfmove_clock.
-            self.remove_piece(us, piece, from);
-            self.put_piece(us, if !is_promotion { piece } else { promoted }, to);
+            self.remove_piece(us, piece, from.clone());
+            self.put_piece(us, if !is_promotion { piece } else { promoted }, to.clone());
             self.game_state.halfmove_clock = 0;
 
             // After an en-passant maneuver, the opponent's pawn must also be removed.
             if en_passant {
-                self.remove_piece(opponent, Pieces::PAWN, to ^ 8);
+                self.remove_piece(opponent, Pieces::PAWN, Square(to.clone().0 ^ 8));
             }
 
             // A double-step is the only move that sets the ep-square.
             if double_step {
-                self.set_ep_square(to ^ 8);
+                self.set_ep_square(Square(to.0 ^ 8));
             }
         }
 
         // Remove castling permissions if king/rook leaves from starting square.
         // (This will also adjust permissions when castling, because the king moves.)
         if (piece == Pieces::KING || piece == Pieces::ROOK) && has_permissions {
-            self.update_castling_permissions(self.game_state.castling & CASTLING_PERMS[from.0]);
+            self.update_castling_permissions(self.game_state.castling & CASTLING_PERMS[from.clone().0]);
         }
 
         // If the king is castling, then also move the rook.
@@ -121,7 +121,7 @@ impl Board {
         }
 
         /*** Validating move: see if "us" is in check. If so, undo everything. ***/
-        let is_legal = !mg.square_attacked(self, opponent, self.king_square(us));
+        let is_legal = !mg.square_attacked(self, opponent, &Square(self.pieces[Pieces::KING][us].0.trailing_zeros().try_into().unwrap()));
         if !is_legal {
             self.unmake();
         }
@@ -146,7 +146,7 @@ impl Board {
         self.game_state = self.history.pop();
 
         // Set "us" and "opponent"
-        let us = self.us();
+        let us = self.game_state.side_to_move;
         let opponent = us ^ 1;
 
         // Dissect the move to undo
@@ -161,9 +161,9 @@ impl Board {
 
         // Moving backwards...
         if promoted == Pieces::NONE {
-            reverse_move(self, us, piece, to, from);
+            reverse_move(self, us, piece, to.clone(), from);
         } else {
-            remove_piece(self, us, promoted, to);
+            remove_piece(self, us, promoted, to.clone());
             put_piece(self, us, Pieces::PAWN, from);
         }
 
@@ -181,12 +181,12 @@ impl Board {
 
         // If a piece was captured, put it back onto the to-square
         if captured != Pieces::NONE {
-            put_piece(self, opponent, captured, to);
+            put_piece(self, opponent, captured, to.clone());
         }
 
         // If this was an e-passant move, put the opponent's pawn back
         if en_passant {
-            put_piece(self, opponent, Pieces::PAWN, to ^ 8);
+            put_piece(self, opponent, Pieces::PAWN, Square(to.0 ^ 8));
         }
     }
 }
@@ -202,16 +202,16 @@ impl Board {
 
 // Removes a piece from the board without Zobrist key updates.
 fn remove_piece(board: &mut Board, side: Side, piece: Piece, square: Square) {
-    board.pieces[side][piece] ^= square.to_bb();
-    board.bb_side[side] ^= square.to_bb();
-    board.piece_list[square] = Pieces::NONE;
+    board.pieces[piece][side] ^= square.clone().to_bb();
+    //board.bb_side[side] ^= square.to_bb();
+    board.piece_list[square.0] = Pieces::NONE;
 }
 
 // Puts a piece onto the board without Zobrist key updates.
 fn put_piece(board: &mut Board, side: Side, piece: Piece, square: Square) {
-    board.pieces[side][piece] |= square.to_bb();
-    board.bb_side[side] |= square.to_bb();
-    board.piece_list[square] = piece;
+    board.pieces[piece][side] |= square.clone().to_bb();
+    //board.bb_side[side] |= square.to_bb();
+    board.piece_list[square.0] = piece;
 }
 
 // Moves a piece from one square to another.

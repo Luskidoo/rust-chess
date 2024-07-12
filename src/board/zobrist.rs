@@ -1,4 +1,4 @@
-use crate::defs::{Side, Sides, Square};
+use crate::{defs::{Side, Sides, Square}, BitBoard};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
 
@@ -14,7 +14,7 @@ pub type ZobristKey = u64;
 
 // 256 bit (8 bits x 32) seed
 const RNG_SEED: [u8; 32] = [125; 32];
-
+#[derive(Clone, Copy)]
 pub struct ZobristRandoms {
     rnd_pieces: PieceRandoms,
     rnd_castling: CastlingRandoms,
@@ -62,8 +62,8 @@ impl ZobristRandoms {
         self.rnd_pieces[side][piece][square.0]
     }
 
-    pub fn castling(&self, castling_permissions: u8) -> ZobristKey {
-        self.rnd_castling[castling_permissions as usize]
+    pub fn castling(&self, castling_permissions: BitBoard) -> ZobristKey {
+        self.rnd_castling[castling_permissions.0 as usize]
     }
 
     pub fn side(&self, side: Side) -> u64 {
@@ -73,7 +73,7 @@ impl ZobristRandoms {
     pub fn en_passant(&self, en_passant: Option<u8>) -> ZobristKey {
         match en_passant {
             Some(ep) => self.rnd_en_passant[ep as usize],
-            None => self.rnd_en_passant[65],
+            None => self.rnd_en_passant[NrOf::SQUARES],
         }
     }
 }

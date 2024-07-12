@@ -1,4 +1,4 @@
-use crate::BitBoard;
+use crate::{movegen::bit_move::Move, BitBoard};
 
 use super::Side;
 
@@ -9,6 +9,8 @@ pub struct GameState {
     pub fullmove_number: u16,
     pub castling: BitBoard,
     pub side_to_move: Side,
+    pub next_move: Move,
+    pub zobrist_key: u64,
 }
 
 impl GameState {
@@ -19,9 +21,9 @@ impl GameState {
             en_passant: None,
             halfmove_clock: 0,
             fullmove_number: 0,
-            //zobrist_key: 0,
             //psqt: [0; Sides::BOTH],
-            //next_move: Move::new(0),
+            next_move: Move::new(0),
+            zobrist_key: 0,
         }
     }
 }

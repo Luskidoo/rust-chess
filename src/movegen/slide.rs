@@ -3,7 +3,7 @@ use crate::{defs::{Piece, Pieces, Side, Sides, Square}, BitBoard, BitMove, Board
 use super::{MoveGenerator, SQ};
 
 impl MoveGenerator {
-    pub fn generate_rook_moves(&self, board: Board, list: &mut MoveList) {
+    pub fn generate_rook_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
         let mut rooks = board.pieces[Pieces::ROOK][side];
         let occupancy = board.black_occupied() | board.white_occupied();
@@ -29,7 +29,7 @@ impl MoveGenerator {
         }
     }
 
-    pub fn generate_bishop_moves(&self, board: Board, list: &mut MoveList) {
+    pub fn generate_bishop_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
         let mut bishops = board.pieces[Pieces::BISHOP][side];
         let occupancy = board.black_occupied() | board.white_occupied();
@@ -52,7 +52,7 @@ impl MoveGenerator {
     }
 
 
-    pub fn generate_queen_moves(&self, board: Board, list: &mut MoveList) {
+    pub fn generate_queen_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
         let mut queens = board.pieces[Pieces::QUEEN][side];
         let occupancy = board.black_occupied() | board.white_occupied();

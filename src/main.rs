@@ -7,6 +7,7 @@ mod defs;
 mod movegen;
 mod bitmove;
 mod movelist;
+mod perft;
 
 //mod extra;
 use crate::bitmove::*;
@@ -27,8 +28,7 @@ fn main() {
     let fen_result = board.fen_read(Some(init_fen));
     let mut list = MoveList::default();
     let move_gen = MoveGenerator::new();
-    move_gen.generate_all_moves(board, &mut list);
-    println!("{} moves", list.count);
+    perft::run(board, 2, move_gen);
     //println!("{:?}", MoveGenerator::rook_mask(0));
     //println!("{:?}", MoveGenerator::rook_attacks(0, BitBoard(258)));
 

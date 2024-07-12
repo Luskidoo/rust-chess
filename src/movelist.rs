@@ -18,6 +18,11 @@ impl MoveList {
     pub fn len(&self) -> u8 {
         self.count
     }
+
+    // Return the move at the given index. If out of bounds, the program crashes.
+    pub fn get_move(&self, index: u8) -> Move {
+        self.list[index as usize]
+    }
 }
 
 impl Default for MoveList {

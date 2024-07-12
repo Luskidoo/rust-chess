@@ -21,7 +21,7 @@ impl MoveGenerator {
             while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
                 self.add_move(&board, list, Pieces::KING, from.clone(), to.clone());
-                println!("King move from {} to {}", from, to);
+                //println!("King move from {} to {}", from, to);
             }
         }
     }

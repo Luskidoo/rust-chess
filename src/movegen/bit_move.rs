@@ -1,4 +1,4 @@
-use crate::defs::{Piece, Square};
+use crate::defs::{Piece, Square, PIECE_CHAR_SMALL, SQUARE_NAME};
 
 /* "Shift" is an enum which contains the number of bits that needed to be shifted to store
  * move data in a specific place within the u64 integer. This makes sure that, should the
@@ -61,5 +61,14 @@ impl Move {
     #[inline]
     pub const fn null() -> Self {
         Self { data: 0 }
+    }
+
+    pub fn as_string(&self) -> String {
+        format!(
+            "{}{}{}",
+            SQUARE_NAME[self.from().0],
+            SQUARE_NAME[self.to().0],
+            PIECE_CHAR_SMALL[self.promoted()]
+        )
     }
 }

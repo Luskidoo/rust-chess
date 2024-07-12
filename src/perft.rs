@@ -107,7 +107,7 @@ pub fn perft(
     for i in 0..move_list.len() {
         // Get the move to be executed and counted.
         let m = move_list.get_move(i);
-
+        println!("{}", m.as_string());
         // If the move is legal...
         if board.make(m, mg) {
             // Then count the number of leaf nodes it generates...

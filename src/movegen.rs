@@ -40,12 +40,12 @@ impl MoveGenerator {
     pub fn new () -> Self {
         let mut mg = Self {
             knight_moves_array: Self::init_knight_moves(),
-            pawns: [[0; 64]; 2],
+            pawns: [[BitBoard(0); 64]; 2],
             king_attacks: Self::init_king_moves(),
             rook_magics: [Magic::new(); 64],
             bishop_magics: [Magic::new(); 64],
-            rook: vec![0; 102400],
-            bishop: vec![0; 5248],
+            rook: vec![BitBoard(0); 102400],
+            bishop: vec![BitBoard(0); 5248],
         };
         mg.init_pawn_attacks();
         mg.init_magics(true);
@@ -55,24 +55,24 @@ impl MoveGenerator {
     }
 
     fn knight_moves(sq: u64) -> BitBoard {
-        let l1: BitBoard = sq >> 1 & 0x7f7f7f7f7f7f7f7f;
-        let l2: BitBoard = sq >> 2 & 0x3f3f3f3f3f3f3f3f;
-        let r1: BitBoard = sq << 1 & 0xfefefefefefefefe;
-        let r2: BitBoard = sq << 2 & 0xfcfcfcfcfcfcfcfc;
+        let l1: BitBoard = BitBoard(sq >> 1) & BitBoard(0x7f7f7f7f7f7f7f7f);
+        let l2: BitBoard = BitBoard(sq >> 2) & BitBoard(0x3f3f3f3f3f3f3f3f);
+        let r1: BitBoard = BitBoard(sq << 1) & BitBoard(0xfefefefefefefefe);
+        let r2: BitBoard = BitBoard(sq << 2) & BitBoard(0xfcfcfcfcfcfcfcfc);
         let h1: BitBoard = l1 | r1;
         let h2: BitBoard = l2 | r2;
-        (h1 << 16) | (h1 >> 16) | (h2 << 8) | (h2 >> 8)
+        BitBoard((h1.0 << 16) | (h1.0 >> 16) | (h2.0 << 8) | (h2.0 >> 8))
     }
 
     fn white_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = sq << 9u64 & NOT_A_FILE;
-        let west_attacks = sq << 7u64 & NOT_H_FILE;
+        let east_attacks = BitBoard(sq << 9u64) & BitBoard::NOT_A_FILE;
+        let west_attacks = BitBoard(sq << 7u64) & BitBoard::NOT_H_FILE;
         east_attacks | west_attacks
     }
 
     fn black_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = sq >> 7u64 & NOT_A_FILE;
-        let west_attacks = sq >> 9u64 & NOT_H_FILE;
+        let east_attacks = BitBoard(sq >> 7u64) & BitBoard::NOT_A_FILE;
+        let west_attacks = BitBoard(sq >> 9u64) & BitBoard::NOT_H_FILE;
         east_attacks | west_attacks
     }
     
@@ -83,9 +83,9 @@ impl MoveGenerator {
     }
 
     fn king_moves(kings: BitBoard) -> BitBoard {
-        let mut attacks = east_one(kings) | west_one(kings);
+        let mut attacks = kings.east_one() | kings.west_one();
         let intermediate = kings | attacks;
-        attacks |= north_one(intermediate) | south_one(intermediate);
+        attacks |= intermediate.north_one() | intermediate.south_one();
         attacks
     }
     
@@ -135,12 +135,12 @@ impl MoveGenerator {
         // is on one of the squares a rook has to be to reach the given
         // square. Same for the queen, knight, etc... As soon as one is
         // found, the square is attacked.
-        (bb_king & board.pieces[Pieces::KING][attacker] > 0)
-            || (bb_rook & board.pieces[Pieces::ROOK][attacker] > 0)
-            || (bb_queen & board.pieces[Pieces::QUEEN][attacker] > 0)
-            || (bb_bishop & board.pieces[Pieces::BISHOP][attacker] > 0)
-            || (bb_knight & board.pieces[Pieces::KNIGHT][attacker] > 0)
-            || (bb_pawns & board.pieces[Pieces::PAWN][attacker] > 0)
+        (bb_king & board.pieces[Pieces::KING][attacker] > BitBoard(0))
+            || (bb_rook & board.pieces[Pieces::ROOK][attacker] > BitBoard(0))
+            || (bb_queen & board.pieces[Pieces::QUEEN][attacker] > BitBoard(0))
+            || (bb_bishop & board.pieces[Pieces::BISHOP][attacker] > BitBoard(0))
+            || (bb_knight & board.pieces[Pieces::KNIGHT][attacker] > BitBoard(0))
+            || (bb_pawns & board.pieces[Pieces::PAWN][attacker] > BitBoard(0))
     }
 
     pub fn add_move(&self, board: &Board, list: &mut MoveList, piece: Piece, from: Square, to: Square) {

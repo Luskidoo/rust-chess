@@ -1,4 +1,4 @@
-use crate::{defs::{Castling, Pieces, Sides, Square}, bitboard::*, Board, MoveList};
+use crate::{defs::{Castling, Pieces, Sides, Square}, BitBoard, Board, MoveList};
 
 use super::MoveGenerator;
 
@@ -7,39 +7,39 @@ impl MoveGenerator {
         // Create shorthand variables.
         let side_to_move = board.game_state.side_to_move;
         let opponent = side_to_move ^ 1;
-        let castle_perms_white = (board.game_state.castling & (Castling::WK | Castling::WQ)) > 0;
-        let castle_perms_black = (board.game_state.castling & (Castling::BK | Castling::BQ)) > 0;
+        let castle_perms_white = (board.game_state.castling & (Castling::WK | Castling::WQ)) > BitBoard(0);
+        let castle_perms_black = (board.game_state.castling & (Castling::BK | Castling::BQ)) > BitBoard(0);
         let bb_occupancy = board.occupancy(Sides::BOTH);
         let mut bb_king = board.pieces[Pieces::KING][board.game_state.side_to_move];
-        let from = next(&mut bb_king);
+        let from = BitBoard::next(&mut bb_king);
     
         // Generate castling moves for white.
         if side_to_move == Sides::WHITE && castle_perms_white {
             // Kingside
-            if board.game_state.castling & Castling::WK > 0 {
+            if board.game_state.castling & Castling::WK > BitBoard(0) {
                 let bb_kingside_blockers = Square::F1.to_bb() | Square::G1.to_bb();
-                let is_kingside_blocked = (bb_occupancy & bb_kingside_blockers) > 0;
+                let is_kingside_blocked = (bb_occupancy & bb_kingside_blockers) > BitBoard(0);
     
                 if !is_kingside_blocked
                     && !self.square_attacked(board, opponent, &Square::E1)
                     && !self.square_attacked(board, opponent, &Square::F1)
                 {
-                    let to = Square((from.clone().to_bb() << 2).try_into().unwrap());
+                    let to = Square((from.clone().to_bb() << BitBoard(2)).0.try_into().unwrap());
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
     
-            if board.game_state.castling & Castling::WQ > 0 {
+            if board.game_state.castling & Castling::WQ > BitBoard(0) {
                 // Queenside
                 let bb_queenside_blockers =
                     Square::B1.to_bb() | Square::C1.to_bb() | Square::D1.to_bb();
-                let is_queenside_blocked = (bb_occupancy & bb_queenside_blockers) > 0;
+                let is_queenside_blocked = (bb_occupancy & bb_queenside_blockers) > BitBoard(0);
     
                 if !is_queenside_blocked
                     && !self.square_attacked(board, opponent, &Square::E1)
                     && !self.square_attacked(board, opponent, &Square::D1)
                 {
-                    let to = Square((from.clone().to_bb() >> 2).try_into().unwrap());
+                    let to = Square((from.clone().to_bb() >> BitBoard(2)).0.try_into().unwrap());
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
@@ -48,30 +48,30 @@ impl MoveGenerator {
         // Generate castling moves for black.
         if side_to_move == Sides::BLACK && castle_perms_black {
             // Kingside
-            if board.game_state.castling & Castling::BK > 0 {
+            if board.game_state.castling & Castling::BK > BitBoard(0) {
                 let bb_kingside_blockers = Square::F8.to_bb() | Square::G8.to_bb();
-                let is_kingside_blocked = (bb_occupancy & bb_kingside_blockers) > 0;
+                let is_kingside_blocked = (bb_occupancy & bb_kingside_blockers) > BitBoard(0);
     
                 if !is_kingside_blocked
                     && !self.square_attacked(board, opponent, &Square::E8)
                     && !self.square_attacked(board, opponent, &Square::F8)
                 {
-                    let to = Square((from.clone().to_bb() << 2).try_into().unwrap());
+                    let to = Square((from.clone().to_bb() << BitBoard(2)).0.try_into().unwrap());
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
     
             // Queenside
-            if board.game_state.castling & Castling::BQ > 0 {
+            if board.game_state.castling & Castling::BQ > BitBoard(0) {
                 let bb_queenside_blockers =
                     Square::B8.to_bb() | Square::C8.to_bb() | Square::D8.to_bb();
-                let is_queenside_blocked = (bb_occupancy & bb_queenside_blockers) > 0;
+                let is_queenside_blocked = (bb_occupancy & bb_queenside_blockers) > BitBoard(0);
     
                 if !is_queenside_blocked
                     && !self.square_attacked(board, opponent, &Square::E8)
                     && !self.square_attacked(board, opponent, &Square::D8)
                 {
-                    let to = Square((from.clone().to_bb() >> 2).try_into().unwrap());
+                    let to = Square((from.clone().to_bb() >> BitBoard(2)).0.try_into().unwrap());
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }

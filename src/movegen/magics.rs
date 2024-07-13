@@ -1,4 +1,4 @@
-use crate::bitboard::*;
+use crate::BitBoard;
 use rand::Rng;
 
 use super::MoveGenerator;
@@ -14,7 +14,7 @@ pub struct Magic {
 impl Magic {
     pub fn new() -> Self {
         Self {
-            mask: 0,
+            mask: BitBoard(0),
             shift: 0,
             offset: 0,
             nr: 0
@@ -23,7 +23,7 @@ impl Magic {
 
     pub fn get_index(&self, occupancy: BitBoard) -> usize {
       let blockerboard = occupancy & self.mask;
-      ((blockerboard.wrapping_mul(self.nr) >> self.shift) + self.offset) as usize
+      ((blockerboard.0.wrapping_mul(self.nr) >> self.shift) + self.offset) as usize
   }
 }
 
@@ -49,10 +49,10 @@ static B_BITS: [u64; 64] = [
   6, 5, 5, 5, 5, 5, 5, 6
 ];
 
-fn pop_1st_bit(bb: &mut u64) -> u64 {
-  let lsb = *bb & (!(*bb) + 1);
-  *bb &= *bb - 1;
-  lsb.trailing_zeros().into()
+fn pop_1st_bit(bb: &mut BitBoard) -> u64 {
+    let lsb = bb.0 & (!bb.0 + 1);
+    bb.0 &= bb.0 - 1;
+    lsb.trailing_zeros() as u64
 }
 
 fn random_u64() -> u64 {
@@ -78,7 +78,7 @@ impl MoveGenerator {
       for r in (1..rk).rev() { result |= 1u64 << (fl + r * 8); }
       for f in (fl + 1)..=6 { result |= 1u64 << (f + rk * 8); }
       for f in (1..fl).rev() { result |= 1u64 << (f + rk * 8); }
-      result
+      BitBoard(result)
     }
 
     pub fn bishop_mask(sq: u8) -> BitBoard {
@@ -89,7 +89,7 @@ impl MoveGenerator {
       for (r, f) in (rk + 1..=6).zip((1..fl).rev()) { result |= 1u64 << (f + r * 8); }
       for (r, f) in (1..rk).rev().zip(fl + 1..=6) { result |= 1u64 << (f + r * 8); }
       for (r, f) in (1..rk).rev().zip((1..fl).rev()) { result |= 1u64 << (f + r * 8); }
-      result
+      BitBoard(result)
     }
 
     pub fn rook_attacks(sq: u8, block: BitBoard) -> BitBoard {
@@ -98,21 +98,21 @@ impl MoveGenerator {
       let fl = sq % 8;
       for r in rk + 1..=7 {
           result |= 1u64 << (fl + r * 8);
-          if block & (1u64 << (fl + r * 8)) != 0 { break; }
+          if block.0 & (1u64 << (fl + r * 8)) != 0 { break; }
       }
       for r in (0..rk).rev() {
           result |= 1u64 << (fl + r * 8);
-          if block & (1u64 << (fl + r * 8)) != 0 { break; }
+          if block.0 & (1u64 << (fl + r * 8)) != 0 { break; }
       }
       for f in fl + 1..=7 {
           result |= 1u64 << (f + rk * 8);
-          if block & (1u64 << (f + rk * 8)) != 0 { break; }
+          if block.0 & (1u64 << (f + rk * 8)) != 0 { break; }
       }
       for f in (0..fl).rev() {
           result |= 1u64 << (f + rk * 8);
-          if block & (1u64 << (f + rk * 8)) != 0 { break; }
+          if block.0 & (1u64 << (f + rk * 8)) != 0 { break; }
       }
-      result
+      BitBoard(result)
     }
 
     pub fn bishop_attacks(sq: u8, block: BitBoard) -> BitBoard {
@@ -121,48 +121,48 @@ impl MoveGenerator {
       let fl = sq % 8;
       for (r, f) in (rk + 1..=7).zip(fl + 1..=7) {
           result |= 1u64 << (f + r * 8);
-          if block & (1u64 << (f + r * 8)) != 0 { break; }
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
       for (r, f) in (rk + 1..=7).zip((0..fl).rev()) {
           result |= 1u64 << (f + r * 8);
-          if block & (1u64 << (f + r * 8)) != 0 { break; }
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
       for (r, f) in (0..rk).rev().zip(fl + 1..=7) {
           result |= 1u64 << (f + r * 8);
-          if block & (1u64 << (f + r * 8)) != 0 { break; }
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
       for (r, f) in (0..rk).rev().zip((0..fl).rev()) {
           result |= 1u64 << (f + r * 8);
-          if block & (1u64 << (f + r * 8)) != 0 { break; }
+          if block.0 & (1u64 << (f + r * 8)) != 0 { break; }
       }
-    result
+    BitBoard(result)
     }
 
     fn transform(bb: BitBoard, magic: BitBoard, bits: u64) -> usize {
-      (bb.wrapping_mul(magic) >> (64 - bits)) as usize
+      (bb.0.wrapping_mul(magic.0) >> (64 - bits)) as usize
     }
 
     fn index_to_u64(index: usize, bits: u64, mut m: BitBoard) -> BitBoard {
-      let mut result = 0;
+      let mut result = BitBoard(0);
       let mut j: u64;
       for i in 0..bits {
         j = pop_1st_bit(&mut m);
         if index & (1 << i) != 0 {
-          result |= 1u64 << j;
+          result |= BitBoard(1u64 << j);
         }
       }
       result
     }
 
     fn find_magic(sq: u8, m: u64, is_rook: bool) -> BitBoard {
-      let mut b: [BitBoard; 4096] = [0; 4096];
-      let mut a: [BitBoard; 4096] = [0; 4096];
-      let mut used: [BitBoard; 4096] = [0; 4096];
+      let mut b: [BitBoard; 4096] = [BitBoard(0); 4096];
+      let mut a: [BitBoard; 4096] = [BitBoard(0); 4096];
+      let mut used: [BitBoard; 4096] = [BitBoard(0); 4096];
       let mut j: usize;
       let rook_mask = Self::rook_mask(sq);
       let bishop_mask = Self::bishop_mask(sq);
       let mask = if is_rook { rook_mask } else { bishop_mask };
-      let n = mask.count_ones();
+      let n = mask.pop_count();
 
       for i in 0..(1 << n) {
         b[i] = Self::index_to_u64(i, n.into(), mask);
@@ -173,35 +173,35 @@ impl MoveGenerator {
         // if k % 100000 == 0 {
         //   println!("k: {}", k);
         // }
-        let magic = random_u64_fewbits();
-        if mask.wrapping_mul(magic) & (0xFF00000000000000u64.count_ones() as u64) < 6 {
+        let magic = BitBoard(random_u64_fewbits());
+        if BitBoard(mask.0.wrapping_mul(magic.0) & 0xFF00000000000000u64).pop_count() < 6 {
           continue;
         }
-        used.fill(0);
+        used.fill(BitBoard(0));
         let mut fail = false;
         for i in 0..(1 << n) {
           //println!("{} out of {}", i, 1 << n);
           j = Self::transform(b[i], magic, m);
-          if used[j] == 0 {
+          if used[j] == BitBoard(0) {
             used[j] = a[i];
           }
           else if used[j] != a[i] {
             fail = true;
-            println!("Failed");
+            //println!("Failed");
           }
         }
         if !fail {
           return magic;
         }
       }
-      0
+      BitBoard(0)
     }
 
     pub fn generate_magics(is_rook: bool) -> [BitBoard; 64] {
-      let mut magics = [0; 64];
+      let mut magics = [BitBoard(0); 64];
       for sq in 0..64 {
         let magic = Self::find_magic(sq, if is_rook { R_BITS[sq as usize] } else { B_BITS[sq as usize] }, is_rook);
-        println!("{}, {:?}", sq, magic);
+        //println!("{}, {:?}", sq, magic);
         magics[sq as usize] = magic;
       }
       
@@ -211,14 +211,14 @@ impl MoveGenerator {
     pub fn blocker_boards(mask: BitBoard) -> Vec<BitBoard> {
       let d: BitBoard = mask;
       let mut bb_blocker_boards: Vec<BitBoard> = Vec::new();
-      let mut n: BitBoard = 0;
+      let mut n: BitBoard = BitBoard(0);
 
       // Carry-Rippler
       // https://www.chessprogramming.org/Traversing_Subsets_of_a_Set
       loop {
           bb_blocker_boards.push(n);
-          n = n.wrapping_sub(d) & d;
-          if n == 0 {
+          n = BitBoard(n.0.wrapping_sub(d.0) & d.0);
+          if n == BitBoard(0) {
               break;
           }
       }

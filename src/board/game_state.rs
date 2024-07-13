@@ -17,7 +17,7 @@ impl GameState {
     pub fn new() -> Self {
         Self {
             side_to_move: 0,
-            castling: 0,
+            castling: BitBoard(0),
             en_passant: None,
             halfmove_clock: 0,
             fullmove_number: 0,

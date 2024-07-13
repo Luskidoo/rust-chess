@@ -26,7 +26,7 @@ pub struct Board {
 impl Board {
     pub fn new() -> Self { 
         Self {
-            pieces: [[0; Sides::BOTH + 1]; NrOf::PIECE_TYPES],
+            pieces: [[BitBoard(0); Sides::BOTH + 1]; NrOf::PIECE_TYPES],
             piece_list: [Pieces::NONE; NrOf::SQUARES],
             game_state: GameState::new(),
             history: History::new(),
@@ -34,7 +34,7 @@ impl Board {
         }
     }
 
-    pub fn occupancy(&self, side: Side) -> BitBoard {
+    pub fn occupancy(self, side: Side) -> BitBoard {
         match side {
             Sides::WHITE => self.white_occupied(),
             Sides::BLACK => self.black_occupied(),
@@ -43,11 +43,11 @@ impl Board {
         }
     }
 
-    pub fn white_occupied(&self) -> BitBoard {
+    pub fn white_occupied(self) -> BitBoard {
         self.pieces[Pieces::PAWN][Sides::WHITE] | self.pieces[Pieces::BISHOP][Sides::WHITE] | self.pieces[Pieces::KNIGHT][Sides::WHITE] | self.pieces[Pieces::ROOK][Sides::WHITE] | self.pieces[Pieces::QUEEN][Sides::WHITE] | self.pieces[Pieces::KING][Sides::WHITE]
     }
 
-    pub fn black_occupied(&self) -> BitBoard {
+    pub fn black_occupied(self) -> BitBoard {
         self.pieces[Pieces::PAWN][Sides::BLACK] | self.pieces[Pieces::BISHOP][Sides::BLACK] | self.pieces[Pieces::KNIGHT][Sides::BLACK] | self.pieces[Pieces::ROOK][Sides::BLACK] | self.pieces[Pieces::QUEEN][Sides::BLACK] | self.pieces[Pieces::KING][Sides::BLACK]
     }
     
@@ -66,14 +66,14 @@ impl Board {
             let mut black_pieces = *b; // Black pieces of type "piece_type"
 
             // Put white pieces into the piece list.
-            while white_pieces > 0 {
-                let square = next(&mut white_pieces);
+            while white_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut white_pieces);
                 piece_list[square.0] = piece_type;
             }
 
             // Put black pieces into the piece list.
-            while black_pieces > 0 {
-                let square = next(&mut black_pieces);
+            while black_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut black_pieces);
                 piece_list[square.0] = piece_type;
             }
         }
@@ -168,14 +168,14 @@ impl Board {
             // Iterate through all the piece locations of the current piece
             // type. Get the square the piece is on, and then hash that
             // square/piece combination into the zobrist key.
-            while white_pieces > 0 {
-                let square = next(&mut white_pieces);
+            while white_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut white_pieces);
                 key ^= self.zr.piece(Sides::WHITE, piece_type, square);
             }
 
             // Same for black.
-            while black_pieces > 0 {
-                let square = next(&mut black_pieces);
+            while black_pieces > BitBoard(0) {
+                let square = BitBoard::next(&mut black_pieces);
                 key ^= self.zr.piece(Sides::BLACK, piece_type, square);
             }
         }
@@ -201,10 +201,10 @@ impl Board {
                 let mut piece_char = '.';
                 
                 for (piece_type, boards) in self.pieces.iter().enumerate() {
-                    if boards[Sides::WHITE] & (1 << square) != 0 {
+                    if boards[Sides::WHITE].0 & (1 << square) != 0 {
                         piece_char = piece_chars[piece_type];
                         break;
-                    } else if boards[Sides::BLACK] & (1 << square) != 0 {
+                    } else if boards[Sides::BLACK].0 & (1 << square) != 0 {
                         piece_char = piece_chars[piece_type + 6];
                         break;
                     }
@@ -219,10 +219,10 @@ impl Board {
         
         println!("Side to move: {}", if self.game_state.side_to_move == Sides::WHITE { "White" } else { "Black" });
         println!("Castling rights: {}{}{}{}", 
-            if self.game_state.castling & Castling::WK != 0 { "K" } else { "" },
-            if self.game_state.castling & Castling::WQ != 0 { "Q" } else { "" },
-            if self.game_state.castling & Castling::BK != 0 { "k" } else { "" },
-            if self.game_state.castling & Castling::BQ != 0 { "q" } else { "" }
+            if self.game_state.castling.0 & Castling::WK.0 != 0 { "K" } else { "" },
+            if self.game_state.castling.0 & Castling::WQ.0 != 0 { "Q" } else { "" },
+            if self.game_state.castling.0 & Castling::BK.0 != 0 { "k" } else { "" },
+            if self.game_state.castling.0 & Castling::BQ.0 != 0 { "q" } else { "" }
         );
         println!("En passant square: {}", self.game_state.en_passant.map_or("None".to_string(), |sq| format!("{}", sq)));
         println!("Halfmove clock: {}", self.game_state.halfmove_clock);
@@ -233,7 +233,7 @@ impl Board {
 
 impl Board {
     pub fn reset(&mut self) {
-        self.pieces = [[0; Sides::BOTH + 1]; NrOf::PIECE_TYPES];
+        self.pieces = [[BitBoard(0); Sides::BOTH + 1]; NrOf::PIECE_TYPES];
         self.game_state = GameState::new();
         self.piece_list = [Pieces::NONE; NrOf::SQUARES];
         //self.history.clear();

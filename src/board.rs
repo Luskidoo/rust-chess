@@ -34,7 +34,7 @@ impl Board {
         }
     }
 
-    pub fn occupancy(self, side: Side) -> BitBoard {
+    pub fn occupancy(&self, side: Side) -> BitBoard {
         match side {
             Sides::WHITE => self.white_occupied(),
             Sides::BLACK => self.black_occupied(),
@@ -43,11 +43,11 @@ impl Board {
         }
     }
 
-    pub fn white_occupied(self) -> BitBoard {
+    pub fn white_occupied(&self) -> BitBoard {
         self.pieces[Pieces::PAWN][Sides::WHITE] | self.pieces[Pieces::BISHOP][Sides::WHITE] | self.pieces[Pieces::KNIGHT][Sides::WHITE] | self.pieces[Pieces::ROOK][Sides::WHITE] | self.pieces[Pieces::QUEEN][Sides::WHITE] | self.pieces[Pieces::KING][Sides::WHITE]
     }
 
-    pub fn black_occupied(self) -> BitBoard {
+    pub fn black_occupied(&self) -> BitBoard {
         self.pieces[Pieces::PAWN][Sides::BLACK] | self.pieces[Pieces::BISHOP][Sides::BLACK] | self.pieces[Pieces::KNIGHT][Sides::BLACK] | self.pieces[Pieces::ROOK][Sides::BLACK] | self.pieces[Pieces::QUEEN][Sides::BLACK] | self.pieces[Pieces::KING][Sides::BLACK]
     }
     

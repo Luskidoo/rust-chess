@@ -76,7 +76,7 @@ impl Square {
     pub const A6: Self = Square(40);
     pub const H6: Self = Square(47);
 
-    pub fn to_bb(self) -> BitBoard {
+    pub fn to_bb(&self) -> BitBoard {
         BitBoard(1 << self.0)
     }
 }

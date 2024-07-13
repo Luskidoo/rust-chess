@@ -3,9 +3,11 @@ use crate::{defs::{Pieces, Square}, BitBoard, BitMove, Board, MoveList};
 use super::{MoveGenerator, SQ};
 
 impl MoveGenerator {
-    pub fn w_knight_moves(&self, board: &Board, mut bb: BitBoard, w_empty: BitBoard, list: &mut MoveList) {
+    pub fn knight_moves(&self, board: &Board, mut bb: BitBoard, w_empty: BitBoard, list: &mut MoveList) {
+        let side = board.game_state.side_to_move as usize;
+        let mut knights = board.pieces[Pieces::KNIGHT][side];
         //println!("Initial bitboard {:?}", bb);
-        while bb > BitBoard(0) {
+        while knights > BitBoard(0) {
             let from = BitBoard::next(&mut bb);
             //println!("From {}", from);
             //println!("From bb {:?}", from_bb);

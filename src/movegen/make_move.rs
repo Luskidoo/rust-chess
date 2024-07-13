@@ -33,9 +33,9 @@ impl Board {
     #[cfg_attr(debug_assertions, inline(never))]
     #[cfg_attr(not(debug_assertions), inline(always))]
     pub fn make(&mut self, m: Move, mg: &MoveGenerator) -> bool {
-        println!("Making move: {} for side {}", m.as_string(), self.game_state.side_to_move);
-        println!("Board state before move:");
-        self.print_board();
+        //println!("Making move: {} for side {}", m.as_string(), self.game_state.side_to_move);
+        //println!("Board state before move:");
+        //self.print_board();
         // Create the unmake info and store it.
         let mut current_game_state = self.game_state;
         current_game_state.next_move = m;
@@ -123,17 +123,17 @@ impl Board {
             self.game_state.fullmove_number += 1;
         }
 
-        println!("Board state after move:");
-        self.print_board();
+        //println!("Board state after move:");
+        //self.print_board();
 
         /*** Validating move: see if "us" is in check. If so, undo everything. ***/
         let king_square = Square(self.pieces[Pieces::KING][us].0.trailing_zeros() as usize);
         let is_legal = !mg.square_attacked(self, opponent, &king_square);
         if !is_legal {
-            println!("Move is illegal, unmaking");
+            //println!("Move is illegal, unmaking");
             self.unmake();
-            println!("Board state after unmaking:");
-            self.print_board();
+            //println!("Board state after unmaking:");
+            //self.print_board();
         }
 
         // When running in debug mode, check the incrementally updated

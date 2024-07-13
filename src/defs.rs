@@ -45,7 +45,7 @@ impl Castling {
     pub const ALL: BitBoard = BitBoard(15);
 }
 
-#[derive(PartialEq, PartialOrd, Clone)]
+#[derive(PartialEq, PartialOrd, Clone, Eq)]
 pub struct Square(pub usize);
 impl Square {
     // White side squares that are important for castling

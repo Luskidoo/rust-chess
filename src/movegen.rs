@@ -26,7 +26,7 @@ mod make_move;
 // This is a list of all pieces a pawn can promote to.
 const PROMOTION_PIECES: [usize; 4] = [Pieces::QUEEN, Pieces::ROOK, Pieces::BISHOP, Pieces::KNIGHT];
 
-pub(crate) struct MoveGenerator {
+pub struct MoveGenerator {
     pub knight_moves_array: [BitBoard; 64],
     pub pawns: [[BitBoard; 64]; 2],
     pub king_attacks: [BitBoard; 64],
@@ -75,12 +75,6 @@ impl MoveGenerator {
         let west_attacks = BitBoard(sq >> 9u64) & BitBoard::NOT_H_FILE;
         east_attacks | west_attacks
     }
-    
-    fn generate_knight_moves(&self, board: &Board, list: &mut MoveList) {
-        let w_knights = board.pieces[Pieces::KNIGHT][Sides::WHITE];
-        let w_empty = !board.white_occupied();
-        Self::w_knight_moves(&self, &board, w_knights, w_empty, list);
-    }
 
     fn king_moves(kings: BitBoard) -> BitBoard {
         let mut attacks = kings.east_one() | kings.west_one();
@@ -92,31 +86,31 @@ impl MoveGenerator {
     pub fn generate_all_moves(&self, board: &Board, list: &mut MoveList) {
         let initial_count = list.len();
         Self::generate_pawn_moves(&self, board, list);
-        println!("Pawn moves: {}", list.len() - initial_count);
+        //println!("Pawn moves: {}", list.len() - initial_count);
 
         let count_before = list.len();
         Self::generate_knight_moves(&self, board, list);
-        println!("Knight moves: {}", list.len() - count_before);
+        //println!("Knight moves: {}", list.len() - count_before);
 
         let count_before = list.len();
         Self::generate_rook_moves(&self, board, list);
-        println!("Rook moves: {}", list.len() - count_before);
+        //println!("Rook moves: {}", list.len() - count_before);
 
         let count_before = list.len();
         Self::generate_bishop_moves(&self, board, list);
-        println!("Bishop moves: {}", list.len() - count_before);
+        //println!("Bishop moves: {}", list.len() - count_before);
 
         let count_before = list.len();
         Self::generate_queen_moves(&self, board, list);
-        println!("Queen moves: {}", list.len() - count_before);
+        //println!("Queen moves: {}", list.len() - count_before);
 
         let count_before = list.len();
         Self::generate_king_moves(&self, board, list);
-        println!("King moves: {}", list.len() - count_before);
+        //println!("King moves: {}", list.len() - count_before);
 
         let count_before = list.len();
         Self::castling(&self, board, list);
-        println!("Castling moves: {}", list.len() - count_before);
+        //println!("Castling moves: {}", list.len() - count_before);
     }
 
     pub fn square_attacked(&self, board: &Board, attacker: Side, square: &Square) -> bool {

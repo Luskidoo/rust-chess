@@ -36,8 +36,8 @@ impl MoveGenerator {
         let occupancy = board.black_occupied() | board.white_occupied();
         while bishops > BitBoard(0) {
             let from = BitBoard::next(&mut bishops);
-            let index = self.rook_magics[from.0].get_index(occupancy);
-            let mut to_bb = self.rook[index];
+            let index = self.bishop_magics[from.0].get_index(occupancy);
+            let mut to_bb = self.bishop[index];
             // if white
             if side == 0 {
                 to_bb &= !board.white_occupied()

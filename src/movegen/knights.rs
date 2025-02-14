@@ -7,7 +7,7 @@ impl MoveGenerator {
         let side = board.game_state.side_to_move as usize;
         let mut knights = board.pieces[Pieces::KNIGHT][side];
         //println!("Initial bitboard {:?}", bb);
-        while knights > BitBoard(0) {
+        while knights.0 > 0 {
             let from = BitBoard::next(&mut knights);
             //println!("From {}", from);
             //println!("From bb {:?}", from_bb);
@@ -20,7 +20,7 @@ impl MoveGenerator {
                 to_bb &= !board.black_occupied()
             } 
             //println!("To bb {:?}", to_bb);
-            while to_bb > BitBoard(0) {
+            while to_bb.0 > 0 {
                 let to = BitBoard::next(&mut to_bb);
                 //println!("Adding knight move from {} to {}", from, to);
                 self.add_move(board, list, Pieces::KNIGHT, from.clone(), to);

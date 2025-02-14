@@ -26,7 +26,7 @@ impl MoveGenerator {
         let mut pawns = board.pieces[Pieces::PAWN][side];
         //println!("Initial pawns bitboard {:?}", w_pawns);
         let empty_bb: BitBoard = !board.occupancy(Sides::BOTH);
-        while pawns > BitBoard(0) {
+        while pawns.0 > 0 {
             let from = BitBoard::next(&mut pawns);
             let from_bb: BitBoard = BitBoard(1) << BitBoard(from.0.try_into().unwrap());
             let mut to_bb: BitBoard = match side {
@@ -34,7 +34,7 @@ impl MoveGenerator {
                 Sides::BLACK => Self::b_pawn_single_push(from_bb, empty_bb) | Self::b_pawn_double_push(from_bb, empty_bb),
                 _ => panic!()
             };
-            while to_bb > BitBoard(0) {
+            while to_bb.0 > 0 {
                 let to = BitBoard::next(&mut to_bb);
                 //println!("Adding pawn move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::PAWN, from.clone(), to)
@@ -45,9 +45,8 @@ impl MoveGenerator {
     pub fn generate_pawn_attacks(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move;
         let mut pawns = board.pieces[Pieces::PAWN][side];
-        while pawns > BitBoard(0) {
+        while pawns.0 > 0 {
             let from = BitBoard::next(&mut pawns);
-            let from_bb = from.to_bb();
             let targets =  self.get_pawn_attacks_from_square(side, &from);
             let captures = targets & board.occupancy(board.opponent());
             let ep_captures = match board.game_state.en_passant {
@@ -55,7 +54,7 @@ impl MoveGenerator {
                 None => BitBoard(0)
             };
             let mut to_bb = captures | ep_captures;
-            while to_bb > BitBoard(0) {
+            while to_bb.0 > 0 {
                 let to = BitBoard::next(&mut to_bb);
                 //println!("Adding pawn move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::PAWN, from.clone(), to)

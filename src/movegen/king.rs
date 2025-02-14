@@ -7,7 +7,7 @@ impl MoveGenerator {
         let side = board.game_state.side_to_move as usize;
         let mut kings = board.pieces[Pieces::KING][side];
         //println!("{}", occupancy);
-        while kings > BitBoard(0) {
+        while kings.0 > 0 {
             let from = BitBoard::next(&mut kings);
             let mut to_bb = self.king_attacks[from.0];
             // if white
@@ -18,7 +18,7 @@ impl MoveGenerator {
                 to_bb &= !board.black_occupied()
             }           
             //println!("{}", to_bb);
-            while to_bb > BitBoard(0) {
+            while to_bb.0 > 0 {
             let to = BitBoard::next(&mut to_bb);
                 //println!("Adding king move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::KING, from.clone(), to.clone());

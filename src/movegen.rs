@@ -39,7 +39,7 @@ pub struct MoveGenerator {
 impl MoveGenerator {
     pub fn new () -> Self {
         let mut mg = Self {
-            knight_moves_array: Self::init_knight_moves(),
+            knight_moves_array: [BitBoard(0); 64],
             pawns: [[BitBoard(0); 64]; 2],
             king_attacks: [BitBoard(0); 64],
             rook_magics: [Magic::new(); 64],
@@ -49,20 +49,11 @@ impl MoveGenerator {
         };
         mg.init_pawn_attacks();
         mg.init_king_moves();
+        mg.init_knight_moves();
         mg.init_magics(true);
         mg.init_magics(false);
         mg
         
-    }
-
-    fn knight_moves(sq: u64) -> BitBoard {
-        let l1: BitBoard = BitBoard(sq >> 1) & BitBoard(0x7f7f7f7f7f7f7f7f);
-        let l2: BitBoard = BitBoard(sq >> 2) & BitBoard(0x3f3f3f3f3f3f3f3f);
-        let r1: BitBoard = BitBoard(sq << 1) & BitBoard(0xfefefefefefefefe);
-        let r2: BitBoard = BitBoard(sq << 2) & BitBoard(0xfcfcfcfcfcfcfcfc);
-        let h1: BitBoard = l1 | r1;
-        let h2: BitBoard = l2 | r2;
-        BitBoard((h1.0 << 16) | (h1.0 >> 16) | (h2.0 << 8) | (h2.0 >> 8))
     }
 
     fn white_pawn_attacks(sq: u64) -> BitBoard {
@@ -123,12 +114,12 @@ impl MoveGenerator {
         // is on one of the squares a rook has to be to reach the given
         // square. Same for the queen, knight, etc... As soon as one is
         // found, the square is attacked.
-        (bb_king & board.pieces[Pieces::KING][attacker] > BitBoard(0))
-            || (bb_rook & board.pieces[Pieces::ROOK][attacker] > BitBoard(0))
-            || (bb_queen & board.pieces[Pieces::QUEEN][attacker] > BitBoard(0))
-            || (bb_bishop & board.pieces[Pieces::BISHOP][attacker] > BitBoard(0))
-            || (bb_knight & board.pieces[Pieces::KNIGHT][attacker] > BitBoard(0))
-            || (bb_pawns & board.pieces[Pieces::PAWN][attacker] > BitBoard(0))
+        ((bb_king & board.pieces[Pieces::KING][attacker]).0 > 0)
+            || ((bb_rook & board.pieces[Pieces::ROOK][attacker]).0 > 0)
+            || ((bb_queen & board.pieces[Pieces::QUEEN][attacker]).0 > 0)
+            || ((bb_bishop & board.pieces[Pieces::BISHOP][attacker]).0 > 0)
+            || ((bb_knight & board.pieces[Pieces::KNIGHT][attacker]).0 > 0)
+            || ((bb_pawns & board.pieces[Pieces::PAWN][attacker]).0 > 0)
     }
 
     pub fn add_move(&self, board: &Board, list: &mut MoveList, piece: Piece, from: Square, to: Square) {

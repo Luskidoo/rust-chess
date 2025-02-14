@@ -58,7 +58,7 @@ impl Board {
         // Shorthands
         let is_promotion = promoted != Pieces::NONE;
         let is_capture = captured != Pieces::NONE;
-        let has_permissions = self.game_state.castling > BitBoard(0);
+        let has_permissions = self.game_state.castling.0 > 0;
 
         // Assume this is not a pawn move or a capture.
         self.game_state.halfmove_clock += 1;

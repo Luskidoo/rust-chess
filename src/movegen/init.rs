@@ -11,12 +11,20 @@ impl MoveGenerator {
         }
     }
 
-    pub fn init_knight_moves() -> [BitBoard; 64] {
-        let mut moves = [BitBoard(0); 64];
+    pub fn init_knight_moves(&mut self) {
         for sq in 0..64 {
-            moves[sq] = Self::knight_moves((1u64 << sq) as u64);
+            let bb_sq = BitBoard(Square(sq.try_into().unwrap()).to_bb().0);
+            let moves = 
+            BitBoard((bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_RANK_7 & BitBoard::NOT_A_FILE).0 << 15
+            | (bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_RANK_7 & BitBoard::NOT_H_FILE).0 << 17
+            | (bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_B_FILE & BitBoard::NOT_A_FILE).0 << 6
+            | (bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_G_FILE & BitBoard::NOT_H_FILE).0 << 10
+            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_RANK_2 & BitBoard::NOT_H_FILE).0 >> 15
+            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_RANK_2 & BitBoard::NOT_A_FILE).0 >> 17
+            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_H_FILE & BitBoard::NOT_G_FILE).0 >> 6
+            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_B_FILE & BitBoard::NOT_A_FILE).0 >> 10);
+            self.knight_moves_array[sq] = moves;
         }
-        moves
     }
 
     pub fn init_king_moves(&mut self) {

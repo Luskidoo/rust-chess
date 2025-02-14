@@ -74,13 +74,13 @@ impl Board {
             let mut black_pieces = *b; // Black pieces of type "piece_type"
 
             // Put white pieces into the piece list.
-            while white_pieces > BitBoard(0) {
+            while white_pieces.0 > 0 {
                 let square = BitBoard::next(&mut white_pieces);
                 piece_list[square.0] = piece_type;
             }
 
             // Put black pieces into the piece list.
-            while black_pieces > BitBoard(0) {
+            while black_pieces.0 > 0 {
                 let square = BitBoard::next(&mut black_pieces);
                 piece_list[square.0] = piece_type;
             }
@@ -176,13 +176,13 @@ impl Board {
             // Iterate through all the piece locations of the current piece
             // type. Get the square the piece is on, and then hash that
             // square/piece combination into the zobrist key.
-            while white_pieces > BitBoard(0) {
+            while white_pieces.0 > 0 {
                 let square = BitBoard::next(&mut white_pieces);
                 key ^= self.zr.piece(Sides::WHITE, piece_type, square);
             }
 
             // Same for black.
-            while black_pieces > BitBoard(0) {
+            while black_pieces.0 > 0 {
                 let square = BitBoard::next(&mut black_pieces);
                 key ^= self.zr.piece(Sides::BLACK, piece_type, square);
             }

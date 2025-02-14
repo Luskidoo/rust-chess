@@ -1,7 +1,7 @@
 use std::ops::{Add, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Mul, Not, Shl, ShlAssign, Shr, Sub};
 use crate::{board::*, defs::Square};
 
-#[derive(Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct BitBoard(pub u64);
 
 impl BitBoard {
@@ -13,8 +13,12 @@ impl BitBoard {
     pub const k4: BitBoard = BitBoard(0x0f0f0f0f0f0f0f0f); //  -1/17  
     pub const kf: BitBoard = BitBoard(0x0101010101010101); //  -1/255
     pub const NOT_A_FILE: BitBoard = BitBoard(0xfefefefefefefefe);
+    pub const NOT_B_FILE: BitBoard = BitBoard(0xfdfdfdfdfdfdfdfd);
+    pub const NOT_G_FILE: BitBoard = BitBoard(0xbfbfbfbfbfbfbfbf);
     pub const NOT_H_FILE: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f);  
     pub const NOT_RANK_1: BitBoard = BitBoard(0xffffffffffffff00);
+    pub const NOT_RANK_2: BitBoard = BitBoard(0xffffffffffff00ff);
+    pub const NOT_RANK_7: BitBoard = BitBoard(0xff00ffffffffffff);
     pub const NOT_RANK_8: BitBoard = BitBoard(0xffffffffffffff);
     
     pub fn set_bit(mut self, x: BitBoard) -> BitBoard {

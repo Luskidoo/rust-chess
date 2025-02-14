@@ -14,12 +14,12 @@ const fn castling_permissions_per_square() -> CPSquare {
     // Now disable castling permissions when moving pieces on certain
     // squares. For example, when the piece (rook) on A1 moves, disable
     // white castling to the queenside.
-    cp[Square::A1.0] = cp[Square::A1.0] & !Castling::WQ;
-    cp[Square::E1.0] = cp[Square::E1.0] & !Castling::WK & !Castling::WQ;
-    cp[Square::H1.0] = cp[Square::H1.0] & !Castling::WK;
-    cp[Square::A8.0] = cp[Square::A8.0] & !Castling::BQ;
-    cp[Square::E8.0] = cp[Square::E8.0] & !Castling::BK & !Castling::BQ;
-    cp[Square::H8.0] = cp[Square::H8.0] & !Castling::BK;
+    cp[Square::A1.0] = BitBoard(cp[Square::A1.0].0 & !Castling::WQ.0);
+    cp[Square::E1.0] = BitBoard(cp[Square::E1.0].0 & !Castling::WK.0 & !Castling::WQ.0);
+    cp[Square::H1.0] = BitBoard(cp[Square::H1.0].0 & !Castling::WK.0);
+    cp[Square::A8.0] = BitBoard(cp[Square::A8.0].0 & !Castling::BQ.0);
+    cp[Square::E8.0] = BitBoard(cp[Square::E8.0].0 & !Castling::BK.0 & !Castling::BQ.0);
+    cp[Square::H8.0] = BitBoard(cp[Square::H8.0].0 & !Castling::BK.0);
 
     cp
 }
@@ -33,9 +33,9 @@ impl Board {
     #[cfg_attr(debug_assertions, inline(never))]
     #[cfg_attr(not(debug_assertions), inline(always))]
     pub fn make(&mut self, m: Move, mg: &MoveGenerator) -> bool {
-        println!("Making move: {} for side {}", m.as_string(), self.game_state.side_to_move);
-        println!("Board state before move:");
-        self.print_board();
+        //println!("Making move: {} for side {}", m.as_string(), self.game_state.side_to_move);
+        //println!("Board state before move:");
+        //self.print_board();
         // Create the unmake info and store it.
         let mut current_game_state = self.game_state;
         current_game_state.next_move = m;
@@ -58,7 +58,7 @@ impl Board {
         // Shorthands
         let is_promotion = promoted != Pieces::NONE;
         let is_capture = captured != Pieces::NONE;
-        let has_permissions = self.game_state.castling > 0;
+        let has_permissions = self.game_state.castling > BitBoard(0);
 
         // Assume this is not a pawn move or a capture.
         self.game_state.halfmove_clock += 1;
@@ -123,17 +123,17 @@ impl Board {
             self.game_state.fullmove_number += 1;
         }
 
-        println!("Board state after move:");
-        self.print_board();
+        //println!("Board state after move:");
+        //self.print_board();
 
         /*** Validating move: see if "us" is in check. If so, undo everything. ***/
-        let king_square = Square(self.pieces[Pieces::KING][us].trailing_zeros() as usize);
+        let king_square = Square(self.pieces[Pieces::KING][us].0.trailing_zeros() as usize);
         let is_legal = !mg.square_attacked(self, opponent, &king_square);
         if !is_legal {
-            println!("Move is illegal, unmaking");
+            //println!("Move is illegal, unmaking");
             self.unmake();
-            println!("Board state after unmaking:");
-            self.print_board();
+            //println!("Board state after unmaking:");
+            //self.print_board();
         }
 
         // When running in debug mode, check the incrementally updated

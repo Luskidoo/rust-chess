@@ -38,14 +38,14 @@ impl NrOf {
 
 pub struct Castling;
 impl Castling {
-    pub const WK: BitBoard = 1;
-    pub const WQ: BitBoard = 2;
-    pub const BK: BitBoard = 4;
-    pub const BQ: BitBoard = 8;
-    pub const ALL: BitBoard = 15;
+    pub const WK: BitBoard = BitBoard(1);
+    pub const WQ: BitBoard = BitBoard(2);
+    pub const BK: BitBoard = BitBoard(4);
+    pub const BQ: BitBoard = BitBoard(8);
+    pub const ALL: BitBoard = BitBoard(15);
 }
 
-#[derive(PartialEq, PartialOrd, Clone)]
+#[derive(PartialEq, PartialOrd, Clone, Eq)]
 pub struct Square(pub usize);
 impl Square {
     // White side squares that are important for castling
@@ -76,8 +76,8 @@ impl Square {
     pub const A6: Self = Square(40);
     pub const H6: Self = Square(47);
 
-    pub fn to_bb(self) -> BitBoard {
-        1 << self.0
+    pub fn to_bb(&self) -> BitBoard {
+        BitBoard(1 << self.0)
     }
 }
 

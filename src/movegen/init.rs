@@ -12,7 +12,7 @@ impl MoveGenerator {
     }
 
     pub fn init_black_pawn_attacks() -> [BitBoard; 64] {
-        let mut moves = [0; 64];
+        let mut moves = [BitBoard(0); 64];
         for sq in 0..64 {
             moves[sq] = Self::black_pawn_attacks((1u64 << sq) as u64);
         }
@@ -20,7 +20,7 @@ impl MoveGenerator {
     }
 
     pub fn init_knight_moves() -> [BitBoard; 64] {
-        let mut moves = [0; 64];
+        let mut moves = [BitBoard(0); 64];
         for sq in 0..64 {
             moves[sq] = Self::knight_moves((1u64 << sq) as u64);
         }
@@ -28,11 +28,11 @@ impl MoveGenerator {
     }
 
     pub fn init_king_moves() -> [BitBoard; 64] {
-        let mut moves = [0; 64];
-        let mut sq_bb = 1;
+        let mut moves = [BitBoard(0); 64];
+        let mut sq_bb = BitBoard(1);
         for sq in 0..64 {
             moves[sq] = Self::king_moves(sq_bb);
-            sq_bb <<= 1;
+            sq_bb <<= BitBoard(1);
         }
         moves
     }
@@ -47,7 +47,7 @@ impl MoveGenerator {
                 MoveGenerator::bishop_mask(sq)
             };
 
-            let bits = mask.count_ones(); // Number of set bits in the mask
+            let bits = mask.0.count_ones(); // Number of set bits in the mask
             let permutations = 2u64.pow(bits); // Number of blocker boards to be indexed.
             let end = offset + permutations - 1; // End point in the attack table.
             let blocker_boards = MoveGenerator::blocker_boards(mask);
@@ -65,7 +65,7 @@ impl MoveGenerator {
             magic.mask = mask;
             magic.shift = (64 - bits) as u8;
             magic.offset = offset;
-            magic.nr = magic_nr_array[sq as usize];
+            magic.nr = magic_nr_array[sq as usize].0;
 
             let rook_table = &mut self.rook[..];
             let bishop_table = &mut self.bishop[..];
@@ -77,7 +77,7 @@ impl MoveGenerator {
                     panic!("Indexing error. Error in Magics. Square: {}, Index: {}, Offset: {}, End: {}", sq, index, offset, end);
                 }
                 
-                if table[index] == 0 {
+                if table[index] == BitBoard(0) {
                     table[index] = attack_boards[i];
                 } else {
                     panic!("Attack table index not empty. Error in Magics. Square: {}, Index: {}", sq, index);

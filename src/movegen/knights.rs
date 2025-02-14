@@ -22,9 +22,8 @@ impl MoveGenerator {
             //println!("To bb {:?}", to_bb);
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                println!("Adding knight move from {} to {}", from, to);
+                //println!("Adding knight move from {} to {}", from, to);
                 self.add_move(board, list, Pieces::KNIGHT, from.clone(), to);
-                //println!("Knight move from {} to {}", from, to);
             }
         }
         //bb.knight_attacks() & w_empty 

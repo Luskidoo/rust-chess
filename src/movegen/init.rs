@@ -11,14 +11,6 @@ impl MoveGenerator {
         }
     }
 
-    pub fn init_black_pawn_attacks() -> [BitBoard; 64] {
-        let mut moves = [BitBoard(0); 64];
-        for sq in 0..64 {
-            moves[sq] = Self::black_pawn_attacks((1u64 << sq) as u64);
-        }
-        moves
-    }
-
     pub fn init_knight_moves() -> [BitBoard; 64] {
         let mut moves = [BitBoard(0); 64];
         for sq in 0..64 {
@@ -27,14 +19,19 @@ impl MoveGenerator {
         moves
     }
 
-    pub fn init_king_moves() -> [BitBoard; 64] {
-        let mut moves = [BitBoard(0); 64];
-        let mut sq_bb = BitBoard(1);
+    pub fn init_king_moves(&mut self) {
         for sq in 0..64 {
-            moves[sq] = Self::king_moves(sq_bb);
-            sq_bb <<= BitBoard(1);
+            let bb_sq = BitBoard(Square(sq.try_into().unwrap()).to_bb().0);
+            let moves = BitBoard((bb_sq & BitBoard::NOT_A_FILE & BitBoard::NOT_RANK_8).0 << 7
+            | (bb_sq & BitBoard::NOT_RANK_8).0 << 8
+            | (bb_sq & BitBoard::NOT_H_FILE & BitBoard::NOT_RANK_8).0 << 9
+            | (bb_sq & BitBoard::NOT_H_FILE).0 << 1
+            | (bb_sq & BitBoard::NOT_H_FILE & BitBoard::NOT_RANK_1).0 >> 7
+            | (bb_sq & BitBoard::NOT_RANK_1).0 >> 8
+            | (bb_sq & BitBoard::NOT_A_FILE & BitBoard::NOT_RANK_1).0 >> 9
+            | (bb_sq & BitBoard::NOT_A_FILE).0 >> 1);
+            self.king_attacks[sq] = moves;
         }
-        moves
     }
 
     pub fn init_magics(&mut self, is_rook: bool) {

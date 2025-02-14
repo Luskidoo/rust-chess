@@ -43,6 +43,14 @@ impl Board {
         }
     }
 
+    pub fn opponent(&self) -> Side {
+        if self.game_state.side_to_move == 0 {
+            Sides::BLACK
+        } else {
+            Sides::WHITE
+        }
+    }
+
     pub fn white_occupied(&self) -> BitBoard {
         self.pieces[Pieces::PAWN][Sides::WHITE] | self.pieces[Pieces::BISHOP][Sides::WHITE] | self.pieces[Pieces::KNIGHT][Sides::WHITE] | self.pieces[Pieces::ROOK][Sides::WHITE] | self.pieces[Pieces::QUEEN][Sides::WHITE] | self.pieces[Pieces::KING][Sides::WHITE]
     }

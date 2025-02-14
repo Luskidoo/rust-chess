@@ -41,13 +41,14 @@ impl MoveGenerator {
         let mut mg = Self {
             knight_moves_array: Self::init_knight_moves(),
             pawns: [[BitBoard(0); 64]; 2],
-            king_attacks: Self::init_king_moves(),
+            king_attacks: [BitBoard(0); 64],
             rook_magics: [Magic::new(); 64],
             bishop_magics: [Magic::new(); 64],
             rook: vec![BitBoard(0); 102400],
             bishop: vec![BitBoard(0); 5248],
         };
         mg.init_pawn_attacks();
+        mg.init_king_moves();
         mg.init_magics(true);
         mg.init_magics(false);
         mg
@@ -65,22 +66,15 @@ impl MoveGenerator {
     }
 
     fn white_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = BitBoard(sq << 9u64) & BitBoard::NOT_A_FILE;
-        let west_attacks = BitBoard(sq << 7u64) & BitBoard::NOT_H_FILE;
+        let east_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 << 9u64) & BitBoard::NOT_A_FILE;
+        let west_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 << 7u64) & BitBoard::NOT_H_FILE;
         east_attacks | west_attacks
     }
 
     fn black_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = BitBoard(sq >> 7u64) & BitBoard::NOT_A_FILE;
-        let west_attacks = BitBoard(sq >> 9u64) & BitBoard::NOT_H_FILE;
+        let east_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 >> 7u64) & BitBoard::NOT_A_FILE;
+        let west_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 >> 9u64) & BitBoard::NOT_H_FILE;
         east_attacks | west_attacks
-    }
-
-    fn king_moves(kings: BitBoard) -> BitBoard {
-        let mut attacks = kings.east_one() | kings.west_one();
-        let intermediate = kings | attacks;
-        attacks |= intermediate.north_one() | intermediate.south_one();
-        attacks
     }
     
     pub fn generate_all_moves(&self, board: &Board, list: &mut MoveList) {

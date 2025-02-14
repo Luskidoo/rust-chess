@@ -14,6 +14,9 @@ impl BitBoard {
     pub const kf: BitBoard = BitBoard(0x0101010101010101); //  -1/255
     pub const NOT_A_FILE: BitBoard = BitBoard(0xfefefefefefefefe);
     pub const NOT_H_FILE: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f);  
+    pub const NOT_RANK_1: BitBoard = BitBoard(0xffffffffffffff00);
+    pub const NOT_RANK_8: BitBoard = BitBoard(0xffffffffffffff);
+    
     pub fn set_bit(mut self, x: BitBoard) -> BitBoard {
         self | x
     }

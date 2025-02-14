@@ -36,7 +36,7 @@ impl MoveGenerator {
             };
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                println!("Adding pawn move from {} to {}", from, to);
+                //println!("Adding pawn move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::PAWN, from.clone(), to)
             }
         }
@@ -47,15 +47,17 @@ impl MoveGenerator {
         let mut pawns = board.pieces[Pieces::PAWN][side];
         while pawns > BitBoard(0) {
             let from = BitBoard::next(&mut pawns);
-
-            let mut to_bb: BitBoard = match side {
-                Sides::WHITE => self.pawns[Sides::WHITE][from.0] & board.black_occupied(),
-                Sides::BLACK => self.pawns[Sides::BLACK][from.0] & board.white_occupied(),
-                _ => panic!()
+            let from_bb = from.to_bb();
+            let targets =  self.get_pawn_attacks_from_square(side, &from);
+            let captures = targets & board.occupancy(board.opponent());
+            let ep_captures = match board.game_state.en_passant {
+                Some(ep_square) => targets & Square(ep_square.into()).to_bb(),
+                None => BitBoard(0)
             };
+            let mut to_bb = captures | ep_captures;
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                println!("Adding pawn move from {} to {}", from, to);
+                //println!("Adding pawn move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::PAWN, from.clone(), to)
             }
         }

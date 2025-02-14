@@ -26,7 +26,7 @@ impl MoveGenerator {
                 {
                     let mut to_bb = from.clone().to_bb() << BitBoard(2);
                     let to = BitBoard::next(&mut to_bb);
-                    println!("Adding white kingside castle move from {} to {}", from, to);
+                    //println!("Adding white kingside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
@@ -43,7 +43,7 @@ impl MoveGenerator {
                 {
                     let mut to_bb = from.clone().to_bb() >> BitBoard(2);
                     let to = BitBoard::next(&mut to_bb);
-                    println!("Adding white queenside castle move from {} to {}", from, to);
+                    //println!("Adding white queenside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
@@ -62,7 +62,7 @@ impl MoveGenerator {
                 {
                     let mut to_bb = from.clone().to_bb() << BitBoard(2);
                     let to = BitBoard::next(&mut to_bb);
-                    println!("Adding black kingside castle move from {} to {}", from, to);
+                   //println!("Adding black kingside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
@@ -79,7 +79,7 @@ impl MoveGenerator {
                 {
                     let mut to_bb = from.clone().to_bb() >> BitBoard(2);
                     let to = BitBoard::next(&mut to_bb);
-                    println!("Adding black queenside castle move from {} to {}", from, to);
+                    //println!("Adding black queenside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }

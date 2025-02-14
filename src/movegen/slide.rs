@@ -23,9 +23,8 @@ impl MoveGenerator {
             //println!("{}", to_bb);
             while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
-                println!("Adding rook move from {} to {}", from, to);
+                //println!("Adding rook move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::ROOK, from.clone(), to)
-                //println!("Rook move from {} to {}", from, to);
             }
         }
     }
@@ -47,7 +46,7 @@ impl MoveGenerator {
             }
             while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
-                println!("Adding bishop move from {} to {}", from, to);
+                //println!("Adding bishop move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::BISHOP, from.clone(), to)
             }
         }
@@ -72,7 +71,7 @@ impl MoveGenerator {
             }
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                println!("Adding queen move from {} to {}", from, to);
+                //println!("Adding queen move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::QUEEN, from.clone(), to);
             }
             // Straight moves
@@ -87,7 +86,7 @@ impl MoveGenerator {
             }
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
-                println!("Adding queen move from {} to {}", from, to);
+                //println!("Adding queen move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::QUEEN, from.clone(), to);
             }
         }

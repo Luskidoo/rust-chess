@@ -138,6 +138,7 @@ impl MoveGenerator {
     }
 
     pub fn add_move(&self, board: &Board, list: &mut MoveList, piece: Piece, from: Square, to: Square) {
+            // Is the piece a pawn
             let is_pawn = piece == Pieces::PAWN;
             let promotion_rank = Board::promotion_rank(board.game_state.side_to_move);
             let promotion = is_pawn && Board::square_on_rank(&to, Square(promotion_rank));

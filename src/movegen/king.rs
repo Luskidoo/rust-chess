@@ -20,13 +20,13 @@ impl MoveGenerator {
             //println!("{}", to_bb);
             while to_bb > BitBoard(0) {
             let to = BitBoard::next(&mut to_bb);
+                println!("Adding king move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::KING, from.clone(), to.clone());
-                //println!("King move from {} to {}", from, to);
             }
         }
     }
 
-    // Return knight attacks for the given square.
+    // Return king attacks for the given square.
     pub fn get_king_attacks(&self, square: &Square) -> BitBoard {
         self.king_attacks[square.0]
     }

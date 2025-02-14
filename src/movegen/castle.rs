@@ -24,7 +24,9 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E1)
                     && !self.square_attacked(board, opponent, &Square::F1)
                 {
-                    let to = Square((from.clone().to_bb() << BitBoard(2)).0.try_into().unwrap());
+                    let mut to_bb = from.clone().to_bb() << BitBoard(2);
+                    let to = BitBoard::next(&mut to_bb);
+                    println!("Adding white kingside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
@@ -39,7 +41,9 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E1)
                     && !self.square_attacked(board, opponent, &Square::D1)
                 {
-                    let to = Square((from.clone().to_bb() >> BitBoard(2)).0.try_into().unwrap());
+                    let mut to_bb = from.clone().to_bb() >> BitBoard(2);
+                    let to = BitBoard::next(&mut to_bb);
+                    println!("Adding white queenside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
@@ -56,7 +60,9 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E8)
                     && !self.square_attacked(board, opponent, &Square::F8)
                 {
-                    let to = Square((from.clone().to_bb() << BitBoard(2)).0.try_into().unwrap());
+                    let mut to_bb = from.clone().to_bb() << BitBoard(2);
+                    let to = BitBoard::next(&mut to_bb);
+                    println!("Adding black kingside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }
@@ -71,7 +77,9 @@ impl MoveGenerator {
                     && !self.square_attacked(board, opponent, &Square::E8)
                     && !self.square_attacked(board, opponent, &Square::D8)
                 {
-                    let to = Square((from.clone().to_bb() >> BitBoard(2)).0.try_into().unwrap());
+                    let mut to_bb = from.clone().to_bb() >> BitBoard(2);
+                    let to = BitBoard::next(&mut to_bb);
+                    println!("Adding black queenside castle move from {} to {}", from, to);
                     self.add_move(board, list, Pieces::KING, from.clone(), to);
                 }
             }

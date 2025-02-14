@@ -36,8 +36,8 @@ impl MoveGenerator {
             };
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
+                println!("Adding pawn move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::PAWN, from.clone(), to)
-                //println!("Pawn move from {} to {}", from, to);
             }
         }
     }
@@ -55,8 +55,8 @@ impl MoveGenerator {
             };
             while to_bb > BitBoard(0) {
                 let to = BitBoard::next(&mut to_bb);
+                println!("Adding pawn move from {} to {}", from, to);
                 self.add_move(&board, list, Pieces::PAWN, from.clone(), to)
-                //println!("Pawn move from {} to {}", from, to);
             }
         }
     }

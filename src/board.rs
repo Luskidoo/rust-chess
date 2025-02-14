@@ -82,7 +82,7 @@ impl Board {
     }
 
     // Remove a piece from the board, for the given side, piece, and square.
-    pub fn remove_piece(&mut self, side: Side, piece: Piece, square: Square) {
+    pub fn remove_piece(mut self, side: Side, piece: Piece, square: Square) {
         self.pieces[piece][side] ^= square.clone().to_bb();
         //self.bb_side[side] ^= square.to_bb();
         self.piece_list[square.0] = Pieces::NONE;
@@ -96,7 +96,7 @@ impl Board {
     }
 
     // Put a piece onto the board, for the given side, piece, and square.
-    pub fn put_piece(&mut self, side: Side, piece: Piece, square: Square) {
+    pub fn put_piece(mut self, side: Side, piece: Piece, square: Square) {
         self.pieces[piece][side] |= square.clone().to_bb();
         //self.bb_side[side] |= square.to_bb();
         self.piece_list[square.0] = piece;
@@ -110,7 +110,7 @@ impl Board {
     }
 
     // Remove a piece from the from-square, and put it onto the to-square.
-    pub fn move_piece(&mut self, side: Side, piece: Piece, from: Square, to: Square) {
+    pub fn move_piece(mut self, side: Side, piece: Piece, from: Square, to: Square) {
         self.remove_piece(side, piece, from);
         self.put_piece(side, piece, to);
     }

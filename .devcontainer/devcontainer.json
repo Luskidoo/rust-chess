@@ -14,7 +14,7 @@
 		"vscode": {
 			"settings": {},
 			"extensions": [
-				"streetsidesoftware.code-spell-checker"
+				"rust-lang.rust-analyzer"
 			]
 		}
 	}

@@ -32,7 +32,7 @@ const fn castling_permissions_per_square() -> CPSquare {
 impl Board {
     #[cfg_attr(debug_assertions, inline(never))]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    pub fn make(mut self, m: Move, mg: &MoveGenerator) -> bool {
+    pub fn make(&mut self, m: Move, mg: &MoveGenerator) -> bool {
         //println!("Making move: {} for side {}", m.as_string(), self.game_state.side_to_move);
         //println!("Board state before move:");
         //self.print_board();
@@ -152,7 +152,7 @@ impl Board {
 impl Board {
     #[cfg_attr(debug_assertions, inline(never))]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    pub fn unmake(mut self) {
+    pub fn unmake(&mut self) {
         self.game_state = self.history.pop();
 
         // Set "us" and "opponent"
@@ -211,23 +211,22 @@ impl Board {
 // that omit the undoing of incremental updates.
 
 // Removes a piece from the board without Zobrist key updates.
-fn remove_piece(mut board: Board, side: Side, piece: Piece, square: Square) -> Board {
+fn remove_piece(board: &mut Board, side: Side, piece: Piece, square: Square) {
     board.pieces[piece][side] ^= square.clone().to_bb();
     //board.bb_side[side] ^= square.to_bb();
     board.piece_list[square.0] = Pieces::NONE;
-    board
 }
 
 // Puts a piece onto the board without Zobrist key updates.
-fn put_piece(mut board: Board, side: Side, piece: Piece, square: Square) {
+fn put_piece(board: &mut Board, side: Side, piece: Piece, square: Square) {
     board.pieces[piece][side] |= square.clone().to_bb();
     //board.bb_side[side] |= square.to_bb();
     board.piece_list[square.0] = piece;
 }
 
 // Moves a piece from one square to another.
-fn reverse_move(mut board: Board, side: Side, piece: Piece, remove: Square, put: Square) {
-    board = remove_piece(board, side, piece, remove);
+fn reverse_move(board: &mut Board, side: Side, piece: Piece, remove: Square, put: Square) {
+    remove_piece(board, side, piece, remove);
     put_piece(board, side, piece, put);
 }
 

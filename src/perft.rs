@@ -3,7 +3,7 @@ use std::{sync::{Arc, Mutex}, time::Instant};
 use crate::{movegen::MoveGenerator, Board, MoveList};
 
 pub fn run(
-    board: Board,
+    mut board: Board,
     depth: i8,
     mg: MoveGenerator,
     //tt: Arc<Mutex<TT<PerftData>>>,
@@ -11,9 +11,6 @@ pub fn run(
 ) {
     let mut total_time: u128 = 0;
     let mut total_nodes: u64 = 0;
-
-    // Clone the locked board for local use.
-    let mut local_board = board.clone();
 
     println!("Benchmarking perft 1-{depth}:");
 
@@ -23,7 +20,7 @@ pub fn run(
         let now = Instant::now();
         let mut leaf_nodes = 0;
 
-        leaf_nodes += perft(&mut local_board, d, &mg);
+        leaf_nodes += perft(&mut board, d, &mg);
 
         // Measure time and speed
         let elapsed = now.elapsed().as_millis();

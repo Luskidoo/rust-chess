@@ -27,10 +27,10 @@ fn main() {
     let kiwi_fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
     let pos_4 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
     let promotion = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
-    let fen_result = board.fen_read(Some(promotion));
+    let fen_result = board.fen_read(Some(init_fen));
     let mut list = MoveList::default();
     let move_gen = MoveGenerator::new();
-    perft::run(board, 3, move_gen);
+    perft::run(board, 2, move_gen);
     //println!("{:?}", MoveGenerator::rook_mask(0));
     //println!("{:?}", MoveGenerator::rook_attacks(0, BitBoard(258)));
 

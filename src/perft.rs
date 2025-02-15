@@ -1,16 +1,15 @@
-use std::{sync::{Arc, Mutex}, time::Instant};
+use std::{collections::HashMap, hash::Hash, sync::{Arc, Mutex}, time::Instant};
 
-use crate::{movegen::MoveGenerator, Board, MoveList};
+use crate::{defs::SQUARE_NAME, movegen::MoveGenerator, Board, MoveList};
 
 pub fn run(
     mut board: Board,
-    depth: i8,
+    depth: u8,
     mg: MoveGenerator,
-    //tt: Arc<Mutex<TT<PerftData>>>,
-    //tt_enabled: bool,
 ) {
     let mut total_time: u128 = 0;
     let mut total_nodes: u64 = 0;
+    let mut divide_count: HashMap<String, u64> = HashMap::new();
 
     println!("Benchmarking perft 1-{depth}:");
 
@@ -20,7 +19,7 @@ pub fn run(
         let now = Instant::now();
         let mut leaf_nodes = 0;
 
-        leaf_nodes += perft(&mut board, d, &mg);
+        leaf_nodes += perft(&mut board, d, depth, &mg, &mut divide_count);
 
         // Measure time and speed
         let elapsed = now.elapsed().as_millis();
@@ -40,14 +39,18 @@ pub fn run(
     let final_lnps = ((total_nodes * 1000) as f64 / total_time as f64).floor();
     println!("Total time spent: {total_time} ms");
     println!("Execution speed: {final_lnps} leaves/second");
+    for (m, count) in divide_count {
+        println!("{m}: {count}");
+    }
 }
 
-// This is the actual Perft function. It is public, because it is used by
-// the "testsuite" module.
+
 pub fn perft(
     board: &mut Board,
-    depth: i8,
+    depth: u8,
+    max_depth: u8,
     mg: &MoveGenerator,
+    divide_count: &mut HashMap<String, u64>
 ) -> u64 {
     let mut leaf_nodes: u64 = 0;
     let mut move_list: MoveList = MoveList::default();
@@ -56,6 +59,8 @@ pub fn perft(
     if depth == 0 {
         return 1;
     }
+
+    let leaf = (depth == 2);
 
     mg.generate_all_moves(board, &mut move_list);
 
@@ -66,14 +71,15 @@ pub fn perft(
         // If the move is legal...
         if board.make(m, mg) {
             // Then count the number of leaf nodes it generates...
-            let nodes = perft(board, depth - 1, mg);
+            let nodes= perft(board, depth - 1, depth, mg, divide_count);
             //println!("Move: {}, Nodes: {}", m.as_string(), nodes);
             leaf_nodes += nodes;
+            let move_string = String::from(format!("{}{}", SQUARE_NAME[m.from().0], SQUARE_NAME[m.to().0]));
+            divide_count.entry(move_string).and_modify(|counter| *counter += nodes).or_insert(nodes);
             // Then unmake the move so the next one can be counted.
             board.unmake();
         }
     }
-
     // Return the number of leaf nodes for the given position and depth.
     leaf_nodes
 }

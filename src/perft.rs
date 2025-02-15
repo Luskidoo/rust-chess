@@ -15,11 +15,14 @@ pub fn run(
 
     // Perform all perfts for depths 1 up to and including "depth"
     for d in 1..=depth {
+        // Clear divide_count for each depth
+        divide_count.clear();
+
         // Current time
         let now = Instant::now();
         let mut leaf_nodes = 0;
 
-        leaf_nodes += perft(&mut board, d, depth, &mg, &mut divide_count);
+        leaf_nodes += perft(&mut board, d, d, &mg, &mut divide_count);
 
         // Measure time and speed
         let elapsed = now.elapsed().as_millis();
@@ -33,15 +36,23 @@ pub fn run(
         println!(
             "Perft {d}: {leaf_nodes} ({elapsed} ms, {leaves_per_second} leaves/sec)"
         );
+        if d == 1 && depth == 1 {
+            println!("Divided perft for depth {d}:");
+            for (m, count) in &divide_count {
+                println!("{m}: {count}");
+            }
+        } else if d == depth {
+            println!("Divided perft for depth {d}:");
+            for (m, count) in &divide_count {
+                println!("{m}: {count}");
+            }
+        }
     }
 
     // Final calculation of the entire time taken, and average speed of leaves/second.
     let final_lnps = ((total_nodes * 1000) as f64 / total_time as f64).floor();
     println!("Total time spent: {total_time} ms");
     println!("Execution speed: {final_lnps} leaves/second");
-    for (m, count) in divide_count {
-        println!("{m}: {count}");
-    }
 }
 
 
@@ -60,22 +71,22 @@ pub fn perft(
         return 1;
     }
 
-    let leaf = (depth == 2);
-
     mg.generate_all_moves(board, &mut move_list);
 
     // Run perft for each of the moves.
     for i in 0..move_list.len() {
         // Get the move to be executed and counted.
         let m = move_list.get_move(i);
+        let move_string = String::from(format!("{}{}", SQUARE_NAME[m.from().0], SQUARE_NAME[m.to().0]));
         // If the move is legal...
         if board.make(m, mg) {
             // Then count the number of leaf nodes it generates...
-            let nodes= perft(board, depth - 1, depth, mg, divide_count);
+            let nodes= perft(board, depth - 1, max_depth, mg, divide_count);
             //println!("Move: {}, Nodes: {}", m.as_string(), nodes);
             leaf_nodes += nodes;
-            let move_string = String::from(format!("{}{}", SQUARE_NAME[m.from().0], SQUARE_NAME[m.to().0]));
-            divide_count.entry(move_string).and_modify(|counter| *counter += nodes).or_insert(nodes);
+            if depth == max_depth {
+                divide_count.entry(move_string).and_modify(|counter| *counter += nodes).or_insert(nodes);
+            }
             // Then unmake the move so the next one can be counted.
             board.unmake();
         }

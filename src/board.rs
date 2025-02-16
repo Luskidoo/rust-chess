@@ -3,6 +3,7 @@ mod game_state;
 mod zobrist;
 mod utils;
 mod history;
+mod make_move;
 
 use std::sync::Arc;
 
@@ -244,7 +245,7 @@ impl Board {
         self.pieces = [[BitBoard(0); Sides::BOTH + 1]; NrOf::PIECE_TYPES];
         self.game_state = GameState::new();
         self.piece_list = [Pieces::NONE; NrOf::SQUARES];
-        //self.history.clear();
+        self.history.clear();
         //self.piece_list = [Pieces::NONE; NrOf::SQUARES];
     }
 

@@ -1,6 +1,4 @@
-use crate::{defs::{self, Castling, NrOf, Piece, Pieces, Side, Sides, Square}, BitBoard};
-
-use super::{bit_move::Move, MoveGenerator, Board};
+use crate::{defs::{Castling, NrOf, Piece, Pieces, Side, Sides, Square}, BitBoard, MoveGenerator, Board, movegen::bit_move::Move};
 
 // Castling Permissions Per Square
 type CPSquare = [BitBoard; NrOf::SQUARES];
@@ -42,7 +40,7 @@ impl Board {
         self.history.push(current_game_state);
 
         // Set "us" and "opponent"
-        let us = current_game_state.side_to_move;
+        let us = self.game_state.side_to_move;
         let opponent = us ^ 1;
 
         // Dissect the move so we don't need "m.function()" and type casts everywhere.
@@ -63,14 +61,18 @@ impl Board {
         // Assume this is not a pawn move or a capture.
         self.game_state.halfmove_clock += 1;
 
-        // Every move except double_step unsets the up-square.
+        // Every move except double_step unsets the ep-square.
         if self.game_state.en_passant.is_some() {
             self.clear_ep_square();
         }
 
         // If a piece was captured with this move then remove it. Also reset halfmove_clock.
         if is_capture {
+            //println!("Board before capture on {}:", SQUARE_NAME[to.0]);
+            //println!("{}", self.occupancy(opponent));
             self.remove_piece(opponent, captured, to.clone());
+            //println!("Board after capture:");
+            //println!("{}", self.occupancy(opponent));
             self.game_state.halfmove_clock = 0;
             // Change castling permissions on rook capture in the corner.
             if captured == Pieces::ROOK && has_permissions {
@@ -138,7 +140,7 @@ impl Board {
 
         // When running in debug mode, check the incrementally updated
         // values such as Zobrist key and meterial count.
-        //assert!(check_incrementals(self));
+        assert!(check_incrementals(self));
 
         // Report if the move was legal or not.
         is_legal

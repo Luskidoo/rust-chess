@@ -36,14 +36,24 @@ pub fn run(
         println!(
             "Perft {d}: {leaf_nodes} ({elapsed} ms, {leaves_per_second} leaves/sec)"
         );
-        if d == 1 && depth == 1 {
+        if d == 1 {
             println!("Divided perft for depth {d}:");
-            for (m, count) in &divide_count {
+            // 1. Convert HashMap to Vec of (String, u64)
+            let mut sorted_moves: Vec<_> = divide_count.iter().collect();
+            // 2. Sort the Vec by move string (key, which is the first element of the tuple)
+            sorted_moves.sort_by_key(|pair| pair.0);
+            // 3. Iterate over the sorted Vec and print
+            for (m, count) in sorted_moves {
                 println!("{m}: {count}");
             }
         } else if d == depth {
             println!("Divided perft for depth {d}:");
-            for (m, count) in &divide_count {
+            // 1. Convert HashMap to Vec of (String, u64)
+            let mut sorted_moves: Vec<_> = divide_count.iter().collect();
+            // 2. Sort the Vec by move string (key)
+            sorted_moves.sort_by_key(|pair| pair.0);
+            // 3. Iterate over the sorted Vec and print
+            for (m, count) in sorted_moves {
                 println!("{m}: {count}");
             }
         }
@@ -79,7 +89,8 @@ pub fn perft(
         let m = move_list.get_move(i);
         let move_string = String::from(format!("{}{}", SQUARE_NAME[m.from().0], SQUARE_NAME[m.to().0]));
         // If the move is legal...
-        if board.make(m, mg) {
+        let legal = board.make(m, mg);
+        if legal {
             // Then count the number of leaf nodes it generates...
             let nodes= perft(board, depth - 1, max_depth, mg, divide_count);
             //println!("Move: {}, Nodes: {}", m.as_string(), nodes);

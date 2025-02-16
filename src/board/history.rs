@@ -29,7 +29,7 @@ impl History {
 
     // Wipe the entire array.
     pub fn clear(&mut self) {
-        self.list = [GameState::new(); MAX_GAME_MOVES];
+        //self.list = [GameState::new(); MAX_GAME_MOVES];
         self.count = 0;
     }
 

@@ -21,7 +21,6 @@ mod slide;
 mod king;
 pub mod bit_move;
 mod castle;
-mod make_move;
 
 // This is a list of all pieces a pawn can promote to.
 const PROMOTION_PIECES: [usize; 4] = [Pieces::QUEEN, Pieces::ROOK, Pieces::BISHOP, Pieces::KNIGHT];

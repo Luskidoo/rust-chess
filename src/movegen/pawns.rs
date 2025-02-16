@@ -28,7 +28,7 @@ impl MoveGenerator {
         let empty_bb: BitBoard = !board.occupancy(Sides::BOTH);
         while pawns.0 > 0 {
             let from = BitBoard::next(&mut pawns);
-            let from_bb: BitBoard = BitBoard(1) << BitBoard(from.0.try_into().unwrap());
+            let from_bb = from.to_bb();
             let mut to_bb: BitBoard = match side {
                 Sides::WHITE => Self::w_pawn_single_push(from_bb, empty_bb) | Self::w_pawn_double_push(from_bb, empty_bb),
                 Sides::BLACK => Self::b_pawn_single_push(from_bb, empty_bb) | Self::b_pawn_double_push(from_bb, empty_bb),

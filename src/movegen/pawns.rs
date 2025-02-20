@@ -23,7 +23,7 @@ impl MoveGenerator {
 
     pub fn generate_pawn_pushes(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move;
-        let mut pawns = board.pieces[Pieces::PAWN][side];
+        let mut pawns = board.pieces[side][Pieces::PAWN];
         //println!("Initial pawns bitboard {:?}", w_pawns);
         let empty_bb: BitBoard = !board.occupancy(Sides::BOTH);
         while pawns.0 > 0 {
@@ -44,7 +44,7 @@ impl MoveGenerator {
 
     pub fn generate_pawn_attacks(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move;
-        let mut pawns = board.pieces[Pieces::PAWN][side];
+        let mut pawns = board.pieces[side][Pieces::PAWN];
         while pawns.0 > 0 {
             let from = BitBoard::next(&mut pawns);
             let targets =  self.get_pawn_attacks_from_square(side, &from);

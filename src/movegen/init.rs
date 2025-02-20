@@ -15,14 +15,14 @@ impl MoveGenerator {
         for sq in 0..64 {
             let bb_sq = BitBoard(Square(sq.try_into().unwrap()).to_bb().0);
             let moves = 
-            BitBoard((bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_RANK_7 & BitBoard::NOT_A_FILE).0 << 15
-            | (bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_RANK_7 & BitBoard::NOT_H_FILE).0 << 17
-            | (bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_B_FILE & BitBoard::NOT_A_FILE).0 << 6
-            | (bb_sq & BitBoard::NOT_RANK_8 & BitBoard::NOT_G_FILE & BitBoard::NOT_H_FILE).0 << 10
-            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_RANK_2 & BitBoard::NOT_H_FILE).0 >> 15
-            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_RANK_2 & BitBoard::NOT_A_FILE).0 >> 17
-            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_H_FILE & BitBoard::NOT_G_FILE).0 >> 6
-            | (bb_sq & BitBoard::NOT_RANK_1 & BitBoard::NOT_B_FILE & BitBoard::NOT_A_FILE).0 >> 10);
+            BitBoard((bb_sq & !BitBoard::A_FILE).0 >> 17
+            | (bb_sq & !BitBoard::A_FILE).0 << 15
+            | (bb_sq & !BitBoard::H_FILE).0 >> 15
+            | (bb_sq & !BitBoard::H_FILE).0 << 17
+            | (bb_sq & !BitBoard::AB_FILE).0 >> 10
+            | (bb_sq & !BitBoard::AB_FILE).0 << 6
+            | (bb_sq & !BitBoard::GH_FILE).0 >> 6
+            | (bb_sq & !BitBoard::GH_FILE).0 << 10);
             self.knight_moves_array[sq] = moves;
         }
     }
@@ -30,14 +30,14 @@ impl MoveGenerator {
     pub fn init_king_moves(&mut self) {
         for sq in 0..64 {
             let bb_sq = BitBoard(Square(sq.try_into().unwrap()).to_bb().0);
-            let moves = BitBoard((bb_sq & BitBoard::NOT_A_FILE & BitBoard::NOT_RANK_8).0 << 7
+            let moves = BitBoard((bb_sq & !BitBoard::A_FILE & BitBoard::NOT_RANK_8).0 << 7
             | (bb_sq & BitBoard::NOT_RANK_8).0 << 8
-            | (bb_sq & BitBoard::NOT_H_FILE & BitBoard::NOT_RANK_8).0 << 9
-            | (bb_sq & BitBoard::NOT_H_FILE).0 << 1
-            | (bb_sq & BitBoard::NOT_H_FILE & BitBoard::NOT_RANK_1).0 >> 7
+            | (bb_sq & !BitBoard::H_FILE & BitBoard::NOT_RANK_8).0 << 9
+            | (bb_sq & !BitBoard::H_FILE).0 << 1
+            | (bb_sq & !BitBoard::H_FILE & BitBoard::NOT_RANK_1).0 >> 7
             | (bb_sq & BitBoard::NOT_RANK_1).0 >> 8
-            | (bb_sq & BitBoard::NOT_A_FILE & BitBoard::NOT_RANK_1).0 >> 9
-            | (bb_sq & BitBoard::NOT_A_FILE).0 >> 1);
+            | (bb_sq & !BitBoard::A_FILE & BitBoard::NOT_RANK_1).0 >> 9
+            | (bb_sq & !BitBoard::A_FILE).0 >> 1);
             self.king_attacks[sq] = moves;
         }
     }

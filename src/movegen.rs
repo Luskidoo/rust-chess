@@ -56,14 +56,14 @@ impl MoveGenerator {
     }
 
     fn white_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 << 9u64) & BitBoard::NOT_A_FILE;
-        let west_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 << 7u64) & BitBoard::NOT_H_FILE;
+        let east_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 << 9u64) & !BitBoard::A_FILE;
+        let west_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 << 7u64) & !BitBoard::H_FILE;
         east_attacks | west_attacks
     }
 
     fn black_pawn_attacks(sq: u64) -> BitBoard {
-        let east_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 >> 7u64) & BitBoard::NOT_A_FILE;
-        let west_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 >> 9u64) & BitBoard::NOT_H_FILE;
+        let east_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 >> 7u64) & !BitBoard::A_FILE;
+        let west_attacks = BitBoard(Square(sq.try_into().unwrap()).to_bb().0 >> 9u64) & !BitBoard::H_FILE;
         east_attacks | west_attacks
     }
     
@@ -113,12 +113,12 @@ impl MoveGenerator {
         // is on one of the squares a rook has to be to reach the given
         // square. Same for the queen, knight, etc... As soon as one is
         // found, the square is attacked.
-        ((bb_king & board.pieces[Pieces::KING][attacker]).0 > 0)
-            || ((bb_rook & board.pieces[Pieces::ROOK][attacker]).0 > 0)
-            || ((bb_queen & board.pieces[Pieces::QUEEN][attacker]).0 > 0)
-            || ((bb_bishop & board.pieces[Pieces::BISHOP][attacker]).0 > 0)
-            || ((bb_knight & board.pieces[Pieces::KNIGHT][attacker]).0 > 0)
-            || ((bb_pawns & board.pieces[Pieces::PAWN][attacker]).0 > 0)
+        ((bb_king & board.pieces[attacker][Pieces::KING]).0 > 0)
+            || ((bb_rook & board.pieces[attacker][Pieces::ROOK]).0 > 0)
+            || ((bb_queen & board.pieces[attacker][Pieces::QUEEN]).0 > 0)
+            || ((bb_bishop & board.pieces[attacker][Pieces::BISHOP]).0 > 0)
+            || ((bb_knight & board.pieces[attacker][Pieces::KNIGHT]).0 > 0)
+            || ((bb_pawns & board.pieces[attacker][Pieces::PAWN]).0 > 0)
     }
 
     pub fn add_move(&self, board: &Board, list: &mut MoveList, piece: Piece, from: Square, to: Square) {

@@ -5,7 +5,7 @@ use super::{MoveGenerator, SQ};
 impl MoveGenerator {
     pub fn generate_king_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut kings = board.pieces[Pieces::KING][side];
+        let mut kings = board.pieces[side][Pieces::KING];
         //println!("{}", occupancy);
         while kings.0 > 0 {
             let from = BitBoard::next(&mut kings);

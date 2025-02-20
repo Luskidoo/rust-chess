@@ -5,7 +5,7 @@ use super::{MoveGenerator, SQ};
 impl MoveGenerator {
     pub fn generate_rook_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut rooks = board.pieces[Pieces::ROOK][side];
+        let mut rooks = board.pieces[side][Pieces::ROOK];
         let occupancy = board.black_occupied() | board.white_occupied();
         //println!("{}", occupancy);
         while rooks.0 > 0 {
@@ -31,7 +31,7 @@ impl MoveGenerator {
 
     pub fn generate_bishop_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut bishops = board.pieces[Pieces::BISHOP][side];
+        let mut bishops = board.pieces[side][Pieces::BISHOP];
         let occupancy = board.black_occupied() | board.white_occupied();
         while bishops.0 > 0 {
             let from = BitBoard::next(&mut bishops);
@@ -55,7 +55,7 @@ impl MoveGenerator {
 
     pub fn generate_queen_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut queens = board.pieces[Pieces::QUEEN][side];
+        let mut queens = board.pieces[side][Pieces::QUEEN];
         let occupancy = board.black_occupied() | board.white_occupied();
         while queens.0 > 0 {
             let from = BitBoard::next(&mut queens);

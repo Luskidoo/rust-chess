@@ -5,7 +5,7 @@ use super::{MoveGenerator, SQ};
 impl MoveGenerator {
     pub fn generate_knight_moves(&self, board: &Board, list: &mut MoveList) {
         let side = board.game_state.side_to_move as usize;
-        let mut knights = board.pieces[Pieces::KNIGHT][side];
+        let mut knights = board.pieces[side][Pieces::KNIGHT];
         //println!("Initial bitboard {:?}", bb);
         while knights.0 > 0 {
             let from = BitBoard::next(&mut knights);

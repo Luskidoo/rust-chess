@@ -10,7 +10,7 @@ impl MoveGenerator {
         let castle_perms_white = (board.game_state.castling & (Castling::WK | Castling::WQ)).0 > 0;
         let castle_perms_black = (board.game_state.castling & (Castling::BK | Castling::BQ)).0 > 0;
         let bb_occupancy = board.occupancy(Sides::BOTH);
-        let mut bb_king = board.pieces[Pieces::KING][board.game_state.side_to_move];
+        let mut bb_king = board.pieces[board.game_state.side_to_move][Pieces::KING];
         let from = BitBoard::next(&mut bb_king);
     
         // Generate castling moves for white.

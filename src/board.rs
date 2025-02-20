@@ -17,7 +17,7 @@ use crate::defs::*;
 
 #[derive(Clone)]
 pub struct Board {
-    pub pieces: [[BitBoard; Sides::BOTH + 1]; NrOf::PIECE_TYPES],
+    pub pieces: [[BitBoard; NrOf::PIECE_TYPES]; Sides::BOTH + 1],
     pub piece_list: [Piece; NrOf::SQUARES],
     pub game_state: GameState,
     pub history: History,
@@ -27,7 +27,7 @@ pub struct Board {
 impl Board {
     pub fn new() -> Self { 
         Self {
-            pieces: [[BitBoard(0); Sides::BOTH + 1]; NrOf::PIECE_TYPES],
+            pieces: [[BitBoard(0); NrOf::PIECE_TYPES]; Sides::BOTH + 1],
             piece_list: [Pieces::NONE; NrOf::SQUARES],
             game_state: GameState::new(),
             history: History::new(),
@@ -53,11 +53,11 @@ impl Board {
     }
 
     pub fn white_occupied(&self) -> BitBoard {
-        self.pieces[Pieces::PAWN][Sides::WHITE] | self.pieces[Pieces::BISHOP][Sides::WHITE] | self.pieces[Pieces::KNIGHT][Sides::WHITE] | self.pieces[Pieces::ROOK][Sides::WHITE] | self.pieces[Pieces::QUEEN][Sides::WHITE] | self.pieces[Pieces::KING][Sides::WHITE]
+        self.pieces[Sides::WHITE][Pieces::PAWN] | self.pieces[Sides::WHITE][Pieces::BISHOP]| self.pieces[Sides::WHITE][Pieces::KNIGHT] | self.pieces[Sides::WHITE][Pieces::ROOK] | self.pieces[Sides::WHITE][Pieces::QUEEN] | self.pieces[Sides::WHITE][Pieces::KING]
     }
 
     pub fn black_occupied(&self) -> BitBoard {
-        self.pieces[Pieces::PAWN][Sides::BLACK] | self.pieces[Pieces::BISHOP][Sides::BLACK] | self.pieces[Pieces::KNIGHT][Sides::BLACK] | self.pieces[Pieces::ROOK][Sides::BLACK] | self.pieces[Pieces::QUEEN][Sides::BLACK] | self.pieces[Pieces::KING][Sides::BLACK]
+        self.pieces[Sides::BLACK][Pieces::PAWN] | self.pieces[Sides::BLACK][Pieces::BISHOP] | self.pieces[Sides::BLACK][Pieces::KNIGHT] | self.pieces[Sides::BLACK][Pieces::ROOK] | self.pieces[Sides::BLACK][Pieces::QUEEN] | self.pieces[Sides::BLACK][Pieces::KING]
     }
     
     // Initialize the piece list. This list is used to quickly determine
@@ -92,7 +92,7 @@ impl Board {
 
     // Remove a piece from the board, for the given side, piece, and square.
     pub fn remove_piece(&mut self, side: Side, piece: Piece, square: Square) {
-        self.pieces[piece][side] ^= square.clone().to_bb();
+        self.pieces[side][piece] ^= square.clone().to_bb();
         //self.bb_side[side] ^= square.to_bb();
         self.piece_list[square.0] = Pieces::NONE;
         self.game_state.zobrist_key ^= self.zr.piece(side, piece, square);
@@ -106,7 +106,7 @@ impl Board {
 
     // Put a piece onto the board, for the given side, piece, and square.
     pub fn put_piece(&mut self, side: Side, piece: Piece, square: Square) {
-        self.pieces[piece][side] |= square.clone().to_bb();
+        self.pieces[side][piece] |= square.clone().to_bb();
         //self.bb_side[side] |= square.to_bb();
         self.piece_list[square.0] = piece;
         self.game_state.zobrist_key ^= self.zr.piece(side, piece, square);
@@ -236,13 +236,14 @@ impl Board {
         println!("En passant square: {}", self.game_state.en_passant.map_or("None".to_string(), |sq| format!("{}", sq)));
         println!("Halfmove clock: {}", self.game_state.halfmove_clock);
         println!("Fullmove number: {}", self.game_state.fullmove_number);
+        println!("Zobrist key: {}", self.game_state.zobrist_key);
         println!();
     }
 }
 
 impl Board {
     pub fn reset(&mut self) {
-        self.pieces = [[BitBoard(0); Sides::BOTH + 1]; NrOf::PIECE_TYPES];
+        self.pieces = [[BitBoard(0); NrOf::PIECE_TYPES]; Sides::BOTH + 1];
         self.game_state = GameState::new();
         self.piece_list = [Pieces::NONE; NrOf::SQUARES];
         self.history.clear();
@@ -253,5 +254,12 @@ impl Board {
     // bit-boards that are not set up by the FEN-reader function.
     fn init(&mut self) {
         self.piece_list = self.init_piece_list();
+        self.game_state.zobrist_key = self.init_zobrist_key();
     }
+
+    // pub fn check_board(self) {
+    //     let white_pawns = self.pieces[Pieces::PAWN][Sides::WHITE];
+    //     let black_pawns = self.pieces[Pieces::PAWN][Sides::BLACK];
+    //     let both_pawns = white_pawns | black_pawns;
+    // }
 }

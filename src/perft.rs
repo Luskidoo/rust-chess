@@ -1,6 +1,6 @@
 use std::{collections::HashMap, hash::Hash, sync::{Arc, Mutex}, time::Instant};
 
-use crate::{defs::SQUARE_NAME, movegen::MoveGenerator, Board, MoveList};
+use crate::{defs::{Pieces, SQUARE_NAME}, movegen::MoveGenerator, Board, MoveList};
 
 pub fn run(
     mut board: Board,
@@ -10,7 +10,6 @@ pub fn run(
     let mut total_time: u128 = 0;
     let mut total_nodes: u64 = 0;
     let mut divide_count: HashMap<String, u64> = HashMap::new();
-
     println!("Benchmarking perft 1-{depth}:");
 
     // Perform all perfts for depths 1 up to and including "depth"
@@ -36,17 +35,7 @@ pub fn run(
         println!(
             "Perft {d}: {leaf_nodes} ({elapsed} ms, {leaves_per_second} leaves/sec)"
         );
-        if d == 1 {
-            println!("Divided perft for depth {d}:");
-            // 1. Convert HashMap to Vec of (String, u64)
-            let mut sorted_moves: Vec<_> = divide_count.iter().collect();
-            // 2. Sort the Vec by move string (key, which is the first element of the tuple)
-            sorted_moves.sort_by_key(|pair| pair.0);
-            // 3. Iterate over the sorted Vec and print
-            for (m, count) in sorted_moves {
-                println!("{m}: {count}");
-            }
-        } else if d == depth {
+        if d == depth {
             println!("Divided perft for depth {d}:");
             // 1. Convert HashMap to Vec of (String, u64)
             let mut sorted_moves: Vec<_> = divide_count.iter().collect();
@@ -74,7 +63,7 @@ pub fn perft(
     divide_count: &mut HashMap<String, u64>
 ) -> u64 {
     let mut leaf_nodes: u64 = 0;
-    let mut move_list: MoveList = MoveList::default();
+    let mut move_list: MoveList = MoveList::new();
 
     // Count each visited leaf node.
     if depth == 0 {
@@ -82,7 +71,6 @@ pub fn perft(
     }
 
     mg.generate_all_moves(board, &mut move_list);
-
     // Run perft for each of the moves.
     for i in 0..move_list.len() {
         // Get the move to be executed and counted.
@@ -90,6 +78,7 @@ pub fn perft(
         let move_string = String::from(format!("{}{}", SQUARE_NAME[m.from().0], SQUARE_NAME[m.to().0]));
         // If the move is legal...
         let legal = board.make(m, mg);
+        //board.print_board();
         if legal {
             // Then count the number of leaf nodes it generates...
             let nodes= perft(board, depth - 1, max_depth, mg, divide_count);
@@ -100,6 +89,11 @@ pub fn perft(
             }
             // Then unmake the move so the next one can be counted.
             board.unmake();
+            //board.print_board();
+        }
+
+        else {
+            continue;
         }
     }
     // Return the number of leaf nodes for the given position and depth.

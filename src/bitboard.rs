@@ -12,10 +12,12 @@ impl BitBoard {
     pub const k2: BitBoard = BitBoard(0x3333333333333333); //  -1/5   
     pub const k4: BitBoard = BitBoard(0x0f0f0f0f0f0f0f0f); //  -1/17  
     pub const kf: BitBoard = BitBoard(0x0101010101010101); //  -1/255
-    pub const NOT_A_FILE: BitBoard = BitBoard(0xfefefefefefefefe);
-    pub const NOT_B_FILE: BitBoard = BitBoard(0xfdfdfdfdfdfdfdfd);
-    pub const NOT_G_FILE: BitBoard = BitBoard(0xbfbfbfbfbfbfbfbf);
-    pub const NOT_H_FILE: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f);  
+    pub const A_FILE: BitBoard = BitBoard(0x101010101010101);
+    pub const B_FILE: BitBoard = BitBoard(0x202020202020202);
+    pub const G_FILE: BitBoard = BitBoard(0x4040404040404040);
+    pub const H_FILE: BitBoard = BitBoard(0x8080808080808080);
+    pub const AB_FILE:BitBoard = BitBoard(BitBoard::A_FILE.0 | BitBoard::B_FILE.0);
+    pub const GH_FILE:BitBoard = BitBoard(BitBoard::G_FILE.0 | BitBoard::H_FILE.0);   
     pub const NOT_RANK_1: BitBoard = BitBoard(0xffffffffffffff00);
     pub const NOT_RANK_2: BitBoard = BitBoard(0xffffffffffff00ff);
     pub const NOT_RANK_7: BitBoard = BitBoard(0xff00ffffffffffff);
@@ -38,11 +40,11 @@ impl BitBoard {
     }
 
     pub fn east_one(mut self) -> Self {
-        self << BitBoard(1) & Self::NOT_A_FILE
+        self << BitBoard(1) & !Self::A_FILE
     }
 
     pub fn west_one(mut self) -> Self {
-        self >> BitBoard(1) & Self::NOT_H_FILE
+        self >> BitBoard(1) & !Self::H_FILE
     }
 
 

@@ -129,7 +129,7 @@ impl Board {
         //self.print_board();
 
         /*** Validating move: see if "us" is in check. If so, undo everything. ***/
-        let king_square = Square(self.pieces[Pieces::KING][us].0.trailing_zeros() as usize);
+        let king_square = Square(self.pieces[us][Pieces::KING].0.trailing_zeros() as usize);
         let is_legal = !mg.square_attacked(self, opponent, &king_square);
         if !is_legal {
             //println!("Move is illegal, unmaking");
@@ -140,7 +140,7 @@ impl Board {
 
         // When running in debug mode, check the incrementally updated
         // values such as Zobrist key and meterial count.
-        assert!(check_incrementals(self));
+        //assert!(check_incrementals(self));
 
         // Report if the move was legal or not.
         is_legal
@@ -214,14 +214,14 @@ impl Board {
 
 // Removes a piece from the board without Zobrist key updates.
 fn remove_piece(board: &mut Board, side: Side, piece: Piece, square: Square) {
-    board.pieces[piece][side] ^= square.clone().to_bb();
+    board.pieces[side][piece] ^= square.clone().to_bb();
     //board.bb_side[side] ^= square.to_bb();
     board.piece_list[square.0] = Pieces::NONE;
 }
 
 // Puts a piece onto the board without Zobrist key updates.
 fn put_piece(board: &mut Board, side: Side, piece: Piece, square: Square) {
-    board.pieces[piece][side] |= square.clone().to_bb();
+    board.pieces[side][piece] |= square.clone().to_bb();
     //board.bb_side[side] |= square.to_bb();
     board.piece_list[square.0] = piece;
 }

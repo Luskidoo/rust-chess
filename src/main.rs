@@ -9,6 +9,8 @@ mod bitmove;
 mod movelist;
 mod perft;
 mod uci;
+mod evaluate;
+mod search;
 
 //mod extra;
 use crate::bitmove::*;

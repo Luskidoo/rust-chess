@@ -8,6 +8,7 @@ mod movegen;
 mod bitmove;
 mod movelist;
 mod perft;
+mod uci;
 
 //mod extra;
 use crate::bitmove::*;
